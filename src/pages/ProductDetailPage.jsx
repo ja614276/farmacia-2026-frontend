@@ -50,7 +50,54 @@ export const ProductDetailPage = () => {
         const res = await axios.get(`${baseUrl}/products/${id}`, {
           headers: getAuthHeaders(),
         });
-        setProduct(res.data);
+        const data = res.data;
+
+        // Si idUbicacion existe pero falta el objeto ubicacion detallado
+        if (data && data.idUbicacion && (!data.ubicacion || !data.ubicacion.nombre)) {
+          try {
+            const locRes = await axios.get(`${baseUrl}/locations/${data.idUbicacion}`, {
+              headers: getAuthHeaders(),
+            });
+            if (locRes.data) {
+              data.ubicacion = locRes.data;
+              data.ubicacionNombre = locRes.data.nombre;
+            }
+          } catch (locErr) {
+            console.warn("No se pudo cargar detalle de ubicación:", locErr);
+          }
+        }
+
+        // Si idProveedor existe pero falta el objeto proveedor detallado
+        if (data && data.idProveedor && (!data.proveedor || !data.proveedor.nombre)) {
+          try {
+            const supRes = await axios.get(`${baseUrl}/suppliers/${data.idProveedor}`, {
+              headers: getAuthHeaders(),
+            });
+            if (supRes.data) {
+              data.proveedor = supRes.data;
+              data.proveedorNombre = supRes.data.nombre;
+            }
+          } catch (supErr) {
+            console.warn("No se pudo cargar detalle de proveedor:", supErr);
+          }
+        }
+
+        // Si idLaboratorio existe pero falta el objeto laboratorio detallado
+        if (data && data.idLaboratorio && (!data.laboratorio || !data.laboratorio.nombre)) {
+          try {
+            const labRes = await axios.get(`${baseUrl}/laboratories/${data.idLaboratorio}`, {
+              headers: getAuthHeaders(),
+            });
+            if (labRes.data) {
+              data.laboratorio = labRes.data;
+              data.laboratorioNombre = labRes.data.nombre;
+            }
+          } catch (labErr) {
+            console.warn("No se pudo cargar detalle de laboratorio:", labErr);
+          }
+        }
+
+        setProduct(data);
       } catch (error) {
         console.error("Error al cargar la ficha técnica:", error);
       } finally {
@@ -412,7 +459,7 @@ export const ProductDetailPage = () => {
                 </small>
                 <span className="fw-bold text-dark text-truncate d-block small mt-1">
                   {product.proveedor?.nombre ||
-                    product.laboratorioNombre ||
+                    product.proveedorNombre ||
                     "N/A"}
                 </span>
               </div>
@@ -423,12 +470,18 @@ export const ProductDetailPage = () => {
                   className="text-muted fw-bold d-block"
                   style={{ fontSize: "0.64rem" }}
                 >
-                  ALMACÉN
+                  ALMACÉN / UBICACIÓN
                 </small>
                 <span className="fw-bold text-dark text-truncate d-block small mt-1">
-                  {product.ubicacion?.nombre ||
-                    product.ubicacionNombre ||
-                    "Sin Asignar"}
+                  {product.ubicacion?.nombre
+                    ? `${product.ubicacion.nombre}${
+                        product.ubicacion.pasillo || product.ubicacion.estante
+                          ? ` (Pasillo: ${product.ubicacion.pasillo || "-"}, Estante: ${
+                              product.ubicacion.estante || "-"
+                            })`
+                          : ""
+                      }`
+                    : product.ubicacionNombre || "Sin Asignar"}
                 </span>
               </div>
             </div>

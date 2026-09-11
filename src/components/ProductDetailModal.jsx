@@ -195,15 +195,23 @@ export const ProductDetailModal = ({ product, onClose, onEdit }) => {
                 <div className="p-2 border rounded-3 bg-white shadow-2xs h-100">
                   <small className="text-muted fw-bold d-block" style={{ fontSize: "0.64rem" }}>DISTRIBUIDOR</small>
                   <span className="fw-bold text-dark text-truncate d-block small mt-1">
-                    {product.proveedor?.nombre || product.laboratorioNombre || "N/A"}
+                    {product.proveedor?.nombre || product.proveedorNombre || "N/A"}
                   </span>
                 </div>
               </div>
               <div className="col-6 col-md-3">
                 <div className="p-2 border rounded-3 bg-white shadow-2xs h-100">
-                  <small className="text-muted fw-bold d-block" style={{ fontSize: "0.64rem" }}>ALMACÉN</small>
+                  <small className="text-muted fw-bold d-block" style={{ fontSize: "0.64rem" }}>ALMACÉN / UBICACIÓN</small>
                   <span className="fw-bold text-dark text-truncate d-block small mt-1">
-                    {product.ubicacion?.nombre || "Sin Asignar"}
+                    {product.ubicacion?.nombre
+                      ? `${product.ubicacion.nombre}${
+                          product.ubicacion.pasillo || product.ubicacion.estante
+                            ? ` (Pasillo: ${product.ubicacion.pasillo || "-"}, Estante: ${
+                                product.ubicacion.estante || "-"
+                              })`
+                            : ""
+                        }`
+                      : product.ubicacionNombre || "Sin Asignar"}
                   </span>
                 </div>
               </div>

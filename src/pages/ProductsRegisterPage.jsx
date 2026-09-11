@@ -5,28 +5,26 @@ import { ProductForm } from "../components/ProductForm";
 import { useParams } from "react-router-dom";
 
 export const ProductsRegisterPage = () => {
-    const { products } = useProducts();
-    const [productSelected, setProductSelected] = useState(initialProductForm);
-    const { id } = useParams();
+  const { products } = useProducts();
+  const [productSelected, setProductSelected] = useState(initialProductForm);
+  const { id } = useParams();
 
-    useEffect(() => {
-        if (id) {
-            const product = products.find(p => p.id == id) || initialProductForm;
-            setProductSelected(product);
-        } else {
-            setProductSelected(initialProductForm); // ✅ Si no hay ID, es nuevo producto
-        }
-    }, [id, products]);
+  useEffect(() => {
+    if (id) {
+      const product =
+        products.find((p) => String(p.idProducto || p.id) === String(id)) ||
+        initialProductForm;
+      setProductSelected(product);
+    } else {
+      setProductSelected(initialProductForm);
+    }
+  }, [id, products]);
 
-    // <h4>{productSelected.id > 0 ? "Editar" : "Registrar"}  Producto</h4>
-
-    return (
-        <div className="container my-4">
-            <div className="row">
-                <div className="col">
-                    <ProductForm productSelected={productSelected} />
-                </div>
-            </div>
-        </div>
-    );
+  return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <ProductForm productSelected={productSelected} />
+    </div>
+  );
 };
+
+export default ProductsRegisterPage;

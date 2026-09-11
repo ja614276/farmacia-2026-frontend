@@ -1,613 +1,590 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import PropTypes from "prop-types";
-import axios from "axios";
+import { useNavigate, useParams } from "react-router-dom";
+import Swal from "sweetalert2";
+import { saveClient, updateClient, findClientById } from "../services/ClientService";
 
-export const ClientForm = ({ initialData, onSaveSuccess, onCancel }) => {
-  const isEditing = Boolean(initialData?.idCliente || initialData?.id);
+const initialFormState = {
+    id: null,
+    firstName: "",
+    lastName: "",
+    identification: "",
+    phone: "",
+    email: "",
+    address: "",
+    healthInsurance: "",
+    affiliateNumber: "",
+    creditLimit: 0,
+    currentBalance: 0,
+    creditDays: 0,
+    isActive: true,
+};
 
-  const [formData, setFormData] = useState({
-    nombres: initialData?.nombres || "",
-    apellidos: initialData?.apellidos || "",
-    identificacion: initialData?.identificacion || "",
-    telefono: initialData?.telefono || "",
-    email: initialData?.email || "",
-    direccion: initialData?.direccion || "",
-    limiteCredito: initialData?.limiteCredito ?? 0,
-    saldo: initialData?.saldo ?? 0,
-    diasCredito: initialData?.diasCredito ?? 0,
-  });
+export const ClientForm = ({
+    clientSelected = null,
+    initialData = null,
+    onSuccess = null,
+    onSaveSuccess = null,
+    onCancel = null,
+}) => {
+    const navigate = useNavigate();
+    const { id } = useParams();
 
-  const [isSaving, setIsSaving] = useState(false);
-  const [errorMsg, setErrorMsg] = useState("");
+    const [formState, setFormState] = useState(initialFormState);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isLoadingData, setIsLoadingData] = useState(false);
 
-  const getAuthHeaders = () => {
-    let rawToken =
-      localStorage.getItem("token") ||
-      sessionStorage.getItem("token") ||
-      localStorage.getItem("jwt") ||
-      sessionStorage.getItem("jwt");
+    const {
+        firstName,
+        lastName,
+        identification,
+        phone,
+        email,
+        address,
+        healthInsurance,
+        affiliateNumber,
+        creditLimit,
+        currentBalance,
+        creditDays,
+        isActive,
+    } = formState;
 
-    if (!rawToken) {
-      const storedLogin =
-        sessionStorage.getItem("login") || localStorage.getItem("login");
-      if (storedLogin) {
+    const targetClientId =
+        id ||
+        clientSelected?.id ||
+        clientSelected?.idCliente ||
+        initialData?.id ||
+        initialData?.idCliente;
+
+    const isEditMode = Boolean(targetClientId);
+
+    useEffect(() => {
+        const passedData = clientSelected || initialData;
+        if (passedData && (passedData.firstName || passedData.nombres || passedData.lastName || passedData.apellidos)) {
+            setFormState({
+                id: passedData.id || passedData.idCliente || null,
+                firstName: passedData.firstName || passedData.nombres || "",
+                lastName: passedData.lastName || passedData.apellidos || "",
+                identification: passedData.identification || passedData.identificacion || "",
+                phone: passedData.phone || passedData.telefono || "",
+                email: passedData.email || "",
+                address: passedData.address || passedData.direccion || "",
+                healthInsurance: passedData.healthInsurance || passedData.obraSocial || "",
+                affiliateNumber: passedData.affiliateNumber || passedData.nroAfiliado || "",
+                creditLimit: Number(passedData.creditLimit ?? passedData.limiteCredito ?? 0),
+                currentBalance: Number(passedData.currentBalance ?? passedData.saldo ?? 0),
+                creditDays: Number(passedData.creditDays ?? passedData.diasCredito ?? 0),
+                isActive: passedData.isActive !== undefined ? passedData.isActive : true,
+            });
+        } else if (targetClientId) {
+            setIsLoadingData(true);
+            findClientById(targetClientId)
+                .then((response) => {
+                    if (response.data) {
+                        const data = response.data;
+                        setFormState({
+                            id: data.id || data.idCliente,
+                            firstName: data.firstName || data.nombres || "",
+                            lastName: data.lastName || data.apellidos || "",
+                            identification: data.identification || data.identificacion || "",
+                            phone: data.phone || data.telefono || "",
+                            email: data.email || "",
+                            address: data.address || data.direccion || "",
+                            healthInsurance: data.healthInsurance || data.obraSocial || "",
+                            affiliateNumber: data.affiliateNumber || data.nroAfiliado || "",
+                            creditLimit: Number(data.creditLimit ?? data.limiteCredito ?? 0),
+                            currentBalance: Number(data.currentBalance ?? data.saldo ?? 0),
+                            creditDays: Number(data.creditDays ?? data.diasCredito ?? 0),
+                            isActive: data.isActive !== undefined ? data.isActive : true,
+                        });
+                    }
+                })
+                .catch((error) => {
+                    console.error("Error al cargar cliente:", error);
+                    Swal.fire("Error", "No se pudo cargar la información del cliente", "error");
+                })
+                .finally(() => {
+                    setIsLoadingData(false);
+                });
+        } else {
+            setFormState(initialFormState);
+        }
+    }, [clientSelected, initialData, targetClientId]);
+
+    const onInputChange = ({ target }) => {
+        const { name, value, type, checked } = target;
+        setFormState((prev) => ({
+            ...prev,
+            [name]: type === "checkbox" ? checked : value,
+        }));
+    };
+
+    const handleCancel = () => {
+        if (onCancel) {
+            onCancel();
+        } else {
+            navigate("/clients");
+        }
+    };
+
+    const onSubmit = async (event) => {
+        event.preventDefault();
+
+        if (!firstName.trim()) {
+            Swal.fire({
+                title: "Campo requerido",
+                text: "El o los nombres del cliente son obligatorios.",
+                icon: "warning",
+                confirmButtonColor: "#0f766e",
+            });
+            return;
+        }
+
+        if (!lastName.trim()) {
+            Swal.fire({
+                title: "Campo requerido",
+                text: "Los apellidos del cliente son obligatorios.",
+                icon: "warning",
+                confirmButtonColor: "#0f766e",
+            });
+            return;
+        }
+
         try {
-          const parsed = JSON.parse(storedLogin);
-          rawToken = parsed.token || parsed.jwt;
-        } catch (e) {
-          console.error("Error parseando storage de login:", e);
+            setIsSubmitting(true);
+            let savedRecord = null;
+
+            if (isEditMode) {
+                const response = await updateClient(targetClientId, formState);
+                savedRecord = response.data;
+                Swal.fire({
+                    title: "¡Actualizado!",
+                    text: "Cliente actualizado correctamente.",
+                    icon: "success",
+                    timer: 1500,
+                    showConfirmButton: false,
+                });
+            } else {
+                const response = await saveClient(formState);
+                savedRecord = response.data;
+                Swal.fire({
+                    title: "¡Guardado!",
+                    text: "Cliente registrado con éxito.",
+                    icon: "success",
+                    timer: 1500,
+                    showConfirmButton: false,
+                });
+            }
+
+            if (onSaveSuccess) {
+                onSaveSuccess(savedRecord);
+            } else if (onSuccess) {
+                onSuccess(savedRecord);
+            } else {
+                navigate("/clients");
+            }
+        } catch (error) {
+            console.error("Error al persistir cliente:", error);
+            const errorMsg =
+                error.response?.data?.message ||
+                error.response?.data?.error ||
+                "Ocurrió un error al procesar los datos del cliente.";
+            Swal.fire("Error", errorMsg, "error");
+        } finally {
+            setIsSubmitting(false);
         }
-      }
-    }
-
-    if (!rawToken) return { "Content-Type": "application/json" };
-
-    const authHeader = rawToken.startsWith("Bearer ")
-      ? rawToken
-      : `Bearer ${rawToken}`;
-
-    return {
-      Authorization: authHeader,
-      "Content-Type": "application/json",
-    };
-  };
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setErrorMsg("");
-
-    if (!formData.nombres.trim() || !formData.apellidos.trim()) {
-      setErrorMsg("Los campos Nombre(s) y Apellidos son obligatorios.");
-      return;
-    }
-
-    setIsSaving(true);
-
-    const payload = {
-      nombres: formData.nombres.trim(),
-      apellidos: formData.apellidos.trim(),
-      identificacion: formData.identificacion.trim() || null,
-      telefono: formData.telefono.trim() || null,
-      email: formData.email.trim() || null,
-      direccion: formData.direccion.trim() || null,
-      limiteCredito: Number(formData.limiteCredito) || 0,
-      saldo: Number(formData.saldo) || 0,
-      diasCredito: Number(formData.diasCredito) || 0,
     };
 
-    try {
-      const baseUrl =
-        import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
-      let response;
-
-      if (isEditing) {
-        const id = initialData.idCliente || initialData.id;
-        response = await axios.put(`${baseUrl}/clients/${id}`, payload, {
-          headers: getAuthHeaders(),
-        });
-      } else {
-        response = await axios.post(`${baseUrl}/clients`, payload, {
-          headers: getAuthHeaders(),
-        });
-      }
-
-      if (onSaveSuccess) {
-        onSaveSuccess(response.data);
-      } else {
-        alert("Cliente guardado exitosamente.");
-      }
-    } catch (error) {
-      console.error("Error al registrar cliente:", error.response?.data || error);
-      setErrorMsg(
-        error.response?.data?.message ||
-          "Error al procesar la solicitud en el servidor."
-      );
-    } finally {
-      setIsSaving(false);
+    if (isLoadingData) {
+        return (
+            <div className="flex items-center justify-center min-h-[350px]">
+                <div className="flex items-center gap-3 text-teal-700 font-medium text-sm">
+                    <svg className="animate-spin h-5 w-5 text-teal-600" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        />
+                    </svg>
+                    <span>Cargando información del cliente...</span>
+                </div>
+            </div>
+        );
     }
-  };
 
-  return (
-    <div className="client-form-container p-4">
-      {/* Header superior */}
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <div className="d-flex align-items-center gap-3">
-          {onCancel && (
-            <button
-              type="button"
-              className="btn btn-light rounded-circle shadow-sm p-2 d-flex align-items-center justify-content-center border"
-              onClick={onCancel}
-              style={{ width: "38px", height: "38px" }}
-              title="Volver"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-              >
-                <path d="m15 18-6-6 6-6" />
-              </svg>
-            </button>
-          )}
-          <div>
-            <div className="d-flex align-items-center gap-2">
-              <span className="text-teal d-flex align-items-center">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="22"
-                  height="22"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.2"
-                >
-                  <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                  <circle cx="9" cy="7" r="4" />
-                  <line x1="19" y1="8" x2="19" y2="14" />
-                  <line x1="22" y1="11" x2="16" y2="11" />
-                </svg>
-              </span>
-              <h4 className="fw-bolder m-0 text-dark">
-                {isEditing ? "Editar Cliente" : "Nuevo Cliente"}
-              </h4>
-            </div>
-            <p className="text-muted small m-0">
-              Completa la información detallada del cliente para tu sistema.
-            </p>
-          </div>
-        </div>
-
-        {/* Botones de acción */}
-        <div className="d-flex align-items-center gap-2">
-          {onCancel && (
-            <button
-              type="button"
-              className="btn btn-outline-secondary btn-sm px-3 py-2 fw-semibold shadow-sm"
-              onClick={onCancel}
-              disabled={isSaving}
-            >
-              Cancelar
-            </button>
-          )}
-          <button
-            type="button"
-            className="btn btn-teal-primary btn-sm px-4 py-2 fw-semibold shadow-sm d-flex align-items-center gap-2"
-            onClick={handleSubmit}
-            disabled={isSaving}
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.2"
-            >
-              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
-              <polyline points="17 21 17 13 7 13" />
-              <polyline points="7 3 7 8 15 8" />
-            </svg>
-            {isSaving ? "Guardando..." : "Guardar"}
-          </button>
-        </div>
-      </div>
-
-      {errorMsg && (
-        <div className="alert alert-danger py-2 px-3 small rounded-3 mb-3">
-          {errorMsg}
-        </div>
-      )}
-
-      {/* Formulario distribuido */}
-      <form onSubmit={handleSubmit}>
-        <div className="row g-4">
-          {/* COLUMNA IZQUIERDA: Datos Personales e Información de Contacto */}
-          <div className="col-12 col-lg-7 d-flex flex-column gap-4">
-            {/* Tarjeta 1: Datos Personales */}
-            <div className="bg-white rounded-4 shadow-sm border p-4 border-top-teal">
-              <div className="d-flex align-items-center gap-2 text-indigo fw-bold mb-3 section-title">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.2"
-                >
-                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                  <circle cx="12" cy="7" r="4" />
-                </svg>
-                <span>DATOS PERSONALES</span>
-              </div>
-
-              <div className="row g-3">
-                <div className="col-md-6">
-                  <label className="form-label text-muted fw-bold small mb-1">
-                    Nombre(s) <span className="text-danger">*</span>
-                  </label>
-                  <div className="input-group input-group-sm custom-input-group">
-                    <span className="input-group-text bg-light border-end-0 text-muted">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="15"
-                        height="15"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                      >
-                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                        <circle cx="12" cy="7" r="4" />
-                      </svg>
-                    </span>
-                    <input
-                      type="text"
-                      name="nombres"
-                      required
-                      className="form-control border-start-0 ps-0"
-                      placeholder="Ej: Juan Carlos"
-                      value={formData.nombres}
-                      onChange={handleChange}
-                    />
-                  </div>
-                </div>
-
-                <div className="col-md-6">
-                  <label className="form-label text-muted fw-bold small mb-1">
-                    Apellidos <span className="text-danger">*</span>
-                  </label>
-                  <div className="input-group input-group-sm custom-input-group">
-                    <span className="input-group-text bg-light border-end-0 text-muted">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="15"
-                        height="15"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                      >
-                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                        <circle cx="9" cy="7" r="4" />
-                        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-                        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                      </svg>
-                    </span>
-                    <input
-                      type="text"
-                      name="apellidos"
-                      required
-                      className="form-control border-start-0 ps-0"
-                      placeholder="Ej: Pérez García"
-                      value={formData.apellidos}
-                      onChange={handleChange}
-                    />
-                  </div>
-                </div>
-
-                <div className="col-12">
-                  <label className="form-label text-muted fw-bold small mb-1">
-                    Identificación (DNI / RUC / CEE)
-                  </label>
-                  <div className="input-group input-group-sm custom-input-group">
-                    <span className="input-group-text bg-light border-end-0 text-muted">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="15"
-                        height="15"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                      >
-                        <rect width="20" height="14" x="2" y="5" rx="2" />
-                        <line x1="2" x2="22" y1="10" y2="10" />
-                      </svg>
-                    </span>
-                    <input
-                      type="text"
-                      name="identificacion"
-                      className="form-control border-start-0 ps-0 font-monospace"
-                      placeholder="Ej: 72345678"
-                      value={formData.identificacion}
-                      onChange={handleChange}
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Tarjeta 2: Información de Contacto */}
-            <div className="bg-white rounded-4 shadow-sm border p-4 border-top-emerald">
-              <div className="d-flex align-items-center gap-2 text-emerald fw-bold mb-3 section-title">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.2"
-                >
-                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
-                </svg>
-                <span>INFORMACIÓN DE CONTACTO</span>
-              </div>
-
-              <div className="row g-3">
-                <div className="col-md-6">
-                  <label className="form-label text-muted fw-bold small mb-1">
-                    Teléfono / WhatsApp
-                  </label>
-                  <div className="input-group input-group-sm custom-input-group">
-                    <span className="input-group-text bg-light border-end-0 text-muted">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="15"
-                        height="15"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                      >
-                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
-                      </svg>
-                    </span>
-                    <input
-                      type="text"
-                      name="telefono"
-                      className="form-control border-start-0 ps-0"
-                      placeholder="+51 9..."
-                      value={formData.telefono}
-                      onChange={handleChange}
-                    />
-                  </div>
-                </div>
-
-                <div className="col-md-6">
-                  <label className="form-label text-muted fw-bold small mb-1">
-                    Correo Electrónico
-                  </label>
-                  <div className="input-group input-group-sm custom-input-group">
-                    <span className="input-group-text bg-light border-end-0 text-muted">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="15"
-                        height="15"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                      >
-                        <rect width="20" height="16" x="2" y="4" rx="2" />
-                        <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
-                      </svg>
-                    </span>
-                    <input
-                      type="email"
-                      name="email"
-                      className="form-control border-start-0 ps-0"
-                      placeholder="ejemplo@correo.com"
-                      value={formData.email}
-                      onChange={handleChange}
-                    />
-                  </div>
-                </div>
-
-                <div className="col-12">
-                  <label className="form-label text-muted fw-bold small mb-1">
-                    Dirección Completa
-                  </label>
-                  <div className="input-group input-group-sm custom-input-group">
-                    <span className="input-group-text bg-light border-end-0 text-muted">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="15"
-                        height="15"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                      >
-                        <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
-                        <circle cx="12" cy="10" r="3" />
-                      </svg>
-                    </span>
-                    <input
-                      type="text"
-                      name="direccion"
-                      className="form-control border-start-0 ps-0"
-                      placeholder="Calle, Ciudad, Referencia"
-                      value={formData.direccion}
-                      onChange={handleChange}
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* COLUMNA DERECHA: Finanzas y Crédito */}
-          <div className="col-12 col-lg-5">
-            <div className="bg-white rounded-4 shadow-sm border p-4 border-top-rose h-100 d-flex flex-column justify-content-between">
-              <div>
-                <div className="d-flex align-items-center gap-2 text-rose fw-bold mb-3 section-title">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="18"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.2"
-                  >
-                    <rect width="20" height="14" x="2" y="5" rx="2" />
-                    <line x1="2" x2="22" y1="10" y2="10" />
-                  </svg>
-                  <span>FINANZAS Y CRÉDITO</span>
-                </div>
-
-                <div className="row g-3">
-                  <div className="col-6">
-                    <label className="form-label text-muted fw-bold small mb-1">
-                      Límite (S/)
-                    </label>
-                    <div className="input-group input-group-sm custom-input-group">
-                      <span className="input-group-text bg-light border-end-0 text-muted">
-                        S/
-                      </span>
-                      <input
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        name="limiteCredito"
-                        className="form-control border-start-0 ps-0 fw-bold text-dark"
-                        value={formData.limiteCredito}
-                        onChange={handleChange}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="col-6">
-                    <label className="form-label text-muted fw-bold small mb-1">
-                      Saldo Actual (S/)
-                    </label>
-                    <div className="input-group input-group-sm custom-input-group">
-                      <span className="input-group-text bg-light border-end-0 text-muted">
-                        S/
-                      </span>
-                      <input
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        name="saldo"
-                        className="form-control border-start-0 ps-0 fw-bold text-teal"
-                        value={formData.saldo}
-                        onChange={handleChange}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="col-12">
-                    <label className="form-label text-muted fw-bold small mb-1">
-                      Días de Crédito permitidos
-                    </label>
-                    <div className="input-group input-group-sm custom-input-group">
-                      <span className="input-group-text bg-light border-end-0 text-muted">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="15"
-                          height="15"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                        >
-                          <circle cx="12" cy="12" r="10" />
-                          <polyline points="12 6 12 12 16 14" />
+    return (
+        <div className="max-w-6xl mx-auto px-4 py-6 sm:px-6">
+            {/* Header superior */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+                <div className="flex items-center gap-3">
+                    <button
+                        type="button"
+                        onClick={handleCancel}
+                        className="w-9 h-9 rounded-full bg-white border border-slate-200 text-slate-500 hover:text-slate-800 hover:bg-slate-50 flex items-center justify-center transition-colors shadow-sm"
+                        title="Volver"
+                    >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
                         </svg>
-                      </span>
-                      <input
-                        type="number"
-                        min="0"
-                        name="diasCredito"
-                        className="form-control border-start-0 ps-0"
-                        value={formData.diasCredito}
-                        onChange={handleChange}
-                      />
+                    </button>
+                    <div>
+                        <div className="flex items-center gap-2">
+                            <span className="text-teal-600">
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth="2"
+                                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                                    />
+                                </svg>
+                            </span>
+                            <h2 className="text-xl font-bold text-slate-800 tracking-tight">
+                                {isEditMode ? "Editar Cliente" : "Nuevo Cliente"}
+                            </h2>
+                        </div>
+                        <p className="text-xs text-slate-500 mt-0.5">
+                            {isEditMode
+                                ? "Modifica los datos personales, contacto y condiciones crediticias del cliente."
+                                : "Registra un nuevo cliente para gestionar sus compras, recetas y cuenta corriente."}
+                        </p>
                     </div>
-                  </div>
                 </div>
-              </div>
 
-              {/* Nota informativa al pie de la tarjeta */}
-              <div className="p-3 rounded-3 bg-rose-subtle text-rose-dark small mt-4 border border-rose-subtle">
-                <span className="fw-bold">Nota: </span>
-                Define los parámetros de crédito para este cliente según su historial crediticio.
-              </div>
+                {/* Botones de acción */}
+                <div className="flex items-center gap-2">
+                    <button
+                        type="button"
+                        onClick={handleCancel}
+                        disabled={isSubmitting}
+                        className="px-4 py-2 text-xs font-semibold text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 shadow-sm transition-colors"
+                    >
+                        Cancelar
+                    </button>
+                    <button
+                        type="button"
+                        onClick={onSubmit}
+                        disabled={isSubmitting}
+                        className="inline-flex items-center gap-2 px-5 py-2 text-xs font-semibold text-white bg-teal-600 rounded-lg hover:bg-teal-700 shadow-sm hover:shadow transition-all disabled:opacity-50"
+                    >
+                        {isSubmitting ? (
+                            <>
+                                <svg className="animate-spin h-3.5 w-3.5 text-white" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                    <path
+                                        className="opacity-75"
+                                        fill="currentColor"
+                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                    />
+                                </svg>
+                                <span>Guardando...</span>
+                            </>
+                        ) : (
+                            <>
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                                </svg>
+                                <span>{isEditMode ? "Actualizar Cliente" : "Guardar Cliente"}</span>
+                            </>
+                        )}
+                    </button>
+                </div>
             </div>
-          </div>
-        </div>
-      </form>
 
-      {/* Estilos específicos idénticos a tu layout */}
-      <style>{`
-        .client-form-container {
-          background-color: #f8fafc;
-          min-height: 100vh;
-        }
-        .text-teal {
-          color: #006d77 !important;
-        }
-        .btn-teal-primary {
-          background-color: #006d77;
-          color: #fff;
-          border: none;
-        }
-        .btn-teal-primary:hover {
-          background-color: #084c53;
-          color: #fff;
-        }
-        .border-top-teal {
-          border-top: 4px solid #6366f1 !important;
-        }
-        .border-top-emerald {
-          border-top: 4px solid #10b981 !important;
-        }
-        .border-top-rose {
-          border-top: 4px solid #f43f5e !important;
-        }
-        .text-indigo {
-          color: #6366f1 !important;
-        }
-        .text-emerald {
-          color: #10b981 !important;
-        }
-        .text-rose {
-          color: #f43f5e !important;
-        }
-        .bg-rose-subtle {
-          background-color: #fff1f2 !important;
-        }
-        .border-rose-subtle {
-          border-color: #fecdd3 !important;
-        }
-        .text-rose-dark {
-          color: #9f1239 !important;
-          font-size: 0.78rem;
-        }
-        .section-title {
-          font-size: 0.8rem;
-          letter-spacing: 0.5px;
-        }
-        .custom-input-group .form-control:focus {
-          box-shadow: none;
-          border-color: #006d77;
-        }
-        .custom-input-group .input-group-text {
-          border-color: #dee2e6;
-        }
-      `}</style>
-    </div>
-  );
+            {/* Formulario Principal */}
+            <form onSubmit={onSubmit}>
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    {/* COLUMNA IZQUIERDA: Datos Personales, Contacto y Seguro (7 cols) */}
+                    <div className="lg:col-span-7 flex flex-col gap-6">
+                        {/* Tarjeta 1: Datos Personales */}
+                        <div className="bg-white rounded-2xl p-6 shadow-[0_4px_25px_rgba(0,0,0,0.03)] border border-slate-100 border-t-4 border-t-indigo-500">
+                            <div className="flex items-center gap-2 text-indigo-600 font-bold text-xs uppercase tracking-wider mb-4">
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                </svg>
+                                <span>Datos Personales</span>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                                        Nombre(s) <span className="text-red-500">*</span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        name="firstName"
+                                        value={firstName}
+                                        onChange={onInputChange}
+                                        placeholder="Ej: Carlos Alberto"
+                                        required
+                                        className="w-full px-3 py-2 text-xs text-slate-800 bg-slate-50/50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-600 transition-all placeholder:text-slate-400"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                                        Apellidos <span className="text-red-500">*</span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        name="lastName"
+                                        value={lastName}
+                                        onChange={onInputChange}
+                                        placeholder="Ej: Rodríguez Gómez"
+                                        required
+                                        className="w-full px-3 py-2 text-xs text-slate-800 bg-slate-50/50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-600 transition-all placeholder:text-slate-400"
+                                    />
+                                </div>
+
+                                <div className="sm:col-span-2">
+                                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                                        Documento / DNI / RUC / Carnet
+                                    </label>
+                                    <div className="relative">
+                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <rect width="20" height="14" x="2" y="5" rx="2" strokeWidth="2" />
+                                                <line x1="2" x2="22" y1="10" y2="10" strokeWidth="2" />
+                                            </svg>
+                                        </div>
+                                        <input
+                                            type="text"
+                                            name="identification"
+                                            value={identification}
+                                            onChange={onInputChange}
+                                            placeholder="Ej: 74892314"
+                                            className="w-full pl-9 pr-3 py-2 text-xs font-mono text-slate-800 bg-slate-50/50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-600 transition-all placeholder:text-slate-400"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Tarjeta 2: Información de Contacto */}
+                        <div className="bg-white rounded-2xl p-6 shadow-[0_4px_25px_rgba(0,0,0,0.03)] border border-slate-100 border-t-4 border-t-emerald-500">
+                            <div className="flex items-center gap-2 text-emerald-600 font-bold text-xs uppercase tracking-wider mb-4">
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth="2"
+                                        d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
+                                    />
+                                </svg>
+                                <span>Información de Contacto</span>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                                        Teléfono / Celular
+                                    </label>
+                                    <input
+                                        type="text"
+                                        name="phone"
+                                        value={phone}
+                                        onChange={onInputChange}
+                                        placeholder="Ej: +51 987 654 321"
+                                        className="w-full px-3 py-2 text-xs text-slate-800 bg-slate-50/50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-600 transition-all placeholder:text-slate-400"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                                        Correo Electrónico
+                                    </label>
+                                    <input
+                                        type="email"
+                                        name="email"
+                                        value={email}
+                                        onChange={onInputChange}
+                                        placeholder="cliente@correo.com"
+                                        className="w-full px-3 py-2 text-xs text-slate-800 bg-slate-50/50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-600 transition-all placeholder:text-slate-400"
+                                    />
+                                </div>
+
+                                <div className="sm:col-span-2">
+                                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                                        Dirección Completa
+                                    </label>
+                                    <input
+                                        type="text"
+                                        name="address"
+                                        value={address}
+                                        onChange={onInputChange}
+                                        placeholder="Ej: Av. Principal 123, Dpto 4B"
+                                        className="w-full px-3 py-2 text-xs text-slate-800 bg-slate-50/50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-600 transition-all placeholder:text-slate-400"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Tarjeta 3: Seguro u Obra Social (Opcional) */}
+                        <div className="bg-white rounded-2xl p-6 shadow-[0_4px_25px_rgba(0,0,0,0.03)] border border-slate-100 border-t-4 border-t-sky-500">
+                            <div className="flex items-center gap-2 text-sky-600 font-bold text-xs uppercase tracking-wider mb-4">
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth="2"
+                                        d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+                                    />
+                                </svg>
+                                <span>Seguro Médico / Obra Social (Opcional)</span>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                                        Entidad / Seguro
+                                    </label>
+                                    <input
+                                        type="text"
+                                        name="healthInsurance"
+                                        value={healthInsurance}
+                                        onChange={onInputChange}
+                                        placeholder="Ej: EsSalud, Rimac, Pacífico"
+                                        className="w-full px-3 py-2 text-xs text-slate-800 bg-slate-50/50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-600 transition-all placeholder:text-slate-400"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                                        N° Afiliado / Carnet
+                                    </label>
+                                    <input
+                                        type="text"
+                                        name="affiliateNumber"
+                                        value={affiliateNumber}
+                                        onChange={onInputChange}
+                                        placeholder="Ej: POL-882310"
+                                        className="w-full px-3 py-2 text-xs text-slate-800 bg-slate-50/50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-600 transition-all placeholder:text-slate-400"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* COLUMNA DERECHA: Finanzas, Límites y Estado (5 cols) */}
+                    <div className="lg:col-span-5 flex flex-col gap-6">
+                        {/* Tarjeta: Crédito y Condiciones de Pago */}
+                        <div className="bg-white rounded-2xl p-6 shadow-[0_4px_25px_rgba(0,0,0,0.03)] border border-slate-100 border-t-4 border-t-rose-500">
+                            <div className="flex items-center gap-2 text-rose-600 font-bold text-xs uppercase tracking-wider mb-4">
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <rect width="20" height="14" x="2" y="5" rx="2" strokeWidth="2" />
+                                    <line x1="2" x2="22" y1="10" y2="10" strokeWidth="2" />
+                                </svg>
+                                <span>Finanzas y Crédito</span>
+                            </div>
+
+                            <div className="flex flex-col gap-4">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-xs font-semibold text-slate-700 mb-1">
+                                            Límite Crédito (S/)
+                                        </label>
+                                        <div className="relative">
+                                            <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-xs font-semibold text-slate-400">
+                                                S/
+                                            </span>
+                                            <input
+                                                type="number"
+                                                step="0.01"
+                                                min="0"
+                                                name="creditLimit"
+                                                value={creditLimit}
+                                                onChange={onInputChange}
+                                                className="w-full pl-8 pr-3 py-2 text-xs font-bold text-slate-800 bg-slate-50/50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-600 transition-all"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-xs font-semibold text-slate-700 mb-1">
+                                            Saldo Actual (S/)
+                                        </label>
+                                        <div className="relative">
+                                            <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-xs font-semibold text-slate-400">
+                                                S/
+                                            </span>
+                                            <input
+                                                type="number"
+                                                step="0.01"
+                                                min="0"
+                                                name="currentBalance"
+                                                value={currentBalance}
+                                                onChange={onInputChange}
+                                                className="w-full pl-8 pr-3 py-2 text-xs font-bold text-teal-700 bg-slate-50/50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-600 transition-all"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                                        Días de Crédito permitidos
+                                    </label>
+                                    <div className="relative">
+                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <circle cx="12" cy="12" r="10" strokeWidth="2" />
+                                                <polyline points="12 6 12 12 16 14" strokeWidth="2" />
+                                            </svg>
+                                        </div>
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            name="creditDays"
+                                            value={creditDays}
+                                            onChange={onInputChange}
+                                            placeholder="0"
+                                            className="w-full pl-9 pr-3 py-2 text-xs text-slate-800 bg-slate-50/50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-600 transition-all"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="p-3.5 bg-rose-50/70 border border-rose-100 rounded-xl text-rose-800 text-[11px] leading-relaxed mt-2">
+                                    <span className="font-bold">Política crediticia: </span>
+                                    Configura los topes y días según el convenio o historial de pago del cliente. Para compras al contado, mantén el límite en 0.
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Tarjeta: Estado de la Cuenta */}
+                        <div className="bg-white rounded-2xl p-6 shadow-[0_4px_25px_rgba(0,0,0,0.03)] border border-slate-100">
+                            <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-3">
+                                Estado del Cliente
+                            </h3>
+                            <label className="flex items-center gap-3 p-3 bg-slate-50 hover:bg-slate-100/80 border border-slate-200 rounded-xl cursor-pointer transition-colors">
+                                <input
+                                    type="checkbox"
+                                    name="isActive"
+                                    checked={isActive}
+                                    onChange={onInputChange}
+                                    className="w-4 h-4 text-teal-600 rounded border-slate-300 focus:ring-teal-500 transition-colors"
+                                />
+                                <div>
+                                    <span className="text-xs font-semibold text-slate-800 block">
+                                        Cliente Activo
+                                    </span>
+                                    <span className="text-[11px] text-slate-500 block">
+                                        Habilitado para compras, recetas y líneas de crédito en el punto de venta.
+                                    </span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    );
 };
 
 ClientForm.propTypes = {
-  initialData: PropTypes.object,
-  onSaveSuccess: PropTypes.func,
-  onCancel: PropTypes.func,
+    clientSelected: PropTypes.object,
+    initialData: PropTypes.object,
+    onSuccess: PropTypes.func,
+    onSaveSuccess: PropTypes.func,
+    onCancel: PropTypes.func,
 };
