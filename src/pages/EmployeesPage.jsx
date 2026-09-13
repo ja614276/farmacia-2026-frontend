@@ -99,6 +99,7 @@ export const EmployeesPage = () => {
                 <th className="py-3 px-3 text-uppercase">Nombre</th>
                 <th className="py-3 px-3 text-uppercase">Apellidos</th>
                 <th className="py-3 px-3 text-uppercase">Usuario</th>
+                <th className="py-3 px-3 text-uppercase">Teléfono</th>
                 <th className="py-3 px-3 text-uppercase">Cargo</th>
                 <th className="py-3 px-3 text-uppercase">Rol</th>
                 <th className="py-3 px-3 text-uppercase text-center">Estado</th>
@@ -108,14 +109,14 @@ export const EmployeesPage = () => {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={7} className="text-center py-5 text-muted">
+                  <td colSpan={8} className="text-center py-5 text-muted">
                     <div className="spinner-border spinner-border-sm text-teal me-2" role="status"></div>
                     Cargando expediente de colaboradores...
                   </td>
                 </tr>
               ) : filteredEmployees.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="text-center py-5 text-muted">
+                  <td colSpan={8} className="text-center py-5 text-muted">
                     No se encontraron empleados registrados o coincidentes.
                   </td>
                 </tr>
@@ -143,7 +144,12 @@ export const EmployeesPage = () => {
                         @{emp.username}
                       </td>
 
-                      {/* 4. Cargo */}
+                      {/* 4. Teléfono */}
+                      <td className="px-3 font-monospace text-dark">
+                        {emp.numeroTelefono || <span className="text-muted">—</span>}
+                      </td>
+
+                      {/* 5. Cargo */}
                       <td className="px-3 text-dark">
                         {emp.cargo || "Sin cargo asignado"}
                       </td>

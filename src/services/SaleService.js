@@ -26,6 +26,8 @@ export const saveSale = async (sale) => {
     try {
         const payload = {
             dateTime: sale.dateTime || new Date().toISOString().slice(0, 19).replace("T", " "),
+            sessionId: sale.sessionId || sale.idSesion || null,
+            paymentConditionId: sale.paymentConditionId || sale.idCondicionPago || null,
             saleType: sale.saleType || sale.tipoVenta || "CONTADO",
             receiptType: sale.receiptType || sale.tipoComprobante || "BOLETA",
             series: sale.series || sale.serie || "B001",
@@ -41,7 +43,7 @@ export const saveSale = async (sale) => {
             taxAmount: Number(sale.taxAmount || 0),
             surchargeAmount: Number(sale.surchargeAmount || 0),
             total: Number(sale.total || 0),
-            amountPaid: Number(sale.amountPaid || sale.montoPagado || sale.total || 0),
+            amountPaid: Number(sale.amountPaid !== undefined && sale.amountPaid !== null ? sale.amountPaid : (sale.montoPagado || sale.total || 0)),
             pendingBalance: Number(sale.pendingBalance || sale.saldoPendiente || 0),
             isActive: sale.isActive !== undefined ? sale.isActive : true,
             details: (sale.details || sale.detalles || []).map((d) => ({
@@ -69,6 +71,8 @@ export const updateSale = async (id, sale) => {
     try {
         const payload = {
             dateTime: sale.dateTime,
+            sessionId: sale.sessionId || sale.idSesion,
+            paymentConditionId: sale.paymentConditionId || sale.idCondicionPago,
             saleType: sale.saleType || sale.tipoVenta,
             receiptType: sale.receiptType || sale.tipoComprobante,
             series: sale.series || sale.serie,
@@ -84,7 +88,7 @@ export const updateSale = async (id, sale) => {
             taxAmount: Number(sale.taxAmount || 0),
             surchargeAmount: Number(sale.surchargeAmount || 0),
             total: Number(sale.total || 0),
-            amountPaid: Number(sale.amountPaid || sale.montoPagado || 0),
+            amountPaid: Number(sale.amountPaid !== undefined && sale.amountPaid !== null ? sale.amountPaid : (sale.montoPagado || 0)),
             pendingBalance: Number(sale.pendingBalance || sale.saldoPendiente || 0),
             isActive: sale.isActive !== undefined ? sale.isActive : true,
             details: (sale.details || sale.detalles || []).map((d) => ({

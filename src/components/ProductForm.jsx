@@ -125,8 +125,8 @@ export const ProductForm = ({ productSelected = null }) => {
       data.precioVenta !== undefined && data.precioVenta !== null
         ? String(data.precioVenta)
         : data.presentaciones && data.presentaciones.length > 0
-        ? String(data.presentaciones[0].precioVenta || "")
-        : "";
+          ? String(data.presentaciones[0].precioVenta || "")
+          : "";
 
     setProductForm({
       idProducto: data.idProducto || data.id || null,
@@ -305,8 +305,8 @@ export const ProductForm = ({ productSelected = null }) => {
           field === "cantidadUnidades"
             ? value === "" ? "" : Math.max(1, parseInt(value, 10) || 1)
             : field === "precioVenta"
-            ? value
-            : value,
+              ? value
+              : value,
       };
 
       // Si se modifica el precio de la primera presentación, sincronizar precio base
@@ -547,11 +547,10 @@ export const ProductForm = ({ productSelected = null }) => {
                 {isEditMode ? "Editar Producto" : "Registrar Producto"}
               </h1>
               <span
-                className={`text-xs px-2.5 py-0.5 rounded-full font-semibold ${
-                  isEditMode
-                    ? "bg-amber-50 text-amber-700 border border-amber-200"
-                    : "bg-teal-50 text-teal-700 border border-teal-200"
-                }`}
+                className={`text-xs px-2.5 py-0.5 rounded-full font-semibold ${isEditMode
+                  ? "bg-amber-50 text-amber-700 border border-amber-200"
+                  : "bg-teal-50 text-teal-700 border border-teal-200"
+                  }`}
               >
                 {isEditMode ? "Edición" : "Nuevo Registro"}
               </span>
@@ -720,7 +719,7 @@ export const ProductForm = ({ productSelected = null }) => {
             {/* Patología / Indicación Médica */}
             <div className="md:col-span-2">
               <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-                Patología / Acción Terapéutica
+                Patología
               </label>
               <input
                 type="text"
@@ -1073,7 +1072,7 @@ export const ProductForm = ({ productSelected = null }) => {
                   <div className="w-full md:w-32 flex md:flex-col justify-between md:justify-center items-center md:items-start text-xs pt-1">
                     <span className="text-slate-400 font-medium">Costo unitario:</span>
                     <span className="font-bold text-slate-700">
-                      {unitPrice ? `S/. ${unitPrice} / ud` : "---"}
+                      {unitPrice ? `S/. ${unitPrice}` : "---"}
                     </span>
                   </div>
 

@@ -114,7 +114,7 @@ export const ClientsPage = () => {
                     </div>
                     <div>
                         <h1 className="text-2xl font-black text-slate-800 tracking-tight">
-                            Clientes & Pacientes
+                            Lista de Clientes
                         </h1>
                         <p className="text-xs font-medium text-slate-400 mt-0.5">
                             Gestión de clientes, historial de atención y líneas de crédito
@@ -129,7 +129,7 @@ export const ClientsPage = () => {
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" />
                     </svg>
-                    <span>+ Nuevo Cliente</span>
+                    <span>Nuevo Cliente</span>
                 </Link>
             </div>
 
@@ -217,14 +217,12 @@ export const ClientsPage = () => {
                             <thead>
                                 <tr className="border-b border-slate-100 bg-slate-50/40">
                                     <th className="py-3.5 px-5 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                                        CLIENTE / PACIENTE
+                                        CLIENTE
                                     </th>
                                     <th className="py-3.5 px-5 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
                                         CONTACTO
                                     </th>
-                                    <th className="py-3.5 px-5 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                                        DIRECCIÓN
-                                    </th>
+
                                     <th className="py-3.5 px-5 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
                                         CRÉDITO / SALDO
                                     </th>
@@ -253,9 +251,7 @@ export const ClientsPage = () => {
                                             {/* CLIENTE / PACIENTE */}
                                             <td className="py-3.5 px-5">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="w-9 h-9 rounded-full bg-teal-50 border border-teal-200/80 text-teal-700 font-bold text-xs flex items-center justify-center flex-shrink-0">
-                                                        {getInitials(c)}
-                                                    </div>
+
                                                     <div>
                                                         <span className="font-bold text-slate-800 text-sm block">
                                                             {fullName}
@@ -263,7 +259,7 @@ export const ClientsPage = () => {
                                                         <div className="flex items-center gap-2 mt-0.5">
                                                             {doc ? (
                                                                 <span className="text-[10px] font-mono font-medium px-1.5 py-0.5 rounded bg-slate-100 text-slate-600">
-                                                                    ID: {doc}
+                                                                    Dni: {doc}
                                                                 </span>
                                                             ) : (
                                                                 <span className="text-[10px] text-slate-400 italic">
@@ -313,10 +309,6 @@ export const ClientsPage = () => {
                                                         <span className="italic text-slate-400 font-normal">Sin contacto</span>
                                                     )}
                                                 </div>
-                                            </td>
-
-                                            {/* DIRECCIÓN */}
-                                            <td className="py-3.5 px-5">
                                                 {c.address || c.direccion ? (
                                                     <div className="flex items-start gap-1.5 text-slate-600 max-w-[200px]">
                                                         <svg className="w-3.5 h-3.5 text-slate-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -334,6 +326,8 @@ export const ClientsPage = () => {
                                                     <span className="italic text-slate-400 font-normal">Sin dirección</span>
                                                 )}
                                             </td>
+
+
 
                                             {/* CRÉDITO / SALDO */}
                                             <td className="py-3.5 px-5">
@@ -464,11 +458,10 @@ export const ClientsPage = () => {
                                             <button
                                                 type="button"
                                                 onClick={() => setCurrentPage(page)}
-                                                className={`w-8 h-8 rounded-lg text-xs font-bold transition-colors ${
-                                                    currentPage === page
-                                                        ? "bg-teal-700 text-white shadow-sm"
-                                                        : "border border-slate-200 text-slate-600 hover:bg-slate-50"
-                                                }`}
+                                                className={`w-8 h-8 rounded-lg text-xs font-bold transition-colors ${currentPage === page
+                                                    ? "bg-teal-700 text-white shadow-sm"
+                                                    : "border border-slate-200 text-slate-600 hover:bg-slate-50"
+                                                    }`}
                                             >
                                                 {page}
                                             </button>

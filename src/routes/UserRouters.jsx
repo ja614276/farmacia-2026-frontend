@@ -9,6 +9,7 @@ import { SupportHelp } from "../components/SupportHelp.jsx";
 // Usuarios
 import { UsersPage } from "../pages/UsersPage";
 import { RegisterPage } from "../pages/RegisterPage";
+import { ProfilePage } from "../pages/ProfilePage";
 
 // Productos & Lotes
 import { ProductsPage } from "../pages/ProductsPage";
@@ -44,24 +45,27 @@ import { SalesRegisterPage } from "../pages/SalesRegisterPage";
 import { CollectionsPage } from "../pages/CollectionsPage";
 import { PaymentRegisterPage } from "../pages/PaymentRegisterPage";
 
-// Métodos de Pago
+// Métodos de Pago y Condiciones de Pago
 import { PaymentMethodsPage } from "../pages/PaymentMethodsPage";
+import { PaymentConditionsPage } from "../pages/PaymentConditionsPage";
 
 // Empleados (Módulo completo)
 import { EmployeesPage } from "../pages/EmployeesPage";
 import { EmployeesRegisterPage } from "../pages/EmployeesRegisterPage";
 import { EmployeeDetailPage } from "../pages/EmployeeDetailPage";
 
-// Sesiones de Caja
+// Sesiones de Caja y Movimientos de Caja
 import { CashSessionsPage } from "../pages/CashSessionsPage.jsx";
 import { CashSessionOpenPage } from "../pages/CashSessionOpenPage.jsx";
 import { CashSessionClosePage } from "../pages/CashSessionClosePage.jsx";
+import { CashMovementsPage } from "../pages/CashMovementsPage.jsx";
 
 // Ajustes de Inventarios
 import { InventoryAdjustmentsPage } from "../pages/InventoryAdjustmentsPage.jsx";
 import { InventoryAdjustmentRegisterPage } from "../pages/InventoryAdjustmentRegisterPage.jsx";
 
 import { PurchaseRegisterPage } from "../pages/PurchaseRegisterPage";
+import { CompanyPage } from "../pages/CompanyPage";
 
 export const UserRoutes = () => {
   const { isAdmin } = useSelector((state) => state.auth);
@@ -80,6 +84,7 @@ export const UserRoutes = () => {
       >
         <Routes>
           <Route path="dashboard" element={<DashboardPage />} />
+          <Route path="profile" element={<ProfilePage />} />
           <Route path="users" element={<UsersPage />} />
           <Route path="products" element={<ProductsPage />} />
           <Route path="products/register" element={<ProductsRegisterPage />} />
@@ -109,11 +114,14 @@ export const UserRoutes = () => {
           <Route path="cash-sessions" element={<CashSessionsPage />} />
           <Route path="cash-sessions/open" element={<CashSessionOpenPage />} />
           <Route path="cash-sessions/close" element={<CashSessionClosePage />} />
+          <Route path="cash-movements" element={<CashMovementsPage />} />
           <Route path="inventory-adjustments" element={<InventoryAdjustmentsPage />} />
           <Route path="inventory-adjustments/register" element={<InventoryAdjustmentRegisterPage />} />
           <Route path="products/:id/lots" element={<ProductLotsPage />} />
           <Route path="products/:id/detail" element={<ProductDetailPage />} />
           <Route path="payment-methods" element={<PaymentMethodsPage />} />
+          <Route path="payment-terms" element={<PaymentConditionsPage />} />
+          <Route path="payment-conditions" element={<PaymentConditionsPage />} />
           <Route path="help" element={<SupportHelp />} />
 
           {/* Listado de Empleados accesible */}
@@ -134,6 +142,7 @@ export const UserRoutes = () => {
             path="/purchases/register"
             element={<PurchaseRegisterPage />}
           />
+          <Route path="company" element={<CompanyPage />} />
 
           {/* Rutas administrativas protegidas */}
           {isAdmin && (

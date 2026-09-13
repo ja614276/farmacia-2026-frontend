@@ -71,13 +71,16 @@ export const ReceiptTicketModal = ({ isOpen, onClose, saleData }) => {
         taxId: "20258585874",
         address: "Cusco Perú",
         phone: "",
+        ticketFooterText1: "¡Gracias por su compra!",
+        ticketFooterText2: "",
+        logoUrl: "",
     });
 
     useEffect(() => {
         // Cargar datos de la empresa desde la base de datos si existen
         productsApi.get("/company")
             .then((res) => {
-                if (res.data && res.data.taxId) {
+                if (res.data) {
                     setCompanyInfo((prev) => ({
                         ...prev,
                         legalName: res.data.legalName || prev.legalName,
@@ -85,6 +88,9 @@ export const ReceiptTicketModal = ({ isOpen, onClose, saleData }) => {
                         taxId: res.data.taxId || prev.taxId,
                         address: res.data.address || prev.address,
                         phone: res.data.phone || prev.phone,
+                        ticketFooterText1: res.data.ticketFooterText1 || prev.ticketFooterText1,
+                        ticketFooterText2: res.data.ticketFooterText2 || "",
+                        logoUrl: res.data.logoUrl || "",
                     }));
                 }
             })
@@ -92,6 +98,16 @@ export const ReceiptTicketModal = ({ isOpen, onClose, saleData }) => {
                 // Fallback a los datos por defecto de la imagen de referencia
             });
     }, []);
+
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            if (e.key === "Escape" && isOpen) {
+                onClose();
+            }
+        };
+        window.addEventListener("keydown", handleKeyDown);
+        return () => window.removeEventListener("keydown", handleKeyDown);
+    }, [isOpen, onClose]);
 
     if (!isOpen || !saleData) return null;
 
@@ -109,9 +125,18 @@ export const ReceiptTicketModal = ({ isOpen, onClose, saleData }) => {
 
     const details = saleData.details || saleData.detalles || [];
     const total = Number(saleData.total || 0);
-    const amountPaid = Number(saleData.amountPaid || saleData.montoPagado || total);
+    const amountPaid = Number(
+        saleData.amountPaid !== undefined && saleData.amountPaid !== null
+            ? saleData.amountPaid
+            : (saleData.montoPagado !== undefined && saleData.montoPagado !== null ? saleData.montoPagado : total)
+    );
     const change = Math.max(0, amountPaid - total);
     const paymentMethod = saleData.paymentMethodName || saleData.medioPago || "EFECTIVO";
+    const paymentStatus = (
+        saleData.paymentStatus ||
+        saleData.estadoPago ||
+        (Number(saleData.pendingBalance || saleData.saldoPendiente || 0) <= 0.001 ? "PAGADO" : "PENDIENTE")
+    ).toUpperCase();
     const handlePrint = () => {
         // Crear o reutilizar iframe oculto para impresión 100% aislada
         let printFrame = document.getElementById("thermal-print-iframe");
@@ -201,10 +226,16 @@ export const ReceiptTicketModal = ({ isOpen, onClose, saleData }) => {
             </style>
         </head>
         <body>
+            ${companyInfo.logoUrl ? `
+            <div class="center" style="margin-bottom: 6px;">
+                <img src="${companyInfo.logoUrl}" style="max-height: 45px; max-width: 140px; object-fit: contain;" />
+            </div>
+            ` : ''}
             <div class="center">
                 <div class="title">${companyInfo.commercialName || companyInfo.legalName || "VidSalud SAC"}</div>
                 <div class="subtitle">RUC: ${companyInfo.taxId}</div>
                 <div class="subtitle">${companyInfo.address}</div>
+                ${companyInfo.phone ? `<div class="subtitle">Tel: ${companyInfo.phone}</div>` : ''}
             </div>
 
             <div class="dashed-line"></div>
@@ -294,7 +325,8 @@ export const ReceiptTicketModal = ({ isOpen, onClose, saleData }) => {
             <div class="dashed-line"></div>
 
             <div class="footer-text">
-                ¡Gracias por su compra!
+                <div>${companyInfo.ticketFooterText1 || "¡Gracias por su compra!"}</div>
+                ${companyInfo.ticketFooterText2 ? `<div style="margin-top: 2px;">${companyInfo.ticketFooterText2}</div>` : ''}
             </div>
         </body>
         </html>
@@ -308,25 +340,36 @@ export const ReceiptTicketModal = ({ isOpen, onClose, saleData }) => {
     };
 
     return (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 print:p-0 print:bg-white print:static print:overflow-visible">
-            {/* Contenedor del Comprobante */}
-            <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-md overflow-hidden flex flex-col my-8 print:my-0 print:border-none print:shadow-none print:max-w-none print:w-[80mm] print:mx-auto">
-                
-                {/* Barra de Acciones Superior (oculta al imprimir) */}
-                <div className="bg-[#005f60] text-white px-5 py-3.5 flex items-center justify-between print:hidden">
-                    <div className="flex items-center gap-2">
-                        <svg className="w-5 h-5 text-teal-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-                        </svg>
-                        <span className="font-bold text-sm tracking-wide">Vista de Comprobante</span>
+        <div 
+            className="fixed inset-0 z-50 bg-slate-900/75 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 overflow-hidden print:p-0 print:bg-white print:static print:overflow-visible"
+            onClick={onClose}
+        >
+            {/* Contenedor del Modal Principal - Más amplio, alto y sin línea superior antiestética */}
+            <div 
+                className="bg-slate-200/90 rounded-2xl shadow-2xl w-full max-w-[460px] h-[88vh] max-h-[820px] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150 print:max-w-none print:w-[80mm] print:h-auto print:border-none print:shadow-none print:rounded-none print:p-0 print:bg-white print:max-h-none print:overflow-visible ring-1 ring-black/10"
+                onClick={(e) => e.stopPropagation()}
+            >
+                {/* Header Fijo Superior (Sin borde que genere línea) */}
+                <div className="bg-[#005f60] text-white px-5 py-3.5 flex items-center justify-between shadow-md flex-shrink-0 print:hidden rounded-t-2xl">
+                    <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-lg bg-teal-400/20 flex items-center justify-center text-teal-200">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 className="font-bold text-sm text-white leading-tight">Vista de Comprobante</h3>
+                            <span className="text-[11px] text-teal-200/80 font-medium">Ticket Térmico 80mm</span>
+                        </div>
                     </div>
                     <div className="flex items-center gap-2">
                         <button
                             type="button"
                             onClick={handlePrint}
-                            className="bg-white text-[#005f60] hover:bg-teal-50 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm flex items-center gap-1.5"
+                            className="bg-white text-[#005f60] hover:bg-teal-50 active:scale-95 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm flex items-center gap-1.5"
+                            title="Imprimir comprobante"
                         >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
                             </svg>
                             <span>Imprimir</span>
@@ -334,159 +377,192 @@ export const ReceiptTicketModal = ({ isOpen, onClose, saleData }) => {
                         <button
                             type="button"
                             onClick={onClose}
-                            className="text-white hover:text-rose-200 p-1 rounded-lg transition-colors"
-                            title="Cerrar"
+                            className="text-teal-100 hover:text-white hover:bg-teal-700/60 p-1.5 rounded-lg transition-colors"
+                            title="Cerrar (Esc)"
                         >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />
                             </svg>
                         </button>
                     </div>
                 </div>
 
-                {/* CUERPO DEL TICKET TÉRMICO (Calco fiel de la Imagen 5) */}
-                <div id="thermal-receipt" className="p-6 font-mono text-[12px] text-slate-800 bg-white print:p-2 print:text-[11px] leading-tight">
+                {/* Área Scrollable del Ticket (Scroll suave y natural de todo el comprobante) */}
+                <div className="flex-1 overflow-y-auto p-4 sm:p-6 flex justify-center bg-slate-200/75 print:p-0 print:bg-white print:overflow-visible">
                     
-                    {/* Encabezado Empresa */}
-                    <div className="text-center mb-3">
-                        <h2 className="font-bold text-base tracking-wide text-slate-900 mb-0.5">
-                            {companyInfo.commercialName || companyInfo.legalName || "VidSalud SAC"}
-                        </h2>
-                        <p className="text-[11px] text-slate-600">
-                            RUC: {companyInfo.taxId}
-                        </p>
-                        <p className="text-[11px] text-slate-600">
-                            {companyInfo.address}
-                        </p>
-                    </div>
+                    {/* Rollo de Papel Térmico con Sombra y Proporción Real */}
+                    <div 
+                        id="thermal-receipt" 
+                        className="bg-white w-full max-w-[350px] shadow-lg rounded-xl p-6 font-mono text-[12px] leading-relaxed text-slate-800 border border-slate-200 h-fit print:max-w-none print:w-full print:p-2 print:border-none print:shadow-none print:rounded-none"
+                    >
+                        {/* Logotipo Empresa (si existe) */}
+                        {companyInfo.logoUrl && (
+                            <div className="flex justify-center mb-3">
+                                <img
+                                    src={companyInfo.logoUrl}
+                                    alt="Logo Empresa"
+                                    className="max-h-12 max-w-[130px] object-contain filter contrast-125"
+                                />
+                            </div>
+                        )}
 
-                    <div className="border-b border-dashed border-slate-400 my-2.5" />
-
-                    {/* Datos Comprobante y Transacción */}
-                    <div className="text-center mb-2">
-                        <span className="font-black text-sm tracking-wider block">
-                            {receiptType}
-                        </span>
-                        <span className="font-bold text-xs tracking-wider block mt-0.5">
-                            {fullReceipt}
-                        </span>
-                    </div>
-
-                    <div className="space-y-1 text-[11px] text-slate-700">
-                        <div className="flex justify-between">
-                            <span>Fecha:</span>
-                            <span className="font-medium">{dateStr}</span>
-                        </div>
-                        <div className="flex justify-between">
-                            <span>Atendido por:</span>
-                            <span className="font-medium">{cashier}</span>
-                        </div>
-                        <div className="flex justify-between">
-                            <span>Cliente:</span>
-                            <span className="font-medium">{client}</span>
-                        </div>
-                    </div>
-
-                    <div className="border-b border-dashed border-slate-400 my-2.5" />
-
-                    {/* Tabla de Productos */}
-                    <div className="mb-2">
-                        <div className="flex justify-between font-bold text-[11px] border-b border-slate-300 pb-1 mb-1.5">
-                            <span className="w-[50%]">Producto</span>
-                            <span className="w-[15%] text-center">Cant</span>
-                            <span className="w-[17%] text-right">P.U.</span>
-                            <span className="w-[18%] text-right">Subt.</span>
+                        {/* Encabezado Empresa */}
+                        <div className="text-center space-y-0.5">
+                            <h2 className="font-black text-sm tracking-wide text-slate-900 uppercase">
+                                {companyInfo.commercialName || companyInfo.legalName || "VidSalud SAC"}
+                            </h2>
+                            <p className="text-[11px] text-slate-600 font-bold">
+                                RUC: {companyInfo.taxId}
+                            </p>
+                            <p className="text-[11px] text-slate-600 leading-snug">
+                                {companyInfo.address}
+                            </p>
+                            {companyInfo.phone && (
+                                <p className="text-[11px] text-slate-600">
+                                    Tel: {companyInfo.phone}
+                                </p>
+                            )}
                         </div>
 
-                        <div className="space-y-1.5">
-                            {details.map((item, idx) => {
-                                const prodName = item.productName || item.nombre || "Producto";
-                                const presName = item.presentationName || item.presentacion || "";
-                                const displayName = presName ? `${prodName} ${presName}` : prodName;
-                                const qty = item.presentationQuantity || item.cantidad || 1;
-                                const price = Number(item.presentationUnitPrice || item.precioUnitario || item.precio || 0);
-                                const subt = Number(item.subtotal || (qty * price));
+                        <div className="border-b border-dashed border-slate-400 my-3" />
 
-                                return (
-                                    <div key={idx} className="flex items-start text-[11px]">
-                                        <span className="w-[50%] pr-1 leading-snug font-medium uppercase">
-                                            {displayName}
-                                        </span>
-                                        <span className="w-[15%] text-center font-bold">
-                                            {qty}
-                                        </span>
-                                        <span className="w-[17%] text-right">
-                                            {price.toFixed(2)}
-                                        </span>
-                                        <span className="w-[18%] text-right font-bold">
-                                            {subt.toFixed(2)}
-                                        </span>
-                                    </div>
-                                );
-                            })}
+                        {/* Datos Comprobante */}
+                        <div className="text-center my-1.5">
+                            <span className="font-black text-xs tracking-wider block uppercase text-slate-900">
+                                {receiptType}
+                            </span>
+                            <span className="font-bold text-[12px] tracking-widest block text-slate-800 mt-0.5">
+                                {fullReceipt}
+                            </span>
                         </div>
-                    </div>
 
-                    <div className="border-b border-dashed border-slate-400 my-2.5" />
+                        <div className="space-y-1 text-[11px] text-slate-700">
+                            <div className="flex justify-between">
+                                <span className="text-slate-500">Fecha:</span>
+                                <span className="font-semibold text-slate-900">{dateStr}</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span className="text-slate-500">Atendido por:</span>
+                                <span className="font-medium text-slate-900">{cashier}</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span className="text-slate-500">Cliente:</span>
+                                <span className="font-bold text-slate-900 uppercase">{client}</span>
+                            </div>
+                        </div>
 
-                    {/* Totales y Letras */}
-                    <div className="space-y-1 text-[11px]">
-                        <div className="flex justify-between">
-                            <span>SUBTOTAL VENTAS</span>
-                            <span className="font-bold">S/ {total.toFixed(2)}</span>
-                        </div>
-                        <div className="flex justify-between text-xs font-black pt-0.5">
-                            <span>TOTAL</span>
-                            <span>S/ {total.toFixed(2)}</span>
-                        </div>
-                        <div className="text-[10px] text-slate-600 font-medium pt-1 uppercase">
-                            SON: {numeroALetras(total)}
-                        </div>
-                    </div>
+                        <div className="border-b border-dashed border-slate-400 my-3" />
 
-                    <div className="border-b border-dashed border-slate-400 my-2.5" />
+                        {/* Tabla de Productos */}
+                        <div>
+                            <div className="flex justify-between font-bold text-[11px] border-b border-slate-300 pb-1.5 mb-2 text-slate-900">
+                                <span className="w-[48%]">Producto</span>
+                                <span className="w-[14%] text-center">Cant</span>
+                                <span className="w-[18%] text-right">P.U.</span>
+                                <span className="w-[20%] text-right">Subt.</span>
+                            </div>
 
-                    {/* Datos de Pago */}
-                    <div className="space-y-1 text-[11px] text-slate-700">
-                        <div className="flex justify-between">
-                            <span>RECIBIDO</span>
-                            <span>S/ {amountPaid.toFixed(2)}</span>
-                        </div>
-                        <div className="flex justify-between">
-                            <span>CAMBIO</span>
-                            <span>S/ {change.toFixed(2)}</span>
-                        </div>
-                        <div className="flex justify-between">
-                            <span>FORMA DE PAGO</span>
-                            <span className="font-bold uppercase">{paymentMethod}</span>
-                        </div>
-                        <div className="flex justify-between">
-                            <span>ESTADO</span>
-                            <span className="font-bold uppercase text-emerald-700">{paymentStatus}</span>
-                        </div>
-                    </div>
+                            <div className="space-y-1.5 text-[11.5px]">
+                                {details.map((item, idx) => {
+                                    const prodName = item.productName || item.nombre || "Producto";
+                                    const presName = item.presentationName || item.presentacion || "";
+                                    const displayName = presName ? `${prodName} ${presName}` : prodName;
+                                    const qty = item.presentationQuantity || item.cantidad || 1;
+                                    const price = Number(item.presentationUnitPrice || item.precioUnitario || item.precio || 0);
+                                    const subt = Number(item.subtotal !== undefined && item.subtotal !== null ? item.subtotal : (qty * price));
 
-                    <div className="border-b border-dashed border-slate-400 my-3" />
+                                    return (
+                                        <div key={idx} className="flex items-start">
+                                            <span className="w-[48%] pr-1 leading-snug font-medium uppercase text-slate-900">
+                                                {displayName}
+                                            </span>
+                                            <span className="w-[14%] text-center font-bold text-slate-900">
+                                                {qty}
+                                            </span>
+                                            <span className="w-[18%] text-right text-slate-700">
+                                                {price.toFixed(2)}
+                                            </span>
+                                            <span className="w-[20%] text-right font-bold text-slate-900">
+                                                {subt.toFixed(2)}
+                                            </span>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
 
-                    {/* Despedida */}
-                    <div className="text-center text-[11px] text-slate-600 italic">
-                        ¡Gracias por su compra!
+                        <div className="border-b border-dashed border-slate-400 my-3" />
+
+                        {/* Totales y Letras */}
+                        <div className="space-y-1 text-[11px]">
+                            <div className="flex justify-between">
+                                <span className="text-slate-600">SUBTOTAL VENTAS</span>
+                                <span className="font-bold">S/ {total.toFixed(2)}</span>
+                            </div>
+                            <div className="flex justify-between text-sm font-black pt-1 border-t border-dotted border-slate-300 text-slate-900">
+                                <span>TOTAL</span>
+                                <span>S/ {total.toFixed(2)}</span>
+                            </div>
+                            <div className="text-[10px] text-slate-600 font-medium pt-0.5 uppercase leading-tight">
+                                SON: {numeroALetras(total)}
+                            </div>
+                        </div>
+
+                        <div className="border-b border-dashed border-slate-400 my-3" />
+
+                        {/* Datos de Pago */}
+                        <div className="space-y-1 text-[11px] text-slate-700">
+                            <div className="flex justify-between">
+                                <span className="text-slate-500">RECIBIDO</span>
+                                <span>S/ {amountPaid.toFixed(2)}</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span className="text-slate-500">CAMBIO</span>
+                                <span className="font-bold">S/ {change.toFixed(2)}</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span className="text-slate-500">FORMA DE PAGO</span>
+                                <span className="font-bold uppercase">{paymentMethod}</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span className="text-slate-500">ESTADO</span>
+                                <span className={`font-bold uppercase ${
+                                    paymentStatus === "PAGADO"
+                                        ? "text-emerald-700"
+                                        : paymentStatus === "PARCIAL"
+                                        ? "text-amber-700"
+                                        : "text-rose-700"
+                                }`}>
+                                    {paymentStatus}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div className="border-b border-dashed border-slate-400 my-3" />
+
+                        {/* Textos del Pie del Ticket */}
+                        <div className="text-center text-[10.5px] text-slate-600 italic space-y-1 pt-1 leading-snug">
+                            <p className="font-medium">{companyInfo.ticketFooterText1 || "¡Gracias por su compra!"}</p>
+                            {companyInfo.ticketFooterText2 && (
+                                <p>{companyInfo.ticketFooterText2}</p>
+                            )}
+                        </div>
                     </div>
                 </div>
 
-                {/* Footer Modal (oculto al imprimir) */}
-                <div className="bg-slate-50 px-5 py-3 border-t border-slate-100 flex items-center justify-end gap-2 print:hidden">
+                {/* Footer Fijo Siempre Visible (Sin cortes, botones destacados) */}
+                <div className="bg-white px-5 py-3 border-t border-slate-200 flex items-center justify-between gap-3 flex-shrink-0 print:hidden rounded-b-2xl shadow-sm">
                     <button
                         type="button"
                         onClick={onClose}
-                        className="px-4 py-2 text-xs font-medium text-slate-600 hover:bg-slate-200/60 rounded-xl transition-colors"
+                        className="px-4 py-2 text-xs font-semibold text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-xl transition-all"
                     >
                         Cerrar
                     </button>
                     <button
                         type="button"
                         onClick={handlePrint}
-                        className="px-5 py-2 text-xs font-bold text-white bg-[#005f60] hover:bg-[#004e4f] rounded-xl shadow-sm transition-all flex items-center gap-1.5"
+                        className="px-5 py-2 text-xs font-bold text-white bg-[#005f60] hover:bg-[#004e4f] active:scale-95 rounded-xl shadow-md hover:shadow-lg transition-all flex items-center gap-2"
                     >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />

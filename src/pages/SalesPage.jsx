@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
-import { findAllSales, removeSale } from "../services/SaleService";
+import { findAllSales, findSaleById, removeSale } from "../services/SaleService";
 import { ReceiptTicketModal } from "../components/ReceiptTicketModal";
 
 export const SalesPage = () => {
@@ -444,8 +444,19 @@ export const SalesPage = () => {
                                                 <div className="flex items-center justify-end gap-1.5">
                                                     <button
                                                         type="button"
-                                                        onClick={() => {
-                                                            setSelectedSaleForTicket(s);
+                                                        onClick={async () => {
+                                                            let saleToPrint = s;
+                                                            if (!s.details || s.details.length === 0) {
+                                                                try {
+                                                                    const res = await findSaleById(s.id);
+                                                                    if (res?.data) {
+                                                                        saleToPrint = res.data;
+                                                                    }
+                                                                } catch (err) {
+                                                                    console.error("Error al obtener detalle de la venta:", err);
+                                                                }
+                                                            }
+                                                            setSelectedSaleForTicket(saleToPrint);
                                                             setIsTicketOpen(true);
                                                         }}
                                                         className="p-1.5 rounded-lg text-slate-500 hover:text-[#005f60] hover:bg-teal-50 transition-colors"

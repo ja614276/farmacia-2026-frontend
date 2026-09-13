@@ -5,6 +5,8 @@ import Swal from "sweetalert2";
 import { saveSale, updateSale, findSaleById } from "../services/SaleService";
 import { findAllClients } from "../services/ClientService";
 import { getActiveCashSession } from "../services/CashSessionService";
+import { findActivePaymentMethods } from "../services/PaymentMethodService";
+import { findActivePaymentConditions } from "../services/PaymentConditionService";
 import productsApi from "../apis/productsApi";
 import { PresentationLotModal } from "./PresentationLotModal";
 import { SaleSuccessModal } from "./SaleSuccessModal";
@@ -16,7 +18,9 @@ const initialFormState = {
     series: "T001",
     receiptNumber: "00000001",
     saleType: "CONTADO",
+    paymentConditionId: null,
     paymentMethodName: "EFECTIVO",
+    paymentMethodId: null,
     paymentStatus: "PAGADO",
     clientId: "",
     clientName: "Público General",
@@ -32,6 +36,8 @@ export const SaleForm = ({ saleSelected = null, initialData = null, onSuccess = 
     const [formState, setFormState] = useState(initialFormState);
     const [clientsList, setClientsList] = useState([]);
     const [availableProducts, setAvailableProducts] = useState([]);
+    const [paymentMethods, setPaymentMethods] = useState([]);
+    const [paymentConditions, setPaymentConditions] = useState([]);
     const [productCatalogSearch, setProductCatalogSearch] = useState("");
     const [catalogPage, setCatalogPage] = useState(1);
     const catalogPageSize = 10;
@@ -78,14 +84,96 @@ export const SaleForm = ({ saleSelected = null, initialData = null, onSuccess = 
         productsApi.get("/products")
             .then((res) => setAvailableProducts(res.data || []))
             .catch((err) => console.error("Error al cargar catálogo de productos:", err));
-    }, []);
+
+        findActivePaymentMethods()
+            .then((res) => {
+                const list = res.data || [];
+                const defaultMethods = [
+                    { id: null, nombre: "EFECTIVO", recargoPorcentaje: 0 },
+                    { id: null, nombre: "YAPE", recargoPorcentaje: 0 },
+                    { id: null, nombre: "PLIN", recargoPorcentaje: 0 },
+                    { id: null, nombre: "TARJETA", recargoPorcentaje: 0 },
+                    { id: null, nombre: "TRANSFERENCIA", recargoPorcentaje: 0 },
+                ];
+                const merged = [...list];
+                defaultMethods.forEach((dm) => {
+                    if (!merged.some((m) => m.nombre?.toUpperCase() === dm.nombre.toUpperCase())) {
+                        merged.push(dm);
+                    }
+                });
+
+                setPaymentMethods(merged);
+                if (merged.length > 0 && !isEditMode) {
+                    const match = merged.find((m) => m.nombre?.toUpperCase() === formState.paymentMethodName.toUpperCase());
+                    if (match) {
+                        setFormState((prev) => ({ ...prev, paymentMethodId: match.id || null }));
+                    } else {
+                        setFormState((prev) => ({
+                            ...prev,
+                            paymentMethodName: merged[0].nombre?.toUpperCase() || "EFECTIVO",
+                            paymentMethodId: merged[0].id || null,
+                        }));
+                    }
+                }
+            })
+            .catch((err) => {
+                console.error("Error al cargar métodos de pago:", err);
+                const defaultMethods = [
+                    { id: null, nombre: "EFECTIVO", recargoPorcentaje: 0 },
+                    { id: null, nombre: "YAPE", recargoPorcentaje: 0 },
+                    { id: null, nombre: "PLIN", recargoPorcentaje: 0 },
+                    { id: null, nombre: "TARJETA", recargoPorcentaje: 0 },
+                    { id: null, nombre: "TRANSFERENCIA", recargoPorcentaje: 0 },
+                ];
+                setPaymentMethods(defaultMethods);
+            });
+
+        findActivePaymentConditions()
+            .then((res) => {
+                const list = res.data || [];
+                const defaultConditions = [
+                    { idCondicion: null, nombre: "CONTADO", dias: 0 },
+                    { idCondicion: null, nombre: "Crédito 30 dias", dias: 30 },
+                    { idCondicion: null, nombre: "Crédito 60 dias", dias: 60 },
+                ];
+                const merged = [...list];
+                defaultConditions.forEach((dc) => {
+                    if (!merged.some((c) => c.nombre?.toUpperCase() === dc.nombre.toUpperCase())) {
+                        merged.push(dc);
+                    }
+                });
+
+                setPaymentConditions(merged);
+                if (merged.length > 0 && !isEditMode) {
+                    const match = merged.find((c) => c.nombre?.toUpperCase() === formState.saleType.toUpperCase());
+                    if (match) {
+                        setFormState((prev) => ({ ...prev, paymentConditionId: match.idCondicion || match.id || null }));
+                    } else {
+                        setFormState((prev) => ({
+                            ...prev,
+                            saleType: merged[0].nombre?.toUpperCase() || "CONTADO",
+                            paymentConditionId: merged[0].idCondicion || merged[0].id || null,
+                        }));
+                    }
+                }
+            })
+            .catch((err) => {
+                console.error("Error al cargar condiciones de pago:", err);
+                const defaultConditions = [
+                    { idCondicion: null, nombre: "CONTADO", dias: 0 },
+                    { idCondicion: null, nombre: "Crédito 30 dias", dias: 30 },
+                    { idCondicion: null, nombre: "Crédito 60 dias", dias: 60 },
+                ];
+                setPaymentConditions(defaultConditions);
+            });
+    }, [isEditMode]);
 
     // Cargar siguiente número correlativo al cambiar tipo de comprobante
     useEffect(() => {
         if (!isEditMode) {
             const rType = formState.receiptType;
             const sSeries = rType === "FACTURA" ? "F001" : rType === "BOLETA" ? "B001" : "T001";
-            
+
             productsApi.get(`/sales/next-number?receiptType=${rType}&series=${sSeries}`)
                 .then((res) => {
                     setFormState((prev) => ({
@@ -155,6 +243,30 @@ export const SaleForm = ({ saleSelected = null, initialData = null, onSuccess = 
         setFormState((prev) => ({
             ...prev,
             [name]: value,
+        }));
+    };
+
+    // Manejador de cambio de medio de pago
+    const handlePaymentMethodChange = (e) => {
+        const val = e.target.value;
+        const selected = paymentMethods.find((pm) => pm.nombre?.toUpperCase() === val.toUpperCase());
+        const isNonCash = !val.toUpperCase().includes("EFECTIVO");
+        setFormState((prev) => ({
+            ...prev,
+            paymentMethodName: val,
+            paymentMethodId: selected ? (selected.id || null) : null,
+            amountPaid: isNonCash ? "" : prev.amountPaid,
+        }));
+    };
+
+    // Manejador de cambio de tipo de venta
+    const handleSaleTypeChange = (e) => {
+        const val = e.target.value;
+        const selected = paymentConditions.find((pc) => pc.nombre?.toUpperCase() === val.toUpperCase());
+        setFormState((prev) => ({
+            ...prev,
+            saleType: val,
+            paymentConditionId: selected ? (selected.idCondicion || selected.id || null) : null,
         }));
     };
 
@@ -293,11 +405,19 @@ export const SaleForm = ({ saleSelected = null, initialData = null, onSuccess = 
     const subtotalCalculado = totalVenta > 0 ? totalVenta / 1.18 : 0;
     const igvCalculado = totalVenta - subtotalCalculado;
 
-    const isCredito = (formState.saleType || "").toUpperCase() === "CREDITO";
-    const montoPagadoEfectivo = formState.amountPaid !== "" ? Number(formState.amountPaid) : (isCredito ? 0 : totalVenta);
-    const saldoPendiente = Math.max(0, totalVenta - montoPagadoEfectivo);
-    const paymentStatusCalculado = saldoPendiente <= 0.001 ? "PAGADO" : (montoPagadoEfectivo > 0 ? "PARCIAL" : "PENDIENTE");
-    const vuelto = Math.max(0, montoPagadoEfectivo - totalVenta);
+    const isCredito = (formState.saleType || "").toUpperCase().includes("CREDIT") || (formState.saleType || "").toUpperCase().includes("CRÉDIT");
+    const isEfectivo = (formState.paymentMethodName || "").toUpperCase().includes("EFECTIVO");
+
+    // Para medios de pago digitales (YAPE, PLIN, TARJETA, TRANSFERENCIA), el cliente paga el monto total exacto (salvo venta a crédito)
+    const montoPagadoFinal = isCredito
+        ? 0
+        : (!isEfectivo
+            ? totalVenta
+            : (formState.amountPaid !== "" ? Number(formState.amountPaid) : totalVenta));
+
+    const saldoPendiente = Math.max(0, totalVenta - montoPagadoFinal);
+    const paymentStatusCalculado = saldoPendiente <= 0.001 ? "PAGADO" : (montoPagadoFinal > 0 ? "PARCIAL" : "PENDIENTE");
+    const vuelto = isEfectivo ? Math.max(0, montoPagadoFinal - totalVenta) : 0;
 
     // Enviar formulario de venta
     const onSubmit = async (e) => {
@@ -324,7 +444,7 @@ export const SaleForm = ({ saleSelected = null, initialData = null, onSuccess = 
                 total: totalVenta,
                 subtotal: Number(subtotalCalculado.toFixed(2)),
                 taxAmount: Number(igvCalculado.toFixed(2)),
-                amountPaid: montoPagadoEfectivo,
+                amountPaid: montoPagadoFinal,
                 pendingBalance: saldoPendiente,
                 paymentStatus: paymentStatusCalculado,
             };
@@ -352,7 +472,7 @@ export const SaleForm = ({ saleSelected = null, initialData = null, onSuccess = 
                     total: totalVenta,
                     subtotal: Number(subtotalCalculado.toFixed(2)),
                     taxAmount: Number(igvCalculado.toFixed(2)),
-                    amountPaid: montoPagadoEfectivo,
+                    amountPaid: montoPagadoFinal,
                     employeeName: activeSession ? activeSession.openingEmployeeName : "Admin Sistema",
                     clientName: formState.clientName,
                     receiptType: formState.receiptType,
@@ -456,7 +576,7 @@ export const SaleForm = ({ saleSelected = null, initialData = null, onSuccess = 
 
     return (
         <div className="max-w-[1600px] mx-auto px-3 py-4 space-y-4">
-            
+
             {/* BARRA SUPERIOR POS (Calco fiel de la Imagen 2) */}
             <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 flex flex-col md:flex-row items-center justify-between gap-4">
                 {/* Caja Central */}
@@ -511,10 +631,10 @@ export const SaleForm = ({ saleSelected = null, initialData = null, onSuccess = 
 
             {/* CUERPO PRINCIPAL DEL POS (Imagen 2: Grid 8 cols catálogo/carrito, 4 cols panel de pago) */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-                
+
                 {/* COLUMNA IZQUIERDA (8 COLS): Catálogo superior y Carrito inferior */}
                 <div className="lg:col-span-8 space-y-4">
-                    
+
                     {/* SECCIÓN 1: CATÁLOGO DE PRODUCTOS DISPONIBLES */}
                     <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
                         <div className="overflow-x-auto">
@@ -550,11 +670,7 @@ export const SaleForm = ({ saleSelected = null, initialData = null, onSuccess = 
                                                     {/* PRODUCTO */}
                                                     <td className="py-3 px-4">
                                                         <div className="flex items-center gap-3">
-                                                            <div className="w-8 h-8 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400 flex-shrink-0">
-                                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                                                                </svg>
-                                                            </div>
+
                                                             <div>
                                                                 <span className="font-extrabold text-slate-800 text-xs block uppercase">
                                                                     {prod.nombre}
@@ -563,12 +679,12 @@ export const SaleForm = ({ saleSelected = null, initialData = null, onSuccess = 
                                                                     <span className="text-slate-400">
                                                                         {[prod.formaFarmaceutica, prod.concentracion].filter(Boolean).join(" ")}
                                                                     </span>
-                                                                    {prod.principioActivo && (
-                                                                        <span className="text-teal-700 font-medium">
-                                                                            {prod.principioActivo}
-                                                                        </span>
-                                                                    )}
                                                                 </div>
+                                                                <div>{prod.principioActivo && (
+                                                                    <span className="text-teal-700 font-medium">
+                                                                        {prod.principioActivo}
+                                                                    </span>
+                                                                )}</div>
                                                             </div>
                                                         </div>
                                                     </td>
@@ -582,9 +698,8 @@ export const SaleForm = ({ saleSelected = null, initialData = null, onSuccess = 
 
                                                     {/* STOCK */}
                                                     <td className="py-3 px-4 text-center">
-                                                        <span className={`font-black text-xs ${
-                                                            stockVal <= 5 ? "text-rose-600" : stockVal <= 15 ? "text-amber-600" : "text-emerald-700"
-                                                        }`}>
+                                                        <span className={`font-black text-xs ${stockVal <= 5 ? "text-rose-600" : stockVal <= 15 ? "text-amber-600" : "text-emerald-700"
+                                                            }`}>
                                                             {stockVal}
                                                         </span>
                                                     </td>
@@ -768,7 +883,62 @@ export const SaleForm = ({ saleSelected = null, initialData = null, onSuccess = 
                                             </tr>
                                         ))}
                                     </tbody>
+                                    <tfoot>
+                                        <tr className="border-t-2 border-slate-200 bg-slate-50/70 text-xs">
+                                            <td colSpan={3} className="py-3 px-4 text-right uppercase tracking-wider text-[11px] font-extrabold text-slate-500">
+                                                TOTAL DEL CARRITO:
+                                            </td>
+                                            <td className="py-3 px-4 text-right font-black text-sm text-[#005f60]">
+                                                S/ {totalVenta.toFixed(2)}
+                                            </td>
+                                            <td></td>
+                                        </tr>
+                                    </tfoot>
                                 </table>
+                            </div>
+                        )}
+
+                        {/* RESUMEN Y TOTAL AL PIE DEL CARRITO DE VENTA */}
+                        {formState.details.length > 0 && (
+                            <div className="p-4 bg-slate-50/90 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3">
+                                <div className="flex items-center gap-3 text-xs text-slate-500 font-medium">
+                                    <span>
+                                        Ítems: <strong className="text-slate-800 font-bold">{formState.details.length}</strong>
+                                    </span>
+                                    <span>•</span>
+                                    <span>
+                                        Unidades: <strong className="text-slate-800 font-bold">
+                                            {formState.details.reduce((acc, curr) => acc + Number(curr.presentationQuantity || 0), 0)}
+                                        </strong>
+                                    </span>
+                                </div>
+
+                                <div className="flex items-center gap-4">
+                                    <div className="text-right hidden sm:block">
+                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                                            SUBTOTAL
+                                        </span>
+                                        <span className="text-xs font-bold text-slate-700">
+                                            S/ {subtotalCalculado.toFixed(2)}
+                                        </span>
+                                    </div>
+                                    <div className="text-right hidden sm:block">
+                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                                            IGV (18%)
+                                        </span>
+                                        <span className="text-xs font-bold text-slate-700">
+                                            S/ {igvCalculado.toFixed(2)}
+                                        </span>
+                                    </div>
+                                    <div className="bg-[#005f60] text-white px-4 py-2 rounded-xl flex items-center gap-3 shadow-sm">
+                                        <span className="text-[11px] font-bold uppercase tracking-wider text-teal-200">
+                                            TOTAL:
+                                        </span>
+                                        <span className="text-lg font-black tracking-tight">
+                                            S/ {totalVenta.toFixed(2)}
+                                        </span>
+                                    </div>
+                                </div>
                             </div>
                         )}
                     </div>
@@ -776,7 +946,7 @@ export const SaleForm = ({ saleSelected = null, initialData = null, onSuccess = 
 
                 {/* COLUMNA DERECHA (4 COLS): Panel de Totales y Datos de Transacción */}
                 <div className="lg:col-span-4 space-y-4">
-                    
+
                     {/* TARJETA TOTALES (BANNER OSCURO VERDE AZULADO CALCO IMAGEN 2) */}
                     <div className="bg-[#005f60] text-white rounded-2xl p-5 shadow-md flex flex-col justify-between">
                         <div className="space-y-1.5 text-xs text-teal-100 border-b border-teal-500/40 pb-3 mb-3">
@@ -850,11 +1020,21 @@ export const SaleForm = ({ saleSelected = null, initialData = null, onSuccess = 
                                 <select
                                     name="saleType"
                                     value={formState.saleType}
-                                    onChange={onInputChange}
-                                    className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
+                                    onChange={handleSaleTypeChange}
+                                    className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500/20 uppercase"
                                 >
-                                    <option value="CONTADO">Contado</option>
-                                    <option value="CREDITO">Crédito</option>
+                                    {paymentConditions.length > 0 ? (
+                                        paymentConditions.map((cond) => (
+                                            <option key={cond.idCondicion || cond.nombre} value={cond.nombre.toUpperCase()}>
+                                                {cond.nombre} {Number(cond.dias || 0) > 0 ? `(${cond.dias} DÍAS)` : ""}
+                                            </option>
+                                        ))
+                                    ) : (
+                                        <>
+                                            <option value="CONTADO">Contado</option>
+                                            <option value="CREDITO">Crédito</option>
+                                        </>
+                                    )}
                                 </select>
                             </div>
 
@@ -865,14 +1045,24 @@ export const SaleForm = ({ saleSelected = null, initialData = null, onSuccess = 
                                 <select
                                     name="paymentMethodName"
                                     value={formState.paymentMethodName}
-                                    onChange={onInputChange}
+                                    onChange={handlePaymentMethodChange}
                                     className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500/20 uppercase"
                                 >
-                                    <option value="EFECTIVO">EFECTIVO</option>
-                                    <option value="YAPE">YAPE</option>
-                                    <option value="PLIN">PLIN</option>
-                                    <option value="TARJETA">TARJETA</option>
-                                    <option value="TRANSFERENCIA">TRANSFERENCIA</option>
+                                    {paymentMethods.length > 0 ? (
+                                        paymentMethods.map((pm) => (
+                                            <option key={pm.id || pm.nombre} value={pm.nombre.toUpperCase()}>
+                                                {pm.nombre.toUpperCase()} {Number(pm.recargoPorcentaje || 0) > 0 ? `(+${pm.recargoPorcentaje}%)` : ""}
+                                            </option>
+                                        ))
+                                    ) : (
+                                        <>
+                                            <option value="EFECTIVO">EFECTIVO</option>
+                                            <option value="YAPE">YAPE</option>
+                                            <option value="PLIN">PLIN</option>
+                                            <option value="TARJETA">TARJETA</option>
+                                            <option value="TRANSFERENCIA">TRANSFERENCIA</option>
+                                        </>
+                                    )}
                                 </select>
                             </div>
                         </div>
@@ -910,7 +1100,7 @@ export const SaleForm = ({ saleSelected = null, initialData = null, onSuccess = 
                         </div>
 
                         {/* Efectivo Recibido y Vuelto */}
-                        {formState.paymentMethodName === "EFECTIVO" && (
+                        {(formState.paymentMethodName || "").toUpperCase().includes("EFECTIVO") && (
                             <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-100">
                                 <div>
                                     <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">

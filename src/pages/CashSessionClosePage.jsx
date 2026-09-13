@@ -38,6 +38,23 @@ export const CashSessionClosePage = () => {
                     return;
                 }
 
+                // Validar que el usuario actual sea el mismo que abrió la sesión de caja
+                const currentUsername = (user?.username || "").trim().toLowerCase();
+                const opener = (active.openingEmployeeName || "").trim().toLowerCase();
+                const isOwner = opener === currentUsername || opener.includes(currentUsername) || currentUsername.includes(opener);
+
+                if (!isOwner) {
+                    Swal.fire({
+                        title: "Acceso Denegado",
+                        text: `Esta sesión de caja fue abierta por "${active.openingEmployeeName || "otro empleado"}". Cada empleado realiza su propia labor de caja y solo el responsable puede cerrarla.`,
+                        icon: "error",
+                        confirmButtonColor: "#005f60",
+                    }).then(() => {
+                        navigate("/cash-sessions");
+                    });
+                    return;
+                }
+
                 setSession(active);
 
                 // Cargar el resumen financiero calculado en el backend
@@ -64,7 +81,7 @@ export const CashSessionClosePage = () => {
         };
 
         loadSessionData();
-    }, [navigate]);
+    }, [navigate, user?.username]);
 
     // Cálculos financieros
     const initialAmount = summary?.initialAmount != null

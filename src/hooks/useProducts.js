@@ -44,7 +44,6 @@ export const useProducts = () => {
 
     // ✅ Agregar o actualizar un producto
     const handlerAddProduct = async (product) => {
-        if (!login.isAdmin) return; // Solo los admins pueden agregar productos
         let response;
         try {
             if (product.id === 0) {
@@ -77,7 +76,6 @@ export const useProducts = () => {
 
     // ✅ Eliminar un producto
     const handlerRemoveProduct = (id) => {
-        if (!login.isAdmin) return; // Solo los admins pueden eliminar productos
         Swal.fire({
             title: "¿Está seguro de eliminar?",
             text: "¡El producto será eliminado!",
@@ -91,13 +89,14 @@ export const useProducts = () => {
                 try {
                     await remove(id);
                     dispatch(removeProduct(id));
+                    getProducts();
                     Swal.fire("Producto Eliminado!", "El producto ha sido eliminado con éxito!", "success");
                 } catch (error) {
-                    console.error("Error al eliminar producto:", error);
+                    const errorMsg = error.response?.data?.message || error.message || "Hubo un problema al eliminar el producto";
                     if (error.response?.status === 401) {
                         handlerLogout();
                     } else {
-                        Swal.fire("Error", "Hubo un problema al eliminar el producto", "error");
+                        Swal.fire("Error al eliminar", errorMsg, "error");
                     }
                 }
             }

@@ -32,16 +32,20 @@ export const productsSlice = createSlice({
     },
     reducers: {
         addProduct: (state, action) => {
-            state.products.push(action.payload);
+            state.products.unshift(action.payload);
             state.productSelected = initialProductForm;
             state.visibleForm = false;
         },
         removeProduct: (state, action) => {
-            state.products = state.products.filter(product => product.id !== action.payload);
+            const targetId = Number(action.payload);
+            state.products = state.products.filter(
+                product => Number(product.idProducto || product.id) !== targetId
+            );
         },
         updateProduct: (state, action) => {
+            const updatedId = Number(action.payload.idProducto || action.payload.id);
             state.products = state.products.map((p) =>
-                p.id === action.payload.id ? { ...action.payload } : p
+                Number(p.idProducto || p.id) === updatedId ? { ...action.payload } : p
             );
             state.productSelected = initialProductForm;
             state.visibleForm = false;

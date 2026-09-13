@@ -8,6 +8,7 @@ export const EmployeeForm = ({ initialData = null, onSubmit, onCancel }) => {
     nombre: initialData?.nombre || "",
     apellidos: initialData?.apellidos || "",
     nIdentificacion: initialData?.nIdentificacion || "",
+    numeroTelefono: initialData?.numeroTelefono || "",
     cargo: initialData?.cargo || "",
     porcentajeComision: initialData?.porcentajeComision ?? 0,
     fechaContratacion: initialData?.fechaContratacion
@@ -31,6 +32,7 @@ export const EmployeeForm = ({ initialData = null, onSubmit, onCancel }) => {
       nombre: initialData.nombre || "",
       apellidos: initialData.apellidos || "",
       nIdentificacion: initialData.nIdentificacion || "",
+      numeroTelefono: initialData.numeroTelefono || "",
       cargo: initialData.cargo || "",
       porcentajeComision: initialData.porcentajeComision ?? 0,
       fechaContratacion: initialData.fechaContratacion
@@ -103,6 +105,7 @@ export const EmployeeForm = ({ initialData = null, onSubmit, onCancel }) => {
           nombre: formData.nombre.trim(),
           apellidos: formData.apellidos.trim() || null,
           nIdentificacion: formData.nIdentificacion.trim() || null,
+          numeroTelefono: formData.numeroTelefono?.trim() || null,
           cargo: formData.cargo.trim() || null,
           porcentajeComision: Number(formData.porcentajeComision) || 0,
           fechaContratacion: formData.fechaContratacion || null,
@@ -198,6 +201,21 @@ export const EmployeeForm = ({ initialData = null, onSubmit, onCancel }) => {
             />
           </div>
 
+          {/* Teléfono / Celular */}
+          <div className="col-md-4">
+            <label className="form-label text-dark-emphasis small fw-bold text-uppercase mb-1" style={{ fontSize: "0.74rem" }}>
+              Teléfono / Celular
+            </label>
+            <input
+              type="text"
+              name="numeroTelefono"
+              className="form-control modern-input"
+              placeholder="Ej. 987654321"
+              value={formData.numeroTelefono}
+              onChange={onInputChange}
+            />
+          </div>
+
           {/* Cargo */}
           <div className="col-md-4">
             <label className="form-label text-dark-emphasis small fw-bold text-uppercase mb-1" style={{ fontSize: "0.74rem" }}>
@@ -229,7 +247,7 @@ export const EmployeeForm = ({ initialData = null, onSubmit, onCancel }) => {
           </div>
 
           {/* Fecha Contratación */}
-          <div className="col-md-6">
+          <div className="col-md-4">
             <label className="form-label text-dark-emphasis small fw-bold text-uppercase mb-1" style={{ fontSize: "0.74rem" }}>
               Fecha de Contratación
             </label>
@@ -243,7 +261,7 @@ export const EmployeeForm = ({ initialData = null, onSubmit, onCancel }) => {
           </div>
 
           {/* Switch Activo */}
-          <div className="col-md-6 d-flex align-items-end">
+          <div className="col-md-4 d-flex align-items-end">
             <div
               onClick={onToggleActivo}
               className={`p-2 border rounded-3 w-100 d-flex justify-content-between align-items-center cursor-pointer ${

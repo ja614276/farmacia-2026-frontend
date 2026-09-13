@@ -26,15 +26,15 @@ export const navItems = [
       </svg>
     ),
     subItems: [
-      { label: "Lista de Usuarios", path: "/users", end: true },
-      { label: "Registrar Usuario", path: "/users/register", adminOnly: true },
+      { label: "Usuarios", path: "/users", end: true },
+      { label: "Mi Perfil", path: "/profile" },
       { label: "Empleados", path: "/employees" },
     ],
   },
   {
     type: "accordion",
     id: "productos",
-    title: "Productos",
+    title: "Stock de Productos",
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="m7.5 4.27 9 5.15" />
@@ -44,8 +44,7 @@ export const navItems = [
       </svg>
     ),
     subItems: [
-      { label: "Lista de Productos", path: "/products", end: true },
-      { label: "Registrar Producto", path: "/products/register" },
+      { label: "Productos", path: "/products", end: true },
       { label: "Categorías", path: "/categories" },
       { label: "Laboratorios", path: "/laboratories" },
       { label: "Proveedores", path: "/suppliers" },
@@ -65,8 +64,7 @@ export const navItems = [
     ),
     subItems: [
       { label: "Ajustes Inventarios", path: "/inventory-adjustments" },
-      { label: "Lista de Clientes", path: "/clients", end: true },
-      { label: "Registrar Cliente", path: "/clients/register" },
+      { label: "Clientes", path: "/clients", end: true },
       { label: "Historial de Ventas", path: "/sales", end: true },
       { label: "Nueva Venta", path: "/sales/register" },
     ],
@@ -115,6 +113,17 @@ export const navItems = [
     ),
   },
   {
+    type: "link",
+    id: "empresa",
+    title: "Empresa",
+    path: "/company",
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M19 21V5a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v5m-4 0h4" />
+      </svg>
+    ),
+  },
+  {
     type: "accordion",
     id: "configuracion",
     title: "Configuración",
@@ -124,7 +133,9 @@ export const navItems = [
         <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
       </svg>
     ),
-    subItems: [],
+    subItems: [
+      { label: "Empresa", path: "/company" },
+    ],
   },
   {
     type: "link",

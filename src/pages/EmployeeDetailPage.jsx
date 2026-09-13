@@ -57,7 +57,7 @@ export const EmployeeDetailPage = () => {
       <div className="d-flex justify-content-center align-items-center py-5">
         <div className="spinner-border text-teal" role="status"></div>
         <span className="ms-2 text-muted small">
-          Cargando expediente del empleado...
+          Cargando datos del empleado...
         </span>
       </div>
     );
@@ -95,18 +95,17 @@ export const EmployeeDetailPage = () => {
                 {employee.nombre} {employee.apellidos}
               </h4>
               <span
-                className={`badge rounded-pill px-2.5 py-1 ${
-                  employee.activo
-                    ? "bg-teal-soft text-teal"
-                    : "bg-light text-secondary border"
-                }`}
+                className={`badge rounded-pill px-2.5 py-1 ${employee.activo
+                  ? "bg-teal-soft text-teal"
+                  : "bg-light text-secondary border"
+                  }`}
                 style={{ fontSize: "0.72rem" }}
               >
                 {employee.activo ? "Cuenta Habilitada" : "Inactivo"}
               </span>
             </div>
             <p className="text-muted small m-0 mt-1">
-              Expediente digital N° #{employee.idEmpleado} • Cargo:{" "}
+              Id: {employee.idEmpleado} | Cargo:{" "}
               <strong>{employee.cargo || "Sin cargo asignado"}</strong>
             </p>
           </div>
@@ -168,6 +167,14 @@ export const EmployeeDetailPage = () => {
                   {employee.nIdentificacion || "No registrado"}
                 </span>
               </div>
+              <div>
+                <span className="text-muted small d-block">
+                  Teléfono / Celular
+                </span>
+                <span className="font-monospace fw-bold text-teal">
+                  {employee.numeroTelefono || "No registrado"}
+                </span>
+              </div>
             </div>
           </div>
         </div>
@@ -210,7 +217,7 @@ export const EmployeeDetailPage = () => {
                   </span>
                 ) : (
                   <span className="badge bg-light text-secondary border px-2 py-1">
-                    Personal Operativo (Caja / POS)
+                    Personal (Acceso Limitado)
                   </span>
                 )}
               </div>

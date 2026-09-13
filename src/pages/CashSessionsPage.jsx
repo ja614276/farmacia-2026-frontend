@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 import Swal from "sweetalert2";
 import {
     findAllCashSessions,
@@ -8,6 +9,7 @@ import {
 
 export const CashSessionsPage = () => {
     const navigate = useNavigate();
+    const { user } = useSelector((state) => state.auth || {});
 
     const [sessions, setSessions] = useState([]);
     const [activeSession, setActiveSession] = useState(null);
@@ -65,6 +67,14 @@ export const CashSessionsPage = () => {
 
     const hasActiveSession = Boolean(activeSession && activeSession.id);
 
+    // Valida si el usuario en sesión es el mismo que abrió la caja
+    const isSessionOwner = (sessionObj) => {
+        if (!sessionObj || !user?.username) return false;
+        const currentUsername = user.username.trim().toLowerCase();
+        const opener = (sessionObj.openingEmployeeName || "").trim().toLowerCase();
+        return opener === currentUsername || opener.includes(currentUsername) || currentUsername.includes(opener);
+    };
+
     return (
         <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 space-y-6">
             {/* 1. Encabezado Principal */}
@@ -87,7 +97,7 @@ export const CashSessionsPage = () => {
                             title="Ya existe una sesión de caja activa. Debe cerrar el turno antes de abrir uno nuevo."
                             className="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-200 text-slate-400 font-bold text-xs rounded-xl cursor-not-allowed shadow-none"
                         >
-                            <span>+ Nueva Apertura</span>
+                            <span>Nueva Apertura</span>
                         </button>
                     ) : (
                         <button
@@ -150,17 +160,36 @@ export const CashSessionsPage = () => {
                             </div>
                         </div>
 
-                        <button
-                            type="button"
-                            onClick={() => navigate("/cash-sessions/close")}
-                            className="inline-flex items-center gap-2 px-5 py-2.5 bg-rose-600 hover:bg-rose-700 active:bg-rose-800 text-white font-bold text-xs rounded-xl shadow-md shadow-rose-600/20 hover:shadow-rose-600/30 transition-all cursor-pointer"
-                        >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
-                                <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M7 11V7a5 5 0 0110 0v4" />
-                            </svg>
-                            <span>Cerrar Turno</span>
-                        </button>
+                        {isSessionOwner(activeSession) ? (
+                            <button
+                                type="button"
+                                onClick={() => navigate("/cash-sessions/close")}
+                                className="inline-flex items-center gap-2 px-5 py-2.5 bg-rose-600 hover:bg-rose-700 active:bg-rose-800 text-white font-bold text-xs rounded-xl shadow-md shadow-rose-600/20 hover:shadow-rose-600/30 transition-all cursor-pointer"
+                            >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                                    <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M7 11V7a5 5 0 0110 0v4" />
+                                </svg>
+                                <span>Cerrar Turno</span>
+                            </button>
+                        ) : (
+                            <button
+                                type="button"
+                                onClick={() => Swal.fire({
+                                    title: "Acceso Restringido",
+                                    text: `Esta caja fue abierta por ${activeSession.openingEmployeeName || "otro empleado"}. Cada empleado gestiona su propia labor de caja y solo el responsable puede cerrarla.`,
+                                    icon: "warning",
+                                    confirmButtonColor: "#005f60"
+                                })}
+                                className="inline-flex items-center gap-2 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-xs rounded-xl border border-slate-200 transition-all cursor-pointer"
+                                title={`Solo ${activeSession.openingEmployeeName} puede cerrar este turno`}
+                            >
+                                <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                </svg>
+                                <span>Turno de {activeSession.openingEmployeeName || "otro cajero"}</span>
+                            </button>
+                        )}
                     </div>
                 </div>
             ) : (
@@ -296,13 +325,25 @@ export const CashSessionsPage = () => {
                                             {/* ACCIONES */}
                                             <td className="py-3.5 px-5 text-right">
                                                 {isOpen && (
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => navigate("/cash-sessions/close")}
-                                                        className="text-xs font-semibold text-rose-600 hover:text-rose-700 hover:underline px-2 py-1"
-                                                    >
-                                                        Cerrar
-                                                    </button>
+                                                    isSessionOwner(s) ? (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => navigate("/cash-sessions/close")}
+                                                            className="text-xs font-semibold text-rose-600 hover:text-rose-700 hover:underline px-2 py-1 cursor-pointer"
+                                                        >
+                                                            Cerrar
+                                                        </button>
+                                                    ) : (
+                                                        <span
+                                                            className="text-[11px] text-slate-400 font-medium px-2 py-1 inline-flex items-center gap-1 cursor-help"
+                                                            title={`Esta caja fue abierta por ${s.openingEmployeeName || "otro empleado"}. Solo dicho empleado puede cerrarla.`}
+                                                        >
+                                                            <svg className="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                                            </svg>
+                                                            <span>Restringido</span>
+                                                        </span>
+                                                    )
                                                 )}
                                             </td>
                                         </tr>
