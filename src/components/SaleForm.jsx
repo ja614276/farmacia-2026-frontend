@@ -75,15 +75,25 @@ export const SaleForm = ({ saleSelected = null, initialData = null, onSuccess = 
             });
     }, []);
 
+    // Recargar catálogo de productos desde el backend para tener el stock real actualizado
+    const refreshProductsCatalog = async () => {
+        try {
+            const res = await productsApi.get("/products");
+            if (res.data) {
+                setAvailableProducts(res.data);
+            }
+        } catch (err) {
+            console.error("Error al cargar catálogo de productos:", err);
+        }
+    };
+
     // Cargar clientes y productos para el punto de venta
     useEffect(() => {
         findAllClients()
             .then((res) => setClientsList(res.data || []))
             .catch((err) => console.error("Error al cargar clientes:", err));
 
-        productsApi.get("/products")
-            .then((res) => setAvailableProducts(res.data || []))
-            .catch((err) => console.error("Error al cargar catálogo de productos:", err));
+        refreshProductsCatalog();
 
         findActivePaymentMethods()
             .then((res) => {
@@ -293,6 +303,22 @@ export const SaleForm = ({ saleSelected = null, initialData = null, onSuccess = 
         }
     };
 
+    // Cantidad de unidades base de un producto que ya están en el carrito
+    const getCartUnitsForProduct = (productId) => {
+        if (!productId) return 0;
+        return formState.details
+            .filter((d) => d.productId === productId || d.idProducto === productId)
+            .reduce((sum, d) => sum + Number(d.baseUnitsQuantity != null ? d.baseUnitsQuantity : d.presentationQuantity || 0), 0);
+    };
+
+    // Stock disponible restante para un producto considerando lo que hay en el carrito
+    const getAvailableStockForProduct = (product) => {
+        if (!product) return 0;
+        const origStock = Number(product.stockReal !== undefined ? product.stockReal : (product.stock || 0));
+        const inCart = getCartUnitsForProduct(product.idProducto || product.id);
+        return Math.max(0, origStock - inCart);
+    };
+
     // Apertura del modal de presentaciones al hacer clic en "Agregar"
     const handleOpenPresentationModal = (product) => {
         setSelectedProductForModal(product);
@@ -306,6 +332,19 @@ export const SaleForm = ({ saleSelected = null, initialData = null, onSuccess = 
         const presName = presentation.nombrePresentacion || "UNIDAD";
         const unitPrice = Number(presentation.precioVenta || product.precioVenta || 0);
         const baseEquiv = Number(presentation.cantidadUnidades || 1);
+
+        const origStock = Number(product.stockReal !== undefined ? product.stockReal : (product.stock || 0));
+        const currentInCart = getCartUnitsForProduct(prodId);
+
+        if (currentInCart + baseEquiv > origStock) {
+            Swal.fire({
+                title: "Stock insuficiente",
+                text: `No hay suficiente stock para agregar esta presentación. Stock disponible: ${Math.max(0, origStock - currentInCart)} unidad(es) base.`,
+                icon: "warning",
+                confirmButtonColor: "#005f60",
+            });
+            return;
+        }
 
         setFormState((prev) => {
             // Verificar si el ítem con la misma presentación y lote ya está en el carrito
@@ -352,41 +391,91 @@ export const SaleForm = ({ saleSelected = null, initialData = null, onSuccess = 
         });
     };
 
-    // Modificar cantidad en carrito
+    // Modificar cantidad en carrito con validación estricta de stock
     const handleUpdateQuantity = (index, delta) => {
-        setFormState((prev) => {
-            const updatedDetails = [...prev.details];
-            const item = updatedDetails[index];
-            const newQty = Math.max(1, item.presentationQuantity + delta);
+        const item = formState.details[index];
+        if (!item) return;
+
+        if (delta > 0) {
+            const prod = availableProducts.find((p) => (p.idProducto || p.id) === item.productId);
+            const origStock = prod ? Number(prod.stockReal !== undefined ? prod.stockReal : (prod.stock || 0)) : 999999;
+            const otherUnitsInCart = formState.details
+                .filter((d, i) => i !== index && (d.productId === item.productId))
+                .reduce((sum, d) => sum + Number(d.baseUnitsQuantity != null ? d.baseUnitsQuantity : d.presentationQuantity || 0), 0);
             const baseRatio = item.baseUnitsQuantity > 0 && item.presentationQuantity > 0
                 ? Math.round(item.baseUnitsQuantity / item.presentationQuantity)
                 : 1;
 
+            const maxPresQty = Math.floor((origStock - otherUnitsInCart) / baseRatio);
+
+            if (item.presentationQuantity + delta > maxPresQty) {
+                Swal.fire({
+                    title: "Límite de stock alcanzado",
+                    text: `No hay más stock disponible. El límite para este producto es de ${Math.max(0, maxPresQty)} ${item.presentationName}.`,
+                    icon: "warning",
+                    confirmButtonColor: "#005f60",
+                    timer: 2000,
+                });
+                return;
+            }
+        }
+
+        setFormState((prev) => {
+            const updatedDetails = [...prev.details];
+            const cur = updatedDetails[index];
+            const newQty = Math.max(1, cur.presentationQuantity + delta);
+            const baseRatio = cur.baseUnitsQuantity > 0 && cur.presentationQuantity > 0
+                ? Math.round(cur.baseUnitsQuantity / cur.presentationQuantity)
+                : 1;
+
             updatedDetails[index] = {
-                ...item,
+                ...cur,
                 presentationQuantity: newQty,
                 baseUnitsQuantity: newQty * baseRatio,
-                subtotal: Number((newQty * item.presentationUnitPrice).toFixed(2)),
+                subtotal: Number((newQty * cur.presentationUnitPrice).toFixed(2)),
             };
             return { ...prev, details: updatedDetails };
         });
     };
 
-    // Asignar cantidad directa en carrito
+    // Asignar cantidad directa en carrito con tope de stock
     const handleSetQuantityDirect = (index, val) => {
-        const qty = Math.max(1, parseInt(val, 10) || 1);
+        const item = formState.details[index];
+        if (!item) return;
+
+        let qty = parseInt(val, 10);
+        if (isNaN(qty) || qty < 1) qty = 1;
+
+        const prod = availableProducts.find((p) => (p.idProducto || p.id) === item.productId);
+        const origStock = prod ? Number(prod.stockReal !== undefined ? prod.stockReal : (prod.stock || 0)) : 999999;
+        const otherUnitsInCart = formState.details
+            .filter((d, i) => i !== index && (d.productId === item.productId))
+            .reduce((sum, d) => sum + Number(d.baseUnitsQuantity != null ? d.baseUnitsQuantity : d.presentationQuantity || 0), 0);
+        const baseRatio = item.baseUnitsQuantity > 0 && item.presentationQuantity > 0
+            ? Math.round(item.baseUnitsQuantity / item.presentationQuantity)
+            : 1;
+
+        const maxPresQty = Math.max(1, Math.floor((origStock - otherUnitsInCart) / baseRatio));
+
+        if (qty > maxPresQty) {
+            qty = maxPresQty;
+            Swal.fire({
+                title: "Stock máximo alcanzado",
+                text: `Se ajustó la cantidad al máximo disponible (${maxPresQty} ${item.presentationName}).`,
+                icon: "info",
+                confirmButtonColor: "#005f60",
+                timer: 2000,
+            });
+        }
+
         setFormState((prev) => {
             const updatedDetails = [...prev.details];
-            const item = updatedDetails[index];
-            const baseRatio = item.baseUnitsQuantity > 0 && item.presentationQuantity > 0
-                ? Math.round(item.baseUnitsQuantity / item.presentationQuantity)
-                : 1;
-
+            const cur = updatedDetails[index];
             updatedDetails[index] = {
-                ...item,
+                ...cur,
                 presentationQuantity: qty,
                 baseUnitsQuantity: qty * baseRatio,
-                subtotal: Number((qty * item.presentationUnitPrice).toFixed(2)),
+                subtotal: Number((qty * cur.presentationUnitPrice).toFixed(2)),
             };
             return { ...prev, details: updatedDetails };
         });
@@ -465,6 +554,9 @@ export const SaleForm = ({ saleSelected = null, initialData = null, onSuccess = 
                 response = await saveSale(payload);
                 const saved = response.data || payload;
 
+                // 🚀 Inmediatamente refrescar catálogo de productos con los nuevos stocks descontados
+                await refreshProductsCatalog();
+
                 // Guardar venta creada para el modal y ticket
                 setCreatedSaleData({
                     ...saved,
@@ -496,16 +588,25 @@ export const SaleForm = ({ saleSelected = null, initialData = null, onSuccess = 
     const handleSuccessPrint = () => {
         setIsSuccessModalOpen(false);
         setIsTicketModalOpen(true);
+        // Resetear carrito de venta para la siguiente
+        setFormState((prev) => ({
+            ...initialFormState,
+            receiptType: prev.receiptType,
+            series: prev.series,
+        }));
+        refreshProductsCatalog();
     };
 
     // Manejador del botón "Continuar sin imprimir"
-    const handleSuccessContinue = () => {
+    const handleSuccessContinue = async () => {
         setIsSuccessModalOpen(false);
         // Resetear carrito y preparar nueva venta
         setFormState((prev) => ({
             ...initialFormState,
             receiptType: prev.receiptType,
+            series: prev.series,
         }));
+        await refreshProductsCatalog();
     };
 
     // Filtrar catálogo de productos
@@ -658,7 +759,9 @@ export const SaleForm = ({ saleSelected = null, initialData = null, onSuccess = 
                                         </tr>
                                     ) : (
                                         paginatedCatalog.map((prod) => {
-                                            const stockVal = Number(prod.stockReal !== undefined ? prod.stockReal : (prod.stock || 0));
+                                            const origStock = Number(prod.stockReal !== undefined ? prod.stockReal : (prod.stock || 0));
+                                            const inCartUnits = getCartUnitsForProduct(prod.idProducto || prod.id);
+                                            const stockVal = Math.max(0, origStock - inCartUnits);
                                             const priceVal = Number(prod.precioVenta || 0);
                                             const presList = prod.presentaciones || [];
                                             const priceDisplay = presList.length > 1
@@ -696,10 +799,17 @@ export const SaleForm = ({ saleSelected = null, initialData = null, onSuccess = 
                                                         </span>
                                                     </td>
 
-                                                    {/* STOCK */}
+                                                    {/* STOCK DISPONIBLE (DESCONTANDO LO QUE ESTÁ EN EL CARRITO) */}
                                                     <td className="py-3 px-4 text-center">
-                                                        <span className={`font-black text-xs ${stockVal <= 5 ? "text-rose-600" : stockVal <= 15 ? "text-amber-600" : "text-emerald-700"
-                                                            }`}>
+                                                        <span className={`font-black text-xs ${
+                                                            stockVal <= 0
+                                                                ? "text-slate-400"
+                                                                : stockVal <= 5
+                                                                    ? "text-rose-600"
+                                                                    : stockVal <= 15
+                                                                        ? "text-amber-600"
+                                                                        : "text-emerald-700"
+                                                        }`}>
                                                             {stockVal}
                                                         </span>
                                                     </td>
@@ -726,10 +836,15 @@ export const SaleForm = ({ saleSelected = null, initialData = null, onSuccess = 
                                                     <td className="py-3 px-4 text-right">
                                                         <button
                                                             type="button"
+                                                            disabled={stockVal <= 0}
                                                             onClick={() => handleOpenPresentationModal(prod)}
-                                                            className="px-4 py-1.5 bg-[#005f60] hover:bg-[#004e4f] text-white text-xs font-bold rounded-xl shadow-sm transition-all"
+                                                            className={`px-4 py-1.5 text-xs font-bold rounded-xl shadow-sm transition-all ${
+                                                                stockVal <= 0
+                                                                    ? "bg-slate-200 text-slate-400 cursor-not-allowed"
+                                                                    : "bg-[#005f60] hover:bg-[#004e4f] text-white hover:shadow"
+                                                            }`}
                                                         >
-                                                            Agregar
+                                                            {stockVal <= 0 ? "Agotado" : "Agregar"}
                                                         </button>
                                                     </td>
                                                 </tr>
@@ -830,31 +945,54 @@ export const SaleForm = ({ saleSelected = null, initialData = null, onSuccess = 
                                                     </div>
                                                 </td>
 
-                                                {/* CANTIDAD CON BOTONES +/- */}
+                                                {/* CANTIDAD CON BOTONES +/- Y LÍMITE DE STOCK */}
                                                 <td className="py-3 px-4 text-center">
-                                                    <div className="inline-flex items-center border border-slate-200 rounded-xl overflow-hidden bg-slate-50 shadow-inner">
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => handleUpdateQuantity(idx, -1)}
-                                                            className="w-7 h-7 flex items-center justify-center font-bold text-slate-600 hover:bg-slate-200 transition-colors"
-                                                        >
-                                                            -
-                                                        </button>
-                                                        <input
-                                                            type="number"
-                                                            min="1"
-                                                            value={item.presentationQuantity}
-                                                            onChange={(e) => handleSetQuantityDirect(idx, e.target.value)}
-                                                            className="w-10 text-center bg-transparent font-black text-xs text-slate-800 focus:outline-none"
-                                                        />
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => handleUpdateQuantity(idx, 1)}
-                                                            className="w-7 h-7 flex items-center justify-center font-bold text-slate-600 hover:bg-slate-200 transition-colors"
-                                                        >
-                                                            +
-                                                        </button>
-                                                    </div>
+                                                    {(() => {
+                                                        const prod = availableProducts.find((p) => (p.idProducto || p.id) === item.productId);
+                                                        const origStock = prod ? Number(prod.stockReal !== undefined ? prod.stockReal : (prod.stock || 0)) : 999999;
+                                                        const otherUnitsInCart = formState.details
+                                                            .filter((d, i) => i !== idx && d.productId === item.productId)
+                                                            .reduce((sum, d) => sum + Number(d.baseUnitsQuantity != null ? d.baseUnitsQuantity : d.presentationQuantity || 0), 0);
+                                                        const baseRatio = item.baseUnitsQuantity > 0 && item.presentationQuantity > 0
+                                                            ? Math.round(item.baseUnitsQuantity / item.presentationQuantity)
+                                                            : 1;
+                                                        const maxPresQty = Math.max(1, Math.floor((origStock - otherUnitsInCart) / baseRatio));
+                                                        const isAtMaxStock = item.presentationQuantity >= maxPresQty;
+
+                                                        return (
+                                                            <div className="inline-flex items-center border border-slate-200 rounded-xl overflow-hidden bg-slate-50 shadow-inner">
+                                                                <button
+                                                                    type="button"
+                                                                    disabled={item.presentationQuantity <= 1}
+                                                                    onClick={() => handleUpdateQuantity(idx, -1)}
+                                                                    className="w-7 h-7 flex items-center justify-center font-bold text-slate-600 hover:bg-slate-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                                                                >
+                                                                    -
+                                                                </button>
+                                                                <input
+                                                                    type="number"
+                                                                    min="1"
+                                                                    max={maxPresQty}
+                                                                    value={item.presentationQuantity}
+                                                                    onChange={(e) => handleSetQuantityDirect(idx, e.target.value)}
+                                                                    className="w-10 text-center bg-transparent font-black text-xs text-slate-800 focus:outline-none"
+                                                                />
+                                                                <button
+                                                                    type="button"
+                                                                    disabled={isAtMaxStock}
+                                                                    onClick={() => handleUpdateQuantity(idx, 1)}
+                                                                    className={`w-7 h-7 flex items-center justify-center font-bold transition-colors ${
+                                                                        isAtMaxStock
+                                                                            ? "text-slate-300 bg-slate-100 cursor-not-allowed"
+                                                                            : "text-slate-600 hover:bg-slate-200"
+                                                                    }`}
+                                                                    title={isAtMaxStock ? "Stock máximo alcanzado" : "Aumentar cantidad"}
+                                                                >
+                                                                    +
+                                                                </button>
+                                                            </div>
+                                                        );
+                                                    })()}
                                                 </td>
 
                                                 {/* PRECIO UNITARIO */}
@@ -883,17 +1021,7 @@ export const SaleForm = ({ saleSelected = null, initialData = null, onSuccess = 
                                             </tr>
                                         ))}
                                     </tbody>
-                                    <tfoot>
-                                        <tr className="border-t-2 border-slate-200 bg-slate-50/70 text-xs">
-                                            <td colSpan={3} className="py-3 px-4 text-right uppercase tracking-wider text-[11px] font-extrabold text-slate-500">
-                                                TOTAL DEL CARRITO:
-                                            </td>
-                                            <td className="py-3 px-4 text-right font-black text-sm text-[#005f60]">
-                                                S/ {totalVenta.toFixed(2)}
-                                            </td>
-                                            <td></td>
-                                        </tr>
-                                    </tfoot>
+
                                 </table>
                             </div>
                         )}
@@ -1158,6 +1286,7 @@ export const SaleForm = ({ saleSelected = null, initialData = null, onSuccess = 
                     setSelectedProductForModal(null);
                 }}
                 product={selectedProductForModal}
+                availableStock={getAvailableStockForProduct(selectedProductForModal)}
                 onSelectPresentation={handleAddPresentationToCart}
             />
 
@@ -1172,7 +1301,15 @@ export const SaleForm = ({ saleSelected = null, initialData = null, onSuccess = 
             {/* MODAL PLANTILLA COMPROBANTE TÉRMICO (Imagen 5) */}
             <ReceiptTicketModal
                 isOpen={isTicketModalOpen}
-                onClose={() => setIsTicketModalOpen(false)}
+                onClose={() => {
+                    setIsTicketModalOpen(false);
+                    setFormState((prev) => ({
+                        ...initialFormState,
+                        receiptType: prev.receiptType,
+                        series: prev.series,
+                    }));
+                    refreshProductsCatalog();
+                }}
                 saleData={createdSaleData}
             />
         </div>

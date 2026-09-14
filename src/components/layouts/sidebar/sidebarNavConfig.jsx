@@ -34,7 +34,7 @@ export const navItems = [
   {
     type: "accordion",
     id: "productos",
-    title: "Stock de Productos",
+    title: "Inventario",
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="m7.5 4.27 9 5.15" />
@@ -49,6 +49,8 @@ export const navItems = [
       { label: "Laboratorios", path: "/laboratories" },
       { label: "Proveedores", path: "/suppliers" },
       { label: "Ubicaciones", path: "/locations" },
+      { label: "Ajustes de Inventario", path: "/inventory-adjustments" },
+
     ],
   },
   {
@@ -63,10 +65,9 @@ export const navItems = [
       </svg>
     ),
     subItems: [
-      { label: "Ajustes Inventarios", path: "/inventory-adjustments" },
-      { label: "Clientes", path: "/clients", end: true },
-      { label: "Historial de Ventas", path: "/sales", end: true },
       { label: "Nueva Venta", path: "/sales/register" },
+      { label: "Historial de Ventas", path: "/sales", end: true },
+      { label: "Clientes", path: "/clients", end: true },
     ],
   },
   {
@@ -80,11 +81,12 @@ export const navItems = [
       </svg>
     ),
     subItems: [
-      { label: "Condiciones Pagos", path: "/payment-terms" },
-      { label: "Formas Pagos", path: "/payment-methods" },
-      { label: "Movimientos Cajas", path: "/cash-movements" },
-      { label: "Gestión de cobranzas", path: "/collections" },
       { label: "Sesiones Cajas", path: "/cash-sessions" },
+      { label: "Movimientos Cajas", path: "/cash-movements" },
+      { label: "Formas Pagos", path: "/payment-methods" },
+      { label: "Condiciones Pagos", path: "/payment-terms" },
+      { label: "Gestión de cobranzas", path: "/collections" },
+
     ],
   },
   {
@@ -114,12 +116,13 @@ export const navItems = [
   },
   {
     type: "link",
-    id: "empresa",
-    title: "Empresa",
-    path: "/company",
+    id: "avisos-alertas",
+    title: "Avisos y Alertas",
+    path: "/avisos-alertas",
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M19 21V5a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v5m-4 0h4" />
+        <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
+        <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
       </svg>
     ),
   },
@@ -134,7 +137,9 @@ export const navItems = [
       </svg>
     ),
     subItems: [
-      { label: "Empresa", path: "/company" },
+      { label: "Configurar Empresa", path: "/company" },
+      { label: "Configurar Alertas", path: "/settings/alerts" },
+      { label: "Configurar Ticket", path: "/settings/ticket" },
     ],
   },
   {

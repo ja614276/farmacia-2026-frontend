@@ -6,6 +6,7 @@ export const PresentationLotModal = ({
     isOpen,
     onClose,
     product,
+    availableStock,
     onSelectPresentation,
 }) => {
     const [lots, setLots] = useState([]);
@@ -44,15 +45,26 @@ export const PresentationLotModal = ({
                     setIsLoadingLots(false);
                 });
 
-            // Seleccionar por defecto la primera presentación o unidad base
+            // Seleccionar por defecto la primera presentación o unidad base disponible
             const presList = getProductPresentations(product);
-            if (presList.length > 0) {
+            const stockRemaining = availableStock !== undefined
+                ? availableStock
+                : Number(product.stockReal !== undefined ? product.stockReal : (product.stock || 0));
+
+            const firstAvailable = presList.find((p) => {
+                const bUnits = Number(p.cantidadUnidades || 1);
+                return bUnits > 0 && Math.floor(stockRemaining / bUnits) > 0;
+            });
+
+            if (firstAvailable) {
+                setSelectedPresentation(firstAvailable);
+            } else if (presList.length > 0) {
                 setSelectedPresentation(presList[0]);
             } else {
                 setSelectedPresentation(null);
             }
         }
-    }, [isOpen, product]);
+    }, [isOpen, product, availableStock]);
 
     if (!isOpen || !product) return null;
 
@@ -73,10 +85,15 @@ export const PresentationLotModal = ({
     }
 
     const presentations = getProductPresentations(product);
-    const totalStock = Number(product.stockReal !== undefined ? product.stockReal : (product.stock || 0));
+    const totalStock = availableStock !== undefined
+        ? availableStock
+        : Number(product.stockReal !== undefined ? product.stockReal : (product.stock || 0));
 
     const handleConfirm = (pres = selectedPresentation) => {
         if (!pres) return;
+        const baseUnits = Number(pres.cantidadUnidades || 1);
+        if (totalStock < baseUnits) return;
+
         onSelectPresentation({
             product,
             presentation: pres,
@@ -140,29 +157,45 @@ export const PresentationLotModal = ({
                                 const baseUnits = Number(pres.cantidadUnidades || 1);
                                 const availableStockForPres = baseUnits > 0 ? Math.floor(totalStock / baseUnits) : totalStock;
                                 const price = Number(pres.precioVenta || product.precioVenta || 0);
+                                const isOutOfStock = availableStockForPres <= 0;
 
                                 return (
                                     <div
                                         key={pres.idPresentacion || idx}
                                         onClick={() => {
-                                            setSelectedPresentation(pres);
+                                            if (!isOutOfStock) {
+                                                setSelectedPresentation(pres);
+                                            }
                                         }}
-                                        onDoubleClick={() => handleConfirm(pres)}
-                                        className={`cursor-pointer p-4 rounded-2xl border transition-all flex items-center justify-between group ${
-                                            isSelected
-                                                ? "border-teal-500 bg-teal-50/40 ring-2 ring-teal-500/20 shadow-sm"
-                                                : "border-slate-200 hover:border-teal-300 hover:bg-slate-50/70"
+                                        onDoubleClick={() => {
+                                            if (!isOutOfStock) {
+                                                handleConfirm(pres);
+                                            }
+                                        }}
+                                        className={`p-4 rounded-2xl border transition-all flex items-center justify-between group ${
+                                            isOutOfStock
+                                                ? "opacity-50 border-slate-200 bg-slate-50 cursor-not-allowed"
+                                                : isSelected
+                                                    ? "cursor-pointer border-teal-500 bg-teal-50/40 ring-2 ring-teal-500/20 shadow-sm"
+                                                    : "cursor-pointer border-slate-200 hover:border-teal-300 hover:bg-slate-50/70"
                                         }`}
                                     >
                                         <div>
                                             <div className="flex items-center gap-2">
                                                 <span className={`font-black text-sm tracking-wide uppercase ${
-                                                    isSelected ? "text-teal-800" : "text-slate-800"
+                                                    isOutOfStock
+                                                        ? "text-slate-400"
+                                                        : isSelected ? "text-teal-800" : "text-slate-800"
                                                 }`}>
                                                     {pres.nombrePresentacion || "UNIDAD"}
                                                 </span>
-                                                {isSelected && (
+                                                {isSelected && !isOutOfStock && (
                                                     <span className="w-2 h-2 rounded-full bg-teal-600" />
+                                                )}
+                                                {isOutOfStock && (
+                                                    <span className="text-[10px] bg-rose-50 text-rose-600 font-bold px-1.5 py-0.5 rounded border border-rose-200">
+                                                        AGOTADO
+                                                    </span>
                                                 )}
                                             </div>
                                             <span className="text-[11px] text-slate-500 block mt-0.5">
@@ -171,11 +204,13 @@ export const PresentationLotModal = ({
                                         </div>
 
                                         <div className="text-right">
-                                            <div className="font-extrabold text-base text-teal-700">
+                                            <div className={`font-extrabold text-base ${isOutOfStock ? "text-slate-400" : "text-teal-700"}`}>
                                                 S/ {price.toFixed(2)}
                                             </div>
-                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight block">
-                                                STOCK: {availableStockForPres} DISP.
+                                            <span className={`text-[10px] font-bold uppercase tracking-tight block ${
+                                                isOutOfStock ? "text-rose-500" : "text-slate-400"
+                                            }`}>
+                                                {isOutOfStock ? "SIN STOCK DISP." : `STOCK: ${availableStockForPres} DISP.`}
                                             </span>
                                         </div>
                                     </div>
@@ -274,16 +309,27 @@ export const PresentationLotModal = ({
                     >
                         Cerrar
                     </button>
-                    <button
-                        type="button"
-                        onClick={() => handleConfirm()}
-                        className="px-6 py-2.5 text-xs font-bold text-white bg-[#005f60] hover:bg-[#004e4f] rounded-xl shadow-sm hover:shadow transition-all flex items-center gap-1.5"
-                    >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                        </svg>
-                        <span>Agregar al Carrito</span>
-                    </button>
+                    {(() => {
+                        const selUnits = Number(selectedPresentation?.cantidadUnidades || 1);
+                        const isPresDisabled = !selectedPresentation || (selUnits > 0 && Math.floor(totalStock / selUnits) <= 0);
+                        return (
+                            <button
+                                type="button"
+                                disabled={isPresDisabled}
+                                onClick={() => handleConfirm()}
+                                className={`px-6 py-2.5 text-xs font-bold rounded-xl shadow-sm transition-all flex items-center gap-1.5 ${
+                                    isPresDisabled
+                                        ? "bg-slate-200 text-slate-400 cursor-not-allowed"
+                                        : "text-white bg-[#005f60] hover:bg-[#004e4f] hover:shadow"
+                                }`}
+                            >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                </svg>
+                                <span>{isPresDisabled ? "Sin Stock" : "Agregar al Carrito"}</span>
+                            </button>
+                        );
+                    })()}
                 </div>
             </div>
         </div>
@@ -294,5 +340,6 @@ PresentationLotModal.propTypes = {
     isOpen: PropTypes.bool.isRequired,
     onClose: PropTypes.func.isRequired,
     product: PropTypes.object,
+    availableStock: PropTypes.number,
     onSelectPresentation: PropTypes.func.isRequired,
 };

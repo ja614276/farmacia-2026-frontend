@@ -1,18 +1,91 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { getAllLots, getSettings } from "../services/SettingsService.js";
 
 export const DashboardPage = () => {
   const navigate = useNavigate();
   const [cajaAbierta, setCajaAbierta] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // Datos mock para KPIs
-  const [kpis] = useState({
+  // Resumen específico de alertas por color
+  const [alertSummary, setAlertSummary] = useState({
+    total: 0,
+    lowStock: 0,
+    expiring: 0,
+    both: 0,
+    expired: 0,
+  });
+
+  // Datos de KPIs sincronizados con alertas reales
+  const [kpis, setKpis] = useState({
     stockBajo: 0,
     lotesVencer: 0,
     clientesDeuda: 0,
     recetasVencen: 0,
   });
+
+  const loadAlertMetrics = useCallback(async () => {
+    try {
+      const [settings, lots] = await Promise.all([getSettings(), getAllLots()]);
+      const now = new Date();
+      now.setHours(0, 0, 0, 0);
+      const expDaysLimit = settings?.alertExpirationDays ?? 30;
+      const stockPercentLimit = settings?.alertMinStockPercent ?? 20;
+
+      let lowStock = 0;
+      let expiring = 0;
+      let both = 0;
+      let expired = 0;
+
+      if (Array.isArray(lots)) {
+        lots.forEach((lot) => {
+          let daysUntilExp = null;
+          let isExp = false;
+          let isExpSoon = false;
+
+          if (lot.fechaVencimiento) {
+            const cleanDateStr = String(lot.fechaVencimiento).replace(" ", "T");
+            const expDate = new Date(cleanDateStr);
+            if (!isNaN(expDate.getTime())) {
+              const diffTime = expDate.getTime() - now.getTime();
+              daysUntilExp = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+              if (daysUntilExp < 0) isExp = true;
+              else if (daysUntilExp <= expDaysLimit) isExpSoon = true;
+            }
+          }
+
+          const cantInicial = Number(lot.cantidadInicial) || 1;
+          const cantActual = Number(lot.cantidadActual) || 0;
+          const stockPercent = Math.max(0, Math.round((cantActual / cantInicial) * 100));
+          const isLowStock = stockPercent <= stockPercentLimit;
+
+          if (isExp) {
+            expired++;
+          } else if (isExpSoon && isLowStock) {
+            both++;
+          } else if (isExpSoon) {
+            expiring++;
+          } else if (isLowStock) {
+            lowStock++;
+          }
+        });
+      }
+
+      const total = lowStock + expiring + both + expired;
+      setAlertSummary({ total, lowStock, expiring, both, expired });
+      setKpis((prev) => ({
+        ...prev,
+        stockBajo: lowStock + both,
+        lotesVencer: expiring + both + expired,
+      }));
+    } catch (e) {
+      console.warn("Could not load alert metrics in dashboard", e);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadAlertMetrics();
+  }, [loadAlertMetrics]);
 
   // Datos mock para gráfica de tendencia de ventas (7 días)
   const salesData = [
@@ -63,7 +136,9 @@ export const DashboardPage = () => {
 
   const handleRefresh = () => {
     setLoading(true);
-    setTimeout(() => setLoading(false), 600);
+    loadAlertMetrics().finally(() => {
+      setTimeout(() => setLoading(false), 500);
+    });
   };
 
   const quickActions = [
@@ -230,12 +305,20 @@ export const DashboardPage = () => {
       {/* 2. Cuatro Tarjetas KPI */}
       <div className="row g-3 mb-4">
         {/* Stock Bajo */}
-        <div className="col-12 col-sm-6 col-xl-3">
+        <div
+          className="col-12 col-sm-6 col-xl-3"
+          style={{ cursor: "pointer" }}
+          onClick={() => navigate("/avisos-alertas")}
+          title="Ver alertas de stock bajo"
+        >
           <div className="card-kpi bg-white p-3 rounded-3 shadow-sm border border-kpi-yellow h-100 d-flex justify-content-between align-items-start">
             <div>
-              <small className="text-secondary fw-bold text-uppercase d-block" style={{ fontSize: "0.72rem" }}>
-                Stock Bajo
-              </small>
+              <div className="d-flex align-items-center gap-1.5 mb-1">
+                <small className="text-secondary fw-bold text-uppercase d-block" style={{ fontSize: "0.72rem" }}>
+                  Stock Bajo
+                </small>
+                <span className="badge bg-warning text-dark small" style={{ fontSize: "0.62rem" }}>Ver alertas →</span>
+              </div>
               <h3 className="m-0 fw-bold text-dark my-1">{kpis.stockBajo}</h3>
               <small className="text-muted" style={{ fontSize: "0.75rem" }}>
                 Productos críticos
@@ -252,12 +335,20 @@ export const DashboardPage = () => {
         </div>
 
         {/* Lotes por Vencer */}
-        <div className="col-12 col-sm-6 col-xl-3">
+        <div
+          className="col-12 col-sm-6 col-xl-3"
+          style={{ cursor: "pointer" }}
+          onClick={() => navigate("/avisos-alertas")}
+          title="Ver alertas de vencimiento"
+        >
           <div className="card-kpi bg-white p-3 rounded-3 shadow-sm border border-kpi-red h-100 d-flex justify-content-between align-items-start">
             <div>
-              <small className="text-secondary fw-bold text-uppercase d-block" style={{ fontSize: "0.72rem" }}>
-                Lotes por Vencer
-              </small>
+              <div className="d-flex align-items-center gap-1.5 mb-1">
+                <small className="text-secondary fw-bold text-uppercase d-block" style={{ fontSize: "0.72rem" }}>
+                  Lotes por Vencer
+                </small>
+                <span className="badge bg-danger text-white small" style={{ fontSize: "0.62rem" }}>Ver alertas →</span>
+              </div>
               <h3 className="m-0 fw-bold text-dark my-1">{kpis.lotesVencer}</h3>
               <small className="text-muted" style={{ fontSize: "0.75rem" }}>
                 Próximos 30 días
@@ -462,6 +553,90 @@ export const DashboardPage = () => {
               </div>
             </div>
           ))}
+        </div>
+      </div>
+
+      {/* 5. Acceso Rápido al Centro de Avisos y Alertas */}
+      <div className="bg-white rounded-3 border p-3.5 shadow-sm mb-4">
+        <div className="d-flex flex-wrap align-items-center justify-content-between gap-3">
+          <div className="d-flex align-items-center gap-3">
+            <div
+              className="rounded-3 p-2.5 d-flex align-items-center justify-content-center"
+              style={{ backgroundColor: "#e6f4f1", width: "48px", height: "48px" }}
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#005f60" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
+                <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
+              </svg>
+            </div>
+            <div>
+              <div className="d-flex align-items-center gap-2 flex-wrap">
+                <h6 className="m-0 fw-bold text-dark" style={{ fontSize: "1rem" }}>
+                  Avisos y Alertas del Sistema
+                </h6>
+                <span className={`badge ${alertSummary.total > 0 ? "bg-danger" : "bg-success"} rounded-pill px-2.5 py-1`}>
+                  {alertSummary.total} {alertSummary.total === 1 ? "alerta activa" : "alertas activas"}
+                </span>
+              </div>
+              <p className="text-secondary small m-0 mt-1">
+                Monitoreo continuo de inventario: productos con stock bajo, fechas próximas de caducidad y medicamentos vencidos.
+              </p>
+            </div>
+          </div>
+
+          <div className="d-flex align-items-center gap-2 flex-wrap">
+            <button
+              type="button"
+              className="btn btn-sm d-flex align-items-center gap-2 fw-semibold px-3 py-2 shadow-sm text-white"
+              style={{ backgroundColor: "#005f60", borderRadius: "8px" }}
+              onClick={() => navigate("/avisos-alertas")}
+            >
+              <span>Abrir Centro de Alertas</span>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        {/* Resumen cromático de alertas */}
+        <div className="row g-2.5 mt-2 pt-2 border-top">
+          <div className="col-6 col-md-3" onClick={() => navigate("/avisos-alertas")} style={{ cursor: "pointer" }} title="Ver lotes con Stock Bajo">
+            <div className="p-2.5 rounded-3 border d-flex align-items-center justify-content-between" style={{ backgroundColor: "#fffbeb", borderColor: "#fde68a" }}>
+              <div className="d-flex align-items-center gap-2">
+                <span style={{ width: "9px", height: "9px", borderRadius: "50%", backgroundColor: "#f59e0b", display: "inline-block" }}></span>
+                <span className="small fw-semibold text-dark">Stock Bajo</span>
+              </div>
+              <span className="fw-bold" style={{ color: "#b45309" }}>{alertSummary.lowStock}</span>
+            </div>
+          </div>
+          <div className="col-6 col-md-3" onClick={() => navigate("/avisos-alertas")} style={{ cursor: "pointer" }} title="Ver lotes Por Vencer">
+            <div className="p-2.5 rounded-3 border d-flex align-items-center justify-content-between" style={{ backgroundColor: "#fef2f2", borderColor: "#fecaca" }}>
+              <div className="d-flex align-items-center gap-2">
+                <span style={{ width: "9px", height: "9px", borderRadius: "50%", backgroundColor: "#ef4444", display: "inline-block" }}></span>
+                <span className="small fw-semibold text-dark">Por Vencer</span>
+              </div>
+              <span className="fw-bold" style={{ color: "#dc2626" }}>{alertSummary.expiring}</span>
+            </div>
+          </div>
+          <div className="col-6 col-md-3" onClick={() => navigate("/avisos-alertas")} style={{ cursor: "pointer" }} title="Ver lotes con Doble Alerta">
+            <div className="p-2.5 rounded-3 border d-flex align-items-center justify-content-between" style={{ backgroundColor: "#faf5ff", borderColor: "#e9d5ff" }}>
+              <div className="d-flex align-items-center gap-2">
+                <span style={{ width: "9px", height: "9px", borderRadius: "50%", backgroundColor: "#8b5cf6", display: "inline-block" }}></span>
+                <span className="small fw-semibold text-dark">Doble Alerta</span>
+              </div>
+              <span className="fw-bold" style={{ color: "#7c3aed" }}>{alertSummary.both}</span>
+            </div>
+          </div>
+          <div className="col-6 col-md-3" onClick={() => navigate("/avisos-alertas")} style={{ cursor: "pointer" }} title="Ver lotes Ya Vencidos">
+            <div className="p-2.5 rounded-3 border d-flex align-items-center justify-content-between" style={{ backgroundColor: "#f8fafc", borderColor: "#cbd5e1" }}>
+              <div className="d-flex align-items-center gap-2">
+                <span style={{ width: "9px", height: "9px", borderRadius: "50%", backgroundColor: "#0f172a", display: "inline-block" }}></span>
+                <span className="small fw-semibold text-dark">Ya Vencidos</span>
+              </div>
+              <span className="fw-bold text-dark">{alertSummary.expired}</span>
+            </div>
+          </div>
         </div>
       </div>
 

@@ -66,6 +66,10 @@ import { InventoryAdjustmentRegisterPage } from "../pages/InventoryAdjustmentReg
 
 import { PurchaseRegisterPage } from "../pages/PurchaseRegisterPage";
 import { CompanyPage } from "../pages/CompanyPage";
+import { AlertSettingsPage } from "../pages/AlertSettingsPage.jsx";
+import { AlertsPage } from "../pages/AlertsPage.jsx";
+import { TicketSettingsPage } from "../pages/TicketSettingsPage.jsx";
+import { ReportsPage } from "../pages/ReportsPage.jsx";
 
 export const UserRoutes = () => {
   const { isAdmin } = useSelector((state) => state.auth);
@@ -84,6 +88,8 @@ export const UserRoutes = () => {
       >
         <Routes>
           <Route path="dashboard" element={<DashboardPage />} />
+          <Route path="avisos-alertas" element={<AlertsPage />} />
+          <Route path="alerts" element={<Navigate to="/avisos-alertas" replace />} />
           <Route path="profile" element={<ProfilePage />} />
           <Route path="users" element={<UsersPage />} />
           <Route path="products" element={<ProductsPage />} />
@@ -143,6 +149,19 @@ export const UserRoutes = () => {
             element={<PurchaseRegisterPage />}
           />
           <Route path="company" element={<CompanyPage />} />
+          
+          {/* Rutas separadas para Alertas y Tickets */}
+          <Route path="settings/alerts" element={<AlertSettingsPage />} />
+          <Route path="settings/ticket" element={<TicketSettingsPage />} />
+          <Route path="settings" element={<Navigate to="/settings/alerts" replace />} />
+          <Route path="configuracion/alertas" element={<AlertSettingsPage />} />
+          <Route path="configuracion/ticket" element={<TicketSettingsPage />} />
+          <Route path="configuracion" element={<Navigate to="/settings/alerts" replace />} />
+
+          {/* Reportes y Business Intelligence */}
+          <Route path="reports" element={<ReportsPage />} />
+          <Route path="report" element={<ReportsPage />} />
+          <Route path="reportes" element={<ReportsPage />} />
 
           {/* Rutas administrativas protegidas */}
           {isAdmin && (
