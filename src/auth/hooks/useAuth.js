@@ -3,6 +3,7 @@ import { loginUser } from "../services/authService";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { onLogin, onLogout } from "../../store/slices/auth/authSlice";
+import { clearStorageSession } from "../utils/tokenUtils";
 
 export const useAuth = () => {
   const dispatch = useDispatch();
@@ -14,21 +15,23 @@ export const useAuth = () => {
       const response = await loginUser({ username, password });
       const token = response.data.token;
       const claims = JSON.parse(window.atob(token.split(".")[1]));
-      console.log(claims);
 
       const user = { username: claims.sub };
       dispatch(onLogin({ user, isAdmin: claims.isAdmin }));
 
-      // Guardar en localStorage en lugar de sessionStorage
+      // Guardar en localStorage para persistencia de 7 días
       localStorage.setItem(
-          "login",
-          JSON.stringify({
-            isAuth: true,
-            isAdmin: claims.isAdmin,
-            user,
-          })
+        "login",
+        JSON.stringify({
+          isAuth: true,
+          isAdmin: claims.isAdmin,
+          user,
+        })
       );
       localStorage.setItem("token", `Bearer ${token}`);
+
+      // Limpiar cualquier residuo previo en sessionStorage
+      sessionStorage.clear();
 
       navigate("/users");
     } catch (e) {
@@ -44,9 +47,7 @@ export const useAuth = () => {
 
   const handlerLogout = () => {
     dispatch(onLogout());
-    localStorage.removeItem("token");
-    localStorage.removeItem("login");
-    localStorage.clear(); // Limpia todo el almacenamiento local
+    clearStorageSession();
   };
 
   return {

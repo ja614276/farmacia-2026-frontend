@@ -14,6 +14,7 @@ import {
 } from "../store/slices/products/productsSlice.js";
 import { useAuth } from "../auth/hooks/useAuth.js";
 import { findAll, save, update, remove } from "../services/ProductService.js"; // ✅ Servicio correcto para productos
+import { isTokenExpired, getStoredToken } from "../auth/utils/tokenUtils.js";
 
 export const useProducts = () => {
     const { products, productSelected, visibleForm, errors, isLoading } = useSelector(state => state.products);
@@ -33,8 +34,16 @@ export const useProducts = () => {
             console.log(result);
             dispatch(loadingProducts(result.data)); // ✅ Usamos la acción correcta
         } catch (error) {
+            if (!error.response) {
+                console.warn("⚠️ [useProducts] Microcorte o error de conexión al cargar productos:", error.message);
+                return;
+            }
             if (error.response?.status === 401) {
-                handlerLogout();
+                if (isTokenExpired(getStoredToken())) {
+                    handlerLogout();
+                } else {
+                    console.warn("⚠️ [useProducts] 401 recibido pero el token sigue vigente (7 días). Conservando sesión.");
+                }
             } else {
                 console.error("Error al obtener productos:", error);
                 Swal.fire("Error", "No se pudieron cargar los productos", "error");
@@ -67,7 +76,11 @@ export const useProducts = () => {
             if (error.response?.status === 400) {
                 dispatch(loadingError(error.response.data));
             } else if (error.response?.status === 401) {
-                handlerLogout();
+                if (isTokenExpired(getStoredToken())) {
+                    handlerLogout();
+                } else {
+                    console.warn("⚠️ [useProducts] 401 recibido al guardar producto pero token sigue vigente.");
+                }
             } else {
                 Swal.fire("Error", "Hubo un problema al guardar el producto", "error");
             }
@@ -94,7 +107,11 @@ export const useProducts = () => {
                 } catch (error) {
                     const errorMsg = error.response?.data?.message || error.message || "Hubo un problema al eliminar el producto";
                     if (error.response?.status === 401) {
-                        handlerLogout();
+                        if (isTokenExpired(getStoredToken())) {
+                            handlerLogout();
+                        } else {
+                            console.warn("⚠️ [useProducts] 401 recibido al eliminar producto pero token sigue vigente.");
+                        }
                     } else {
                         Swal.fire("Error al eliminar", errorMsg, "error");
                     }

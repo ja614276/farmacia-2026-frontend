@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import axios from "axios";
+import { getAuthHeaders as getTokenHeaders } from "../auth/utils/tokenUtils";
 
 export const PaymentMethodsPage = () => {
   const [paymentMethods, setPaymentMethods] = useState([]);
@@ -24,38 +25,8 @@ export const PaymentMethodsPage = () => {
   // Base URL de la API
   const baseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
 
-  // Función para obtener headers con token JWT
-  const getAuthHeaders = useCallback(() => {
-    let rawToken =
-      localStorage.getItem("token") ||
-      sessionStorage.getItem("token") ||
-      localStorage.getItem("jwt") ||
-      sessionStorage.getItem("jwt");
-
-    if (!rawToken) {
-      const storedLogin =
-        sessionStorage.getItem("login") || localStorage.getItem("login");
-      if (storedLogin) {
-        try {
-          const parsed = JSON.parse(storedLogin);
-          rawToken = parsed.token || parsed.jwt;
-        } catch (e) {
-          console.error("Error parseando storage:", e);
-        }
-      }
-    }
-
-    if (!rawToken) return { "Content-Type": "application/json" };
-
-    const authHeader = rawToken.startsWith("Bearer ")
-      ? rawToken
-      : `Bearer ${rawToken}`;
-
-    return {
-      Authorization: authHeader,
-      "Content-Type": "application/json",
-    };
-  }, []);
+  // Función para obtener headers con token JWT desde LocalStorage
+  const getAuthHeaders = useCallback(() => getTokenHeaders(), []);
 
   // 1. READ: Obtener todas las formas de pago del backend
   const fetchPaymentMethods = useCallback(async () => {

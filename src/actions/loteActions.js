@@ -7,20 +7,12 @@ import {
     setLoading, 
     setError 
 } from "../slices/lots/lotsSlice.js";
+import { getAuthHeaders as getTokenHeaders } from "../auth/utils/tokenUtils.js";
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
 const API_URL = `${BASE_URL}/lots`;
 
-const getAuthHeaders = () => {
-    let token = localStorage.getItem("token") || sessionStorage.getItem("token");
-    if (!token) return { "Content-Type": "application/json" };
-
-    const authHeader = token.startsWith("Bearer ") ? token : `Bearer ${token}`;
-    return {
-        "Content-Type": "application/json",
-        "Authorization": authHeader,
-    };
-};
+const getAuthHeaders = () => getTokenHeaders();
 
 // 1. Obtener lotes por ID de Producto
 export const fetchLotsByProduct = (productId) => async (dispatch) => {

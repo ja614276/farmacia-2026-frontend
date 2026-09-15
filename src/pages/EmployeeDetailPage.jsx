@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import axios from "axios";
+import { getStoredToken } from "../auth/utils/tokenUtils";
 
 export const EmployeeDetailPage = () => {
   const { id } = useParams();
@@ -16,15 +17,13 @@ export const EmployeeDetailPage = () => {
     const fetchEmployee = async () => {
       try {
         setLoading(true);
-        const token = sessionStorage.getItem("token");
-        const authHeader = token?.startsWith("Bearer ")
-          ? token
-          : `Bearer ${token}`;
+        const token = getStoredToken();
+        const baseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
 
         const response = await axios.get(
-          `http://localhost:8080/employees/${id}`,
+          `${baseUrl}/employees/${id}`,
           {
-            headers: token ? { Authorization: authHeader } : {},
+            headers: token ? { Authorization: token } : {},
           }
         );
         setEmployee(response.data);

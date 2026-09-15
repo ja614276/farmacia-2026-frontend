@@ -4,6 +4,7 @@ import {findAll, remove, save, update} from "../services/UserService.js";
 import { useDispatch, useSelector } from "react-redux";
 import { initialUserForm, addUser,removeUser,updateUser,loadingUsers, onUserSelectedForm, onOpenForm, onCloseForm, loadingError} from "../store/slices/users/usersSlice.js";
 import { useAuth } from "../auth/hooks/useAuth.js";
+import { isTokenExpired, getStoredToken } from "../auth/utils/tokenUtils.js";
 
 export const useUsers = () => {
     const {users, userSelected, visibleForm, errors, isLoading} = useSelector(state => state.users)
@@ -18,8 +19,16 @@ export const useUsers = () => {
             console.log(result);
             dispatch(loadingUsers(result.data));
         } catch (error) {
+            if (!error.response) {
+                console.warn("⚠️ [useUsers] Microcorte o error de conexión al cargar usuarios:", error.message);
+                return;
+            }
             if (error.response?.status == 401) {
-                handlerLogout();
+                if (isTokenExpired(getStoredToken())) {
+                    handlerLogout();
+                } else {
+                    console.warn("⚠️ [useUsers] 401 recibido pero el token sigue vigente (7 días). Conservando sesión.");
+                }
             }
         }
     };
@@ -62,7 +71,11 @@ export const useUsers = () => {
                     dispatch(loadingError(({email: 'El email ya existe.'})))
                 }
             } else if (error.response?.status == 401) {
-                handlerLogout();
+                if (isTokenExpired(getStoredToken())) {
+                    handlerLogout();
+                } else {
+                    console.warn("⚠️ [useUsers] 401 recibido al registrar usuario pero token sigue vigente.");
+                }
             } else {
                 throw error;
             }
@@ -98,7 +111,11 @@ export const useUsers = () => {
                     )
                 } catch (error) {
                     if (error.response?.status == 401) {
-                        handlerLogout();
+                        if (isTokenExpired(getStoredToken())) {
+                            handlerLogout();
+                        } else {
+                            console.warn("⚠️ [useUsers] 401 recibido al eliminar usuario pero token sigue vigente.");
+                        }
                     }
                 }
             }

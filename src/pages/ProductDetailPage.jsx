@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { getAuthHeaders as getTokenHeaders } from "../auth/utils/tokenUtils";
 
 export const ProductDetailPage = () => {
   const { id } = useParams();
@@ -9,37 +10,7 @@ export const ProductDetailPage = () => {
   const [product, setProduct] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const getAuthHeaders = useCallback(() => {
-    let rawToken =
-      localStorage.getItem("token") ||
-      sessionStorage.getItem("token") ||
-      localStorage.getItem("jwt") ||
-      sessionStorage.getItem("jwt");
-
-    if (!rawToken) {
-      const storedLogin =
-        sessionStorage.getItem("login") || localStorage.getItem("login");
-      if (storedLogin) {
-        try {
-          const parsed = JSON.parse(storedLogin);
-          rawToken = parsed.token || parsed.jwt;
-        } catch (e) {
-          console.error("Error parseando storage:", e);
-        }
-      }
-    }
-
-    if (!rawToken) return { "Content-Type": "application/json" };
-
-    const authHeader = rawToken.startsWith("Bearer ")
-      ? rawToken
-      : `Bearer ${rawToken}`;
-
-    return {
-      Authorization: authHeader,
-      "Content-Type": "application/json",
-    };
-  }, []);
+  const getAuthHeaders = useCallback(() => getTokenHeaders(), []);
 
   const baseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
 

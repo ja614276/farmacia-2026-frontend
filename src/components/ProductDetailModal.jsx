@@ -14,10 +14,11 @@ export const ProductDetailModal = ({ product, onClose, onEdit, onAddToCart }) =>
         },
     ];
 
+    const baseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
     const imageSrc = product.imagen
         ? product.imagen.startsWith("http")
             ? product.imagen
-            : `http://localhost:8080/uploads/${product.imagen}`
+            : `${baseUrl}/uploads/${product.imagen}`
         : null;
 
     const totalStock = Number(

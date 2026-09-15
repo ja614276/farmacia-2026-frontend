@@ -41,6 +41,12 @@ export const SidebarHeader = ({ isCollapsed, onToggle }) => {
 
   const hasLogo = Boolean(company?.logoUrl && company.logoUrl.trim() !== "" && !logoLoadError);
   const companyTitle = company?.commercialName || company?.legalName || "SISTEMA FARMACIA";
+  const baseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
+  const logoSrc = company?.logoUrl
+    ? (company.logoUrl.startsWith("http") || company.logoUrl.startsWith("data:") || company.logoUrl.startsWith("blob:")
+        ? company.logoUrl
+        : `${baseUrl}/uploads/${company.logoUrl}`)
+    : "";
 
   return (
     <div className={styles.headerContainer}>
@@ -52,7 +58,7 @@ export const SidebarHeader = ({ isCollapsed, onToggle }) => {
         >
           {hasLogo ? (
             <img
-              src={company.logoUrl}
+              src={logoSrc}
               alt={companyTitle}
               className={styles.companyLogoImg}
               onError={() => setLogoLoadError(true)}

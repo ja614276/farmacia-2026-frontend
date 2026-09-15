@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { getAuthHeaders } from "../auth/utils/tokenUtils";
 
 export const initialEmployeeForm = {
   idEmpleado: 0,
@@ -21,35 +22,8 @@ export const useEmployees = () => {
   const [loading, setLoading] = useState(false);
   const baseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
 
-  // Función robusta para obtener el token desde cualquier parte del Storage
-  const getHeaders = () => {
-    let token = sessionStorage.getItem("token") || localStorage.getItem("token");
-
-    // Si tu sistema guarda el estado de auth en un JSON serializado (como se ve en useAuth)
-    if (!token) {
-      try {
-        const loginData = JSON.parse(
-          sessionStorage.getItem("login") || localStorage.getItem("login") || "{}"
-        );
-        token = loginData?.token;
-      } catch (e) {
-        console.error("Error al leer token de login:", e);
-      }
-    }
-
-    if (!token) {
-      console.warn("⚠️ [useEmployees] No se detectó token en sessionStorage ni localStorage.");
-      return {};
-    }
-
-    // Asegurar prefijo Bearer
-    const authValue = token.startsWith("Bearer ") ? token : `Bearer ${token}`;
-
-    return {
-      Authorization: authValue,
-      "Content-Type": "application/json",
-    };
-  };
+  // Obtener cabeceras con token JWT garantizado desde LocalStorage
+  const getHeaders = () => getAuthHeaders();
 
   const getEmployees = async () => {
     setLoading(true);

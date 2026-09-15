@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import axios from "axios";
+import { getAuthHeaders as getTokenHeaders } from "../auth/utils/tokenUtils";
 
 export const ProductLotsModal = ({
   product,
@@ -47,39 +48,7 @@ export const ProductLotsModal = ({
     costoUnitario: 1.0,
   });
 
-  const getAuthHeaders = () => {
-    let rawToken =
-      localStorage.getItem("token") ||
-      sessionStorage.getItem("token") ||
-      localStorage.getItem("jwt") ||
-      sessionStorage.getItem("jwt");
-
-    if (!rawToken) {
-      const storedLogin =
-        sessionStorage.getItem("login") || localStorage.getItem("login");
-      if (storedLogin) {
-        try {
-          const parsed = JSON.parse(storedLogin);
-          rawToken = parsed.token || parsed.jwt;
-        } catch (e) {
-          console.error("Error parseando storage de login:", e);
-        }
-      }
-    }
-
-    if (!rawToken) {
-      return { "Content-Type": "application/json" };
-    }
-
-    const authHeader = rawToken.startsWith("Bearer ")
-      ? rawToken
-      : `Bearer ${rawToken}`;
-
-    return {
-      Authorization: authHeader,
-      "Content-Type": "application/json",
-    };
-  };
+  const getAuthHeaders = () => getTokenHeaders();
 
   const fetchLots = async () => {
     setIsLoadingLots(true);

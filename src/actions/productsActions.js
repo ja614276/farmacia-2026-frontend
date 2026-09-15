@@ -1,15 +1,12 @@
 // productsActions.js
 import axios from "axios";
 import { addProduct, updateProduct, removeProduct, loadingProducts } from "../store/slices/products/productsSlice.js";
+import { getAuthHeaders as getTokenHeaders } from "../auth/utils/tokenUtils.js";
 
-const API_URL = "http://localhost:8080/api/products";
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
+const API_URL = `${BASE_URL}/products`;
 
-const getAuthHeaders = () => {
-    const token = localStorage.getItem("token");
-    return token
-        ? { "Content-Type": "application/json", "Authorization": `Bearer ${token}` }
-        : { "Content-Type": "application/json" };
-};
+const getAuthHeaders = () => getTokenHeaders();
 
 export const fetchProducts = () => async (dispatch) => {
     try {

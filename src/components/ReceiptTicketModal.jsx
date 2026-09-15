@@ -100,7 +100,11 @@ export const ReceiptTicketModal = ({ isOpen, onClose, saleData }) => {
                         phone: res.data.phone || prev.phone,
                         ticketFooterText1: res.data.ticketFooterText1 || prev.ticketFooterText1,
                         ticketFooterText2: res.data.ticketFooterText2 || "",
-                        logoUrl: res.data.logoUrl || "",
+                        logoUrl: res.data.logoUrl
+                            ? (res.data.logoUrl.startsWith("http") || res.data.logoUrl.startsWith("data:") || res.data.logoUrl.startsWith("blob:")
+                                ? res.data.logoUrl
+                                : `${import.meta.env.VITE_API_BASE_URL || "http://localhost:8080"}/uploads/${res.data.logoUrl}`)
+                            : "",
                     }));
 
                     if (res.data.ticketPaperSize) {

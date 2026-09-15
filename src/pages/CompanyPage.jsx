@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
-import { getCompanyInfo, saveOrUpdateCompany } from "../services/CompanyService";
+import { getCompanyInfo, saveOrUpdateCompany, uploadCompanyLogo } from "../services/CompanyService";
 
 export const CompanyPage = () => {
   const navigate = useNavigate();
@@ -13,14 +13,24 @@ export const CompanyPage = () => {
     phone: "",
     address: "",
     email: "",
-    ticketFooterText1: "",
-    ticketFooterText2: "",
     logoUrl: "",
   });
 
+  const [fileObject, setFileObject] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const fileInputRef = useRef(null);
+
+  const baseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
+
+  const getFullLogoUrl = (url) => {
+    if (!url) return null;
+    if (url.startsWith("http://") || url.startsWith("https://") || url.startsWith("data:") || url.startsWith("blob:")) {
+      return url;
+    }
+    return `${baseUrl}/uploads/${url}`;
+  };
 
   useEffect(() => {
     setIsLoading(true);
@@ -35,10 +45,12 @@ export const CompanyPage = () => {
             phone: res.data.phone || "",
             address: res.data.address || "Lima Perú",
             email: res.data.email || "",
-            ticketFooterText1: res.data.ticketFooterText1 || "¡Gracias por su compra!",
-            ticketFooterText2: res.data.ticketFooterText2 || "",
             logoUrl: res.data.logoUrl || "",
           });
+
+          if (res.data.logoUrl) {
+            setImagePreview(getFullLogoUrl(res.data.logoUrl));
+          }
         }
       })
       .catch((err) => {
@@ -49,8 +61,6 @@ export const CompanyPage = () => {
           commercialName: "Farmacia SAC",
           taxId: "20258585874",
           address: "Lima Perú",
-          ticketFooterText1: "¡Gracias por su compra!",
-          ticketFooterText2: "",
         }));
       })
       .finally(() => {
@@ -67,64 +77,38 @@ export const CompanyPage = () => {
   };
 
   const handleFileChange = (e) => {
-    const file = e.target.files[0];
+    const file = e.target.files?.[0];
     if (!file) return;
 
     if (!file.type.startsWith("image/")) {
       Swal.fire({
         title: "Archivo no válido",
-        text: "Por favor selecciona una imagen válida (PNG, JPG o SVG)",
+        text: "Por favor selecciona un archivo de imagen (PNG, JPG o WEBP)",
         icon: "warning",
         confirmButtonColor: "#09090b",
       });
       return;
     }
 
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = (event) => {
-      const img = new Image();
-      img.src = event.target.result;
-      img.onload = () => {
-        const canvas = document.createElement("canvas");
-        const maxDim = 320;
-        let width = img.width;
-        let height = img.height;
+    if (file.size > 5 * 1024 * 1024) {
+      Swal.fire({
+        title: "Archivo demasiado pesado",
+        text: "El tamaño máximo permitido para el logo es de 5MB.",
+        icon: "warning",
+        confirmButtonColor: "#09090b",
+      });
+      return;
+    }
 
-        if (width > height) {
-          if (width > maxDim) {
-            height = Math.round((height * maxDim) / width);
-            width = maxDim;
-          }
-        } else {
-          if (height > maxDim) {
-            width = Math.round((width * maxDim) / height);
-            height = maxDim;
-          }
-        }
-
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext("2d");
-        ctx.drawImage(img, 0, 0, width, height);
-
-        const optimizedDataUrl = canvas.toDataURL("image/png", 0.9);
-        setFormData((prev) => ({
-          ...prev,
-          logoUrl: optimizedDataUrl,
-        }));
-      };
-      img.onerror = () => {
-        setFormData((prev) => ({
-          ...prev,
-          logoUrl: event.target.result,
-        }));
-      };
-    };
+    setFileObject(file);
+    const previewUrl = URL.createObjectURL(file);
+    setImagePreview(previewUrl);
   };
 
   const handleRemoveLogo = (e) => {
     if (e) e.stopPropagation();
+    setFileObject(null);
+    setImagePreview(null);
     setFormData((prev) => ({
       ...prev,
       logoUrl: "",
@@ -150,7 +134,7 @@ export const CompanyPage = () => {
     if (!formData.taxId.trim()) {
       Swal.fire({
         title: "Campo requerido",
-        text: "El RUC / Identificación Fiscal es obligatorio.",
+        text: "El RUC / NIT de la empresa es obligatorio.",
         icon: "warning",
         confirmButtonColor: "#09090b",
       });
@@ -159,17 +143,36 @@ export const CompanyPage = () => {
 
     try {
       setIsSaving(true);
+
+      // 1. Guardar o actualizar datos de la empresa
       const res = await saveOrUpdateCompany(formData);
-      if (res.data) {
-        setFormData((prev) => ({
-          ...prev,
-          ...res.data,
-        }));
-        window.dispatchEvent(new CustomEvent("companyInfoUpdated", { detail: res.data }));
+      let updatedData = res.data || formData;
+
+      // 2. Si el usuario seleccionó un nuevo archivo de imagen física, subirlo exactamente como en Product
+      if (fileObject) {
+        const uploadRes = await uploadCompanyLogo(fileObject);
+        if (uploadRes.data?.company) {
+          updatedData = uploadRes.data.company;
+        } else if (uploadRes.data?.logoUrl) {
+          updatedData = {
+            ...updatedData,
+            logoUrl: uploadRes.data.logoUrl,
+          };
+        }
       }
+
+      setFormData(updatedData);
+      if (updatedData.logoUrl) {
+        setImagePreview(getFullLogoUrl(updatedData.logoUrl));
+      }
+      setFileObject(null);
+
+      // Notificar al Sidebar y demás componentes para refrescar el logo en tiempo real
+      window.dispatchEvent(new CustomEvent("companyInfoUpdated", { detail: updatedData }));
+
       Swal.fire({
         title: "¡Configuración Guardada!",
-        text: "Los datos de la empresa se actualizaron correctamente.",
+        text: "Los datos y el logotipo de la empresa se actualizaron con éxito.",
         icon: "success",
         confirmButtonColor: "#09090b",
         timer: 2000,
@@ -216,10 +219,10 @@ export const CompanyPage = () => {
           Configuración
         </span>
         <span>/</span>
-        <span className="text-zinc-950 font-bold">Datos de la Empresa</span>
+        <span className="text-zinc-950 font-bold">Perfil de Empresa</span>
       </div>
 
-      {/* 2. Header de la Página */}
+      {/* 2. Header Superior */}
       <div className="bg-white border border-zinc-200 rounded-2xl p-5 sm:p-6 shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-4">
           <div className="w-12 h-12 rounded-2xl bg-zinc-900 text-white flex items-center justify-center shadow-sm flex-shrink-0">
@@ -240,7 +243,7 @@ export const CompanyPage = () => {
               Información de la Empresa
             </h1>
             <p className="text-xs text-zinc-500 font-mono mt-0.5">
-              Datos fiscales, comerciales, logotipo y encabezados para los comprobantes de venta y reportes.
+              Administre la razón social, datos de contacto y el logotipo institucional que se muestra en comprobantes y barra lateral.
             </p>
           </div>
         </div>
@@ -281,7 +284,7 @@ export const CompanyPage = () => {
               <div className="flex items-center gap-2.5 pb-2 border-b border-zinc-100">
                 <div className="w-2.5 h-2.5 bg-zinc-900 rounded-full"></div>
                 <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-900">
-                  Datos Fiscales y de Contacto
+                  Datos Fiscales y Ubicación
                 </h2>
               </div>
             </div>
@@ -379,79 +382,19 @@ export const CompanyPage = () => {
                 />
               </div>
             </div>
-
-            {/* Separador: Textos de Ticket */}
-            <div className="pt-4">
-              <div className="flex items-center gap-2.5 pb-2 border-b border-zinc-100">
-                <div className="w-2.5 h-2.5 bg-zinc-900 rounded-full"></div>
-                <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-900">
-                  Textos Predefinidos de Comprobante
-                </h2>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mt-4">
-                <div className="space-y-1.5">
-                  <label className="block text-xs font-bold text-zinc-800 uppercase tracking-wider">
-                    Línea 1 (Agradecimiento)
-                  </label>
-                  <input
-                    type="text"
-                    name="ticketFooterText1"
-                    value={formData.ticketFooterText1}
-                    onChange={handleChange}
-                    placeholder="Ej. ¡Gracias por su compra!"
-                    className="w-full h-10 px-3.5 bg-zinc-50/60 border border-zinc-300 rounded-xl text-xs font-medium text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:bg-white focus:border-zinc-950 focus:ring-1 focus:ring-zinc-950 transition-all"
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="block text-xs font-bold text-zinc-800 uppercase tracking-wider">
-                    Línea 2 (Políticas / Advertencias)
-                  </label>
-                  <input
-                    type="text"
-                    name="ticketFooterText2"
-                    value={formData.ticketFooterText2}
-                    onChange={handleChange}
-                    placeholder="Ej. Revise su medicamento antes de retirarse"
-                    className="w-full h-10 px-3.5 bg-zinc-50/60 border border-zinc-300 rounded-xl text-xs font-medium text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:bg-white focus:border-zinc-950 focus:ring-1 focus:ring-zinc-950 transition-all"
-                  />
-                </div>
-              </div>
-            </div>
           </div>
 
-          {/* Columna Derecha: Logotipo Corporativo (4 Cols) */}
+          {/* Columna Derecha: Logotipo de la Empresa (4 Cols) */}
           <div className="lg:col-span-4 space-y-4">
             <div>
               <div className="flex items-center gap-2.5 pb-2 border-b border-zinc-100">
                 <div className="w-2.5 h-2.5 bg-zinc-900 rounded-full"></div>
                 <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-900">
-                  Logotipo Corporativo
+                  Logotipo Institucional
                 </h2>
               </div>
-            </div>
-
-            {/* Enlace URL Directo */}
-            <div className="space-y-1.5">
-              <label className="block text-xs font-bold text-zinc-800 uppercase tracking-wider">
-                URL o Enlace Web del Logo
-              </label>
-              <div className="relative">
-                <input
-                  type="text"
-                  name="logoUrl"
-                  value={formData.logoUrl || ""}
-                  onChange={handleChange}
-                  placeholder="https://ejemplo.com/logo.png"
-                  className="w-full h-10 pl-9 pr-3.5 bg-zinc-50/60 border border-zinc-300 rounded-xl text-xs font-mono text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:bg-white focus:border-zinc-950 focus:ring-1 focus:ring-zinc-950 transition-all"
-                />
-                <svg className="w-4 h-4 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                </svg>
-              </div>
-              <p className="text-[10px] font-mono text-zinc-400">
-                Puede ingresar un enlace web directo o cargar un archivo local abajo.
+              <p className="text-xs text-zinc-500 font-mono mt-1">
+                Suba la imagen del logotipo de la empresa. Se almacenará en el servidor y se utilizará en los comprobantes y la cabecera.
               </p>
             </div>
 
@@ -459,21 +402,21 @@ export const CompanyPage = () => {
               type="file"
               ref={fileInputRef}
               onChange={handleFileChange}
-              accept="image/*"
+              accept="image/png, image/jpeg, image/webp, image/svg+xml"
               className="hidden"
             />
 
             {/* Cuadro de Carga y Vista Previa */}
             <div className="border-2 border-dashed border-zinc-300 hover:border-zinc-500 rounded-2xl p-5 flex flex-col items-center justify-center text-center transition-all bg-zinc-50/50 min-h-[220px] relative">
-              {formData.logoUrl ? (
+              {imagePreview ? (
                 <div className="flex flex-col items-center w-full">
                   <div className="p-3 bg-white rounded-xl shadow-xs border border-zinc-200 mb-3 max-h-36 max-w-full flex items-center justify-center">
                     <img
-                      src={formData.logoUrl}
+                      src={imagePreview}
                       alt="Logo de la Empresa"
                       className="max-h-28 max-w-full object-contain"
                       onError={(e) => {
-                        e.target.title = "No se pudo cargar la imagen";
+                        e.target.style.display = "none";
                       }}
                     />
                   </div>
@@ -512,10 +455,10 @@ export const CompanyPage = () => {
                     </svg>
                   </div>
                   <span className="text-xs font-bold text-zinc-700 group-hover:text-zinc-900 transition-colors uppercase tracking-wider font-mono">
-                    Subir imagen local
+                    Subir imagen de logotipo
                   </span>
                   <span className="text-[10px] text-zinc-400 mt-1 font-mono">
-                    PNG, JPG o SVG (máx. 2MB)
+                    PNG, JPG, WEBP o SVG (máx. 5MB)
                   </span>
                 </div>
               )}

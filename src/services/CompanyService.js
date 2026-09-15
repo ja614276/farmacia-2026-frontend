@@ -38,3 +38,16 @@ export const saveOrUpdateCompany = async (companyData) => {
         throw error;
     }
 };
+
+export const uploadCompanyLogo = async (file) => {
+    try {
+        const formData = new FormData();
+        formData.append("file", file);
+        return await productsApi.post("/company/upload-logo", formData, {
+            headers: { "Content-Type": "multipart/form-data" },
+        });
+    } catch (error) {
+        console.error("Error al subir logotipo de la empresa:", error);
+        throw error;
+    }
+};

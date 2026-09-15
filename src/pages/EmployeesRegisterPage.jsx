@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useEmployees } from "../hooks/useEmployees";
 import { EmployeeForm } from "../components/EmployeeForm";
+import { getStoredToken } from "../auth/utils/tokenUtils";
 
 export const EmployeesRegisterPage = () => {
   const { id } = useParams();
@@ -25,10 +26,10 @@ export const EmployeesRegisterPage = () => {
         // 2. Si se recarga la página (F5), consultar al backend
         const fetchById = async () => {
           try {
-            const token = sessionStorage.getItem("token");
-            const authHeader = token?.startsWith("Bearer ") ? token : `Bearer ${token}`;
-            const response = await fetch(`http://localhost:8080/employees/${id}`, {
-              headers: token ? { Authorization: authHeader } : {},
+            const token = getStoredToken();
+            const baseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
+            const response = await fetch(`${baseUrl}/employees/${id}`, {
+              headers: token ? { Authorization: token } : {},
             });
 
             if (response.ok) {
