@@ -1,75 +1,91 @@
-/* Estilos centralizados para reportes gerenciales */
+/* ==========================================================================
+   ESTILOS CENTRALIZADOS PARA REPORTES GERENCIALES (DISEÑO MONOCROMÁTICO B&W)
+   ========================================================================== */
 
+/* Pestañas Principales (Módulos) */
 .btn-main-tab {
-    background: #f8fafc;
-    border: 1px solid #cbd5e1;
-    border-radius: 20px;
-    padding: 6px 18px;
-    font-size: 0.78rem;
+    background: #ffffff;
+    border: 1px solid #e4e4e7;
+    border-radius: 6px;
+    padding: 8px 20px;
+    font-size: 0.75rem;
     font-weight: 700;
-    color: #475569;
-    letter-spacing: 0.04em;
-    transition: all 0.2s ease;
+    color: #52525b;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    transition: all 0.15s ease;
     cursor: pointer;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
 .btn-main-tab:hover {
-    background-color: #f1f5f9;
-    color: #0f172a;
+    background-color: #f4f4f5;
+    color: #09090b;
+    border-color: #d4d4d8;
 }
 
 .btn-main-tab.active {
-    background-color: #ffffff;
-    border-color: #ea580c;
-    color: #ea580c;
-    box-shadow: 0 2px 6px rgba(234, 88, 12, 0.15);
+    background-color: #09090b;
+    border-color: #09090b;
+    color: #ffffff;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
+/* Sub-pestañas de Reporte */
 .btn-sub-tab {
-    background: transparent;
-    border: 1px solid #e2e8f0;
-    border-radius: 20px;
+    background: #ffffff;
+    border: 1px solid #e4e4e7;
+    border-radius: 6px;
     padding: 6px 14px;
-    font-size: 0.78rem;
+    font-size: 0.75rem;
     font-weight: 600;
-    color: #64748b;
+    color: #52525b;
     display: inline-flex;
     align-items: center;
     white-space: nowrap;
     transition: all 0.15s ease;
     cursor: pointer;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
 }
 
 .btn-sub-tab:hover {
-    background-color: #f1f5f9;
-    color: #1e293b;
+    background-color: #f4f4f5;
+    color: #09090b;
+    border-color: #d4d4d8;
 }
 
 .btn-sub-tab.active {
-    background-color: #f97316;
-    border-color: #f97316;
+    background-color: #18181b;
+    border-color: #18181b;
     color: #ffffff;
-    box-shadow: 0 2px 8px rgba(249, 115, 22, 0.25);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
 }
 
+/* Tarjetas de Métodos de Pago y Resumen */
 .card-payment {
+    background-color: #ffffff;
+    border: 1px solid #e4e4e7;
+    border-radius: 8px;
     transition: all 0.2s ease;
 }
 
 .card-payment:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05) !important;
+    border-color: #a1a1aa;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 .active-efectivo {
-    border: 2px solid #10b981 !important;
+    border: 1.5px solid #09090b !important;
     background-color: #ffffff !important;
 }
 
 .payment-icon-wrap {
-    width: 44px;
-    height: 44px;
-    border-radius: 12px;
+    width: 42px;
+    height: 42px;
+    border-radius: 8px;
+    background-color: #f4f4f5;
+    color: #09090b;
+    border: 1px solid #e4e4e7;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -77,119 +93,184 @@
 
 .payment-title {
     font-size: 0.72rem;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.06em;
+    font-weight: 700;
+    color: #71717a;
+    text-transform: uppercase;
 }
 
-.bg-purple-subtle { background-color: #f3e8ff; }
-.text-purple { color: #9333ea; }
-.bg-cyan-subtle { background-color: #e0f2fe; }
-.text-cyan { color: #0284c7; }
-.bg-emerald-subtle { background-color: #d1fae5; }
-.text-emerald { color: #059669; }
-.bg-blue-subtle { background-color: #dbeafe; }
-.text-blue { color: #2563eb; }
-.bg-rose-subtle { background-color: #ffe4e6; }
-.text-rose { color: #e11d48; }
-.text-teal { color: #005f60; }
-.bg-teal-subtle { background-color: #ccfbf1; }
-.text-orange-custom { color: #ea580c; }
-.bg-orange-custom { background-color: #ea580c; }
+/* Clases de apoyo convertidas a paleta corporativa neutra */
+.bg-purple-subtle,
+.bg-cyan-subtle,
+.bg-emerald-subtle,
+.bg-blue-subtle,
+.bg-teal-subtle,
+.bg-amber-light {
+    background-color: #f4f4f5 !important;
+    color: #18181b !important;
+    border: 1px solid #e4e4e7;
+}
+
+.text-purple,
+.text-cyan,
+.text-emerald,
+.text-blue,
+.text-teal,
+.text-orange-custom,
+.text-amber {
+    color: #09090b !important;
+}
+
+.bg-orange-custom {
+    background-color: #18181b !important;
+    color: #ffffff !important;
+}
+
+.bg-rose-subtle,
+.bg-rose-light {
+    background-color: #18181b !important;
+    color: #ffffff !important;
+}
+
+.text-rose {
+    color: #18181b !important;
+    font-weight: 700;
+}
 
 .online-dot {
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    background-color: #10b981;
-    box-shadow: 0 0 6px #10b981;
+    background-color: #09090b;
+    display: inline-block;
+}
+
+/* Tablas Gerenciales de Alta Densidad */
+.custom-report-table {
+    border-collapse: separate;
+    border-spacing: 0;
 }
 
 .custom-report-table th {
-    font-size: 0.72rem;
-    font-weight: 700;
-    letter-spacing: 0.03em;
-    color: #64748b;
-    padding: 10px 12px;
+    background-color: #09090b !important;
+    color: #ffffff !important;
+    font-size: 0.70rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 11px 14px;
+    border: none;
+    white-space: nowrap;
 }
 
 .custom-report-table td {
-    padding: 10px 12px;
-    font-size: 0.8rem;
+    padding: 11px 14px;
+    font-size: 0.80rem;
+    color: #18181b;
+    border-bottom: 1px solid #e4e4e7;
+    background-color: #ffffff;
+    vertical-align: middle;
 }
 
+.custom-report-table tbody tr:hover td {
+    background-color: #f8fafc;
+}
+
+/* Badges y Pastillas de Estado */
 .badge-badge {
     padding: 3px 8px;
-    border-radius: 12px;
-    font-size: 0.7rem;
+    border-radius: 4px;
+    font-size: 0.68rem;
+    font-weight: 700;
     text-transform: uppercase;
+    letter-spacing: 0.04em;
+    background-color: #f4f4f5;
+    color: #09090b;
+    border: 1px solid #d4d4d8;
 }
-
-.bg-emerald-light { background-color: #d1fae5; }
-.bg-rose-light { background-color: #ffe4e6; }
-.bg-amber-light { background-color: #fef3c7; }
-.text-amber { color: #d97706; }
 
 .btn-action-icon {
     background: transparent;
-    border: none;
-    padding: 4px;
-    border-radius: 6px;
+    border: 1px solid #e4e4e7;
+    padding: 5px 8px;
+    border-radius: 4px;
     transition: 0.15s;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
+    color: #09090b;
 }
 
 .btn-action-icon:hover {
-    background-color: #e6f4f1;
+    background-color: #09090b;
+    color: #ffffff;
+    border-color: #09090b;
 }
 
+/* Rankings de Ventas e Inversión */
 .badge-rank {
     font-weight: 800;
-    padding: 4px 8px;
-    border-radius: 12px;
-    font-size: 0.75rem;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 0.72rem;
+    font-family: monospace;
+    display: inline-block;
 }
 
 .rank-gold {
-    background: linear-gradient(135deg, #fef08a 0%, #facc15 100%);
-    color: #854d0e;
-    box-shadow: 0 2px 4px rgba(250, 204, 21, 0.4);
+    background: #09090b;
+    color: #ffffff;
+    border: 1px solid #09090b;
 }
 
 .rank-silver {
-    background: linear-gradient(135deg, #f1f5f9 0%, #cbd5e1 100%);
-    color: #334155;
+    background: #27272a;
+    color: #ffffff;
+    border: 1px solid #27272a;
 }
 
 .rank-bronze {
-    background: linear-gradient(135deg, #fed7aa 0%, #fb923c 100%);
-    color: #7c2d12;
+    background: #52525b;
+    color: #ffffff;
+    border: 1px solid #52525b;
 }
 
 .rank-default {
-    background-color: #f1f5f9;
-    color: #64748b;
+    background-color: #f4f4f5;
+    color: #71717a;
+    border: 1px solid #e4e4e7;
 }
 
+/* Botones de acción general */
 .btn-outline-teal {
-    color: #005f60;
-    border-color: #005f60;
+    color: #09090b;
+    border-color: #d4d4d8;
+    background-color: #ffffff;
 }
 
 .btn-outline-teal:hover {
-    background-color: #005f60;
-    color: #fff;
+    background-color: #09090b;
+    color: #ffffff;
+    border-color: #09090b;
 }
 
 .btn-teal-action {
-    background-color: #005f60;
+    background-color: #09090b;
+    color: #ffffff;
+    border: 1px solid #09090b;
 }
 
-/* Círculo Estado Vacío */
+.btn-teal-action:hover {
+    background-color: #27272a;
+    color: #ffffff;
+}
+
+/* Estado Vacío */
 .empty-search-circle {
-    width: 100px;
-    height: 100px;
+    width: 80px;
+    height: 80px;
     border-radius: 50%;
-    background-color: #f1f5f9;
+    background-color: #f4f4f5;
+    border: 1px solid #e4e4e7;
 }

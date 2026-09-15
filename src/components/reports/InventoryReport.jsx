@@ -11,17 +11,17 @@ export const InventoryReport = ({
     loading = false,
 }) => {
     const inventorySubTabs = [
-        { id: "inv_general", label: "Inventario", icon: "🏢" },
-        { id: "inv_stock_actual", label: "Stock Actual", icon: "📦" },
-        { id: "inv_low_stock", label: "Alertas Stock Bajo", icon: "⚠️" },
-        { id: "inv_expirations", label: "Caducados y por caducar", icon: "📅" },
-        { id: "inv_top_investment", label: "Mayor Inversión", icon: "💼" },
-        { id: "inv_categorization", label: "Categorización", icon: "🏷️" },
-        { id: "inv_lots_detailed", label: "Lotes Detallado", icon: "📑" },
-        { id: "inv_valuation", label: "Valorización", icon: "💰" },
-        { id: "inv_products_lots", label: "Productos y Lotes", icon: "📦" },
-        { id: "inv_adjustments", label: "Ajustes de Inventario", icon: "📋" },
-        { id: "inv_no_rotation", label: "Sin Rotación", icon: "⏳" },
+        { id: "inv_general", label: "Inventario" },
+        { id: "inv_stock_actual", label: "Stock Actual" },
+        { id: "inv_low_stock", label: "Alertas Stock Bajo" },
+        { id: "inv_expirations", label: "Caducados y por caducar" },
+        { id: "inv_top_investment", label: "Mayor Inversión" },
+        { id: "inv_categorization", label: "Categorización" },
+        { id: "inv_lots_detailed", label: "Lotes Detallado" },
+        { id: "inv_valuation", label: "Valorización" },
+        { id: "inv_products_lots", label: "Productos y Lotes" },
+        { id: "inv_adjustments", label: "Ajustes de Inventario" },
+        { id: "inv_no_rotation", label: "Sin Rotación" },
     ];
 
     const [subTab, setSubTab] = useState("inv_general");
@@ -864,8 +864,8 @@ export const InventoryReport = ({
             {/* Header con botones PDF y Excel */}
             <div className="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
                 <div className="d-flex align-items-center gap-2">
-                    <span className="badge bg-purple-subtle text-purple fw-bold px-3 py-1.5 rounded-pill" style={{ fontSize: "0.78rem" }}>
-                        🏢 CONTROL ESTRATÉGICO DE INVENTARIO
+                    <span className="badge rounded-1 px-3 py-1.5 fw-bold" style={{ backgroundColor: "#09090b", color: "#ffffff", fontSize: "0.72rem" }}>
+                        CONTROL ESTRATÉGICO DE INVENTARIO
                     </span>
                     <span className="text-secondary small">
                         Existencias, lotes, vencimientos, valorización y ajustes de stock
@@ -915,7 +915,6 @@ export const InventoryReport = ({
                             setCurrentPage(1);
                         }}
                     >
-                        <span className="me-1">{tab.icon}</span>
                         <span>{tab.label}</span>
                     </button>
                 ))}
@@ -1055,7 +1054,7 @@ export const InventoryReport = ({
             <div className="bg-white rounded-3 border shadow-sm overflow-hidden mb-3">
                 {loading ? (
                     <div className="p-5 text-center">
-                        <div className="spinner-border text-orange-custom" role="status" style={{ width: "2.5rem", height: "2.5rem" }}>
+                        <div className="spinner-border text-dark" role="status" style={{ width: "2rem", height: "2rem" }}>
                             <span className="visually-hidden">Cargando reporte...</span>
                         </div>
                         <p className="text-secondary small mt-2 mb-0">Cargando datos de inventario...</p>
@@ -1252,7 +1251,7 @@ export const InventoryReport = ({
                                             <td className="small text-secondary">{item.categoria}</td>
                                             <td className="text-center fw-semibold">{item.stock} uds</td>
                                             <td className="text-end text-dark">S/ {item.costoUnitario.toFixed(2)}</td>
-                                            <td className="text-end fw-black text-orange-custom">S/ {item.capitalInvertido.toFixed(2)}</td>
+                                            <td className="text-end fw-black text-dark">S/ {item.capitalInvertido.toFixed(2)}</td>
                                             <td className="text-center small text-secondary">{item.percentOfTotal.toFixed(1)}%</td>
                                             <td className="text-end text-dark">S/ {item.precioVenta.toFixed(2)}</td>
                                             <td className="text-end fw-bold text-emerald">+{item.roi.toFixed(1)}%</td>
@@ -1387,7 +1386,7 @@ export const InventoryReport = ({
                                                 </span>
                                             </td>
                                             <td className="text-center fw-bold">{item.stockTotal} uds</td>
-                                            <td className="text-end fw-bold text-orange-custom">S/ {item.totalValued.toFixed(2)}</td>
+                                            <td className="text-end fw-bold text-dark">S/ {item.totalValued.toFixed(2)}</td>
                                         </tr>
                                     ))}
                                 </tbody>

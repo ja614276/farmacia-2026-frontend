@@ -25,7 +25,7 @@ export const EmployeeDetailPage = () => {
           `http://localhost:8080/employees/${id}`,
           {
             headers: token ? { Authorization: authHeader } : {},
-          },
+          }
         );
         setEmployee(response.data);
       } catch (err) {
@@ -52,12 +52,21 @@ export const EmployeeDetailPage = () => {
     });
   };
 
+  const getInitials = (nombre = "", apellidos = "") => {
+    const n = nombre.trim().charAt(0) || "";
+    const a = apellidos.trim().charAt(0) || "";
+    return (n + a).toUpperCase() || "EM";
+  };
+
   if (loading) {
     return (
-      <div className="d-flex justify-content-center align-items-center py-5">
-        <div className="spinner-border text-teal" role="status"></div>
-        <span className="ms-2 text-muted small">
-          Cargando datos del empleado...
+      <div className="w-full min-h-[400px] flex flex-col items-center justify-center gap-3">
+        <svg className="animate-spin h-7 w-7 text-zinc-900" fill="none" viewBox="0 0 24 24">
+          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+        </svg>
+        <span className="text-xs font-mono uppercase tracking-wider text-zinc-500">
+          Cargando expediente del colaborador...
         </span>
       </div>
     );
@@ -65,240 +74,241 @@ export const EmployeeDetailPage = () => {
 
   if (error || !employee) {
     return (
-      <div className="bg-white border rounded-3 p-5 text-center shadow-xs">
-        <div className="text-danger mb-3 fs-3">⚠️</div>
-        <h5 className="fw-bold text-dark">
+      <div className="max-w-xl mx-auto bg-white border border-zinc-200 rounded-2xl p-8 text-center shadow-sm my-10">
+        <div className="w-12 h-12 mx-auto rounded-full bg-zinc-100 flex items-center justify-center text-zinc-900 mb-3 text-xl font-bold">
+          !
+        </div>
+        <h2 className="text-lg font-bold text-zinc-900 mb-1">
           {error || "Empleado no encontrado"}
-        </h5>
+        </h2>
+        <p className="text-xs text-zinc-500 font-mono mb-5">
+          El registro solicitado no existe o no tiene permisos para visualizarlo.
+        </p>
         <button
-          className="btn btn-sm btn-teal-primary mt-3"
+          type="button"
+          className="inline-flex items-center gap-2 px-5 py-2.5 bg-zinc-900 hover:bg-black text-white text-xs font-mono font-bold rounded-xl shadow transition-all uppercase tracking-wider"
           onClick={() => navigate("/employees")}
         >
-          Volver a la lista
+          Volver a Colaboradores
         </button>
       </div>
     );
   }
 
+  const empId = employee.idEmpleado || employee.id || id;
+
   return (
-    <div className="w-100 pb-5">
-      {/* Cabecera Superior */}
-      <div className="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3 bg-white p-4 rounded-3 border shadow-xs">
-        <div className="d-flex align-items-center gap-3">
-          <div className="detail-avatar fw-bold font-monospace">
-            {employee.nombre?.charAt(0)}
-            {employee.apellidos?.charAt(0)}
+    <div className="max-w-6xl mx-auto space-y-6 pb-12">
+      {/* 1. Breadcrumbs */}
+      <div className="flex items-center gap-2 text-xs font-semibold text-zinc-500">
+        <span
+          className="hover:text-zinc-900 cursor-pointer transition-colors"
+          onClick={() => navigate("/dashboard")}
+        >
+          Dashboard
+        </span>
+        <span>/</span>
+        <span
+          className="hover:text-zinc-900 cursor-pointer transition-colors"
+          onClick={() => navigate("/employees")}
+        >
+          Colaboradores
+        </span>
+        <span>/</span>
+        <span className="text-zinc-950 font-bold">Expediente #{empId}</span>
+      </div>
+
+      {/* 2. Header Superior del Expediente */}
+      <div className="bg-white border border-zinc-200 rounded-2xl p-5 sm:p-6 shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <div className="w-14 h-14 rounded-2xl bg-zinc-900 text-white font-mono font-bold text-lg flex items-center justify-center shadow-sm flex-shrink-0">
+            {getInitials(employee.nombre, employee.apellidos)}
           </div>
           <div>
-            <div className="d-flex align-items-center gap-2">
-              <h4 className="fw-bold text-dark m-0">
-                {employee.nombre} {employee.apellidos}
-              </h4>
-              <span
-                className={`badge rounded-pill px-2.5 py-1 ${employee.activo
-                  ? "bg-teal-soft text-teal"
-                  : "bg-light text-secondary border"
-                  }`}
-                style={{ fontSize: "0.72rem" }}
-              >
-                {employee.activo ? "Cuenta Habilitada" : "Inactivo"}
+            <div className="flex items-center gap-2.5 mb-1 flex-wrap">
+              <span className="bg-zinc-900 text-white font-mono font-bold text-[10px] px-2.5 py-0.5 rounded uppercase tracking-wider">
+                ID #{empId}
               </span>
+              <span
+                className={`font-mono text-[10px] font-bold px-2 py-0.5 rounded uppercase ${
+                  employee.activo
+                    ? "bg-zinc-900 text-white"
+                    : "bg-zinc-100 text-zinc-500 border border-zinc-300"
+                }`}
+              >
+                {employee.activo ? "[CUENTA ACTIVA]" : "[INACTIVO]"}
+              </span>
+              {employee.admin && (
+                <span className="bg-zinc-100 text-zinc-800 border border-zinc-300 font-mono text-[10px] font-bold px-2 py-0.5 rounded uppercase">
+                  ADMINISTRADOR
+                </span>
+              )}
             </div>
-            <p className="text-muted small m-0 mt-1">
-              Id: {employee.idEmpleado} | Cargo:{" "}
-              <strong>{employee.cargo || "Sin cargo asignado"}</strong>
+            <h1 className="text-2xl font-bold text-zinc-900 tracking-tight">
+              {employee.nombre} {employee.apellidos}
+            </h1>
+            <p className="text-xs text-zinc-500 font-mono mt-0.5">
+              Cargo: <strong className="text-zinc-800 font-semibold">{employee.cargo || "Sin cargo asignado"}</strong> • Usuario: <span className="text-zinc-700 font-semibold">@{employee.username}</span>
             </p>
           </div>
         </div>
 
-        <div className="d-flex gap-2">
+        <div className="flex items-center gap-2.5 self-start sm:self-auto">
           <button
             type="button"
-            className="btn btn-light border px-3 py-1.5 btn-sm fw-semibold rounded-2 text-secondary"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-white hover:bg-zinc-100 text-zinc-700 text-xs font-bold rounded-xl border border-zinc-300 shadow-xs transition-all cursor-pointer"
             onClick={() => navigate("/employees")}
           >
-            ← Volver
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="19" y1="12" x2="5" y2="12" />
+              <polyline points="12 19 5 12 12 5" />
+            </svg>
+            <span>Volver</span>
           </button>
+
           {isAdmin && (
             <button
               type="button"
-              className="btn btn-teal-primary px-3 py-1.5 btn-sm fw-semibold rounded-2"
-              onClick={() => navigate(`/employees/edit/${employee.idEmpleado}`)}
+              className="inline-flex items-center gap-2 px-5 py-2 rounded-xl bg-[#09090b] hover:bg-zinc-800 text-white font-mono font-bold text-xs shadow transition-all cursor-pointer tracking-wider uppercase"
+              onClick={() => navigate(`/employees/edit/${empId}`)}
             >
-              Editar Expediente
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+              </svg>
+              <span>Editar Expediente</span>
             </button>
           )}
         </div>
       </div>
 
-      {/* Grid de Información Detallada */}
-      <div className="row g-4">
-        {/* Tarjeta 1: Datos Personales */}
-        <div className="col-12 col-md-6">
-          <div className="bg-white border rounded-3 p-4 h-100 shadow-xs">
-            <div className="d-flex align-items-center gap-2 pb-3 mb-3 border-bottom">
-              <span className="accent-bar"></span>
-              <h6
-                className="fw-bold text-dark m-0 text-uppercase"
-                style={{ fontSize: "0.8rem", letterSpacing: "0.5px" }}
-              >
+      {/* 3. Grid de Secciones de Información */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Tarjeta 1: Identificación Personal */}
+        <div className="bg-white border border-zinc-200 rounded-2xl p-6 shadow-sm space-y-4">
+          <div className="flex items-center justify-between pb-3 border-b border-zinc-100">
+            <div className="flex items-center gap-2.5">
+              <div className="w-2.5 h-2.5 bg-zinc-900 rounded-full"></div>
+              <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-900">
                 Identificación Personal
-              </h6>
+              </h2>
+            </div>
+            <span className="text-[10px] font-mono text-zinc-400">DATOS GENERALES</span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+            <div>
+              <span className="text-zinc-400 font-mono text-[11px] block uppercase">Nombres</span>
+              <span className="font-semibold text-zinc-900 text-sm mt-0.5 block">
+                {employee.nombre || "—"}
+              </span>
             </div>
 
-            <div className="d-flex flex-column gap-3">
-              <div>
-                <span className="text-muted small d-block">
-                  Nombres Completos
-                </span>
-                <span className="fw-bold text-dark">{employee.nombre}</span>
-              </div>
-              <div>
-                <span className="text-muted small d-block">Apellidos</span>
-                <span className="fw-bold text-dark">
-                  {employee.apellidos || "—"}
-                </span>
-              </div>
-              <div>
-                <span className="text-muted small d-block">
-                  N° Identificación / DNI
-                </span>
-                <span className="font-monospace fw-bold text-dark">
-                  {employee.nIdentificacion || "No registrado"}
-                </span>
-              </div>
-              <div>
-                <span className="text-muted small d-block">
-                  Teléfono / Celular
-                </span>
-                <span className="font-monospace fw-bold text-teal">
-                  {employee.numeroTelefono || "No registrado"}
-                </span>
-              </div>
+            <div>
+              <span className="text-zinc-400 font-mono text-[11px] block uppercase">Apellidos</span>
+              <span className="font-semibold text-zinc-900 text-sm mt-0.5 block">
+                {employee.apellidos || "—"}
+              </span>
+            </div>
+
+            <div>
+              <span className="text-zinc-400 font-mono text-[11px] block uppercase">N° Identificación / DNI</span>
+              <span className="font-mono font-semibold text-zinc-900 text-sm mt-0.5 block">
+                {employee.nIdentificacion || "No registrado"}
+              </span>
+            </div>
+
+            <div>
+              <span className="text-zinc-400 font-mono text-[11px] block uppercase">Teléfono / Celular</span>
+              <span className="font-mono font-semibold text-zinc-900 text-sm mt-0.5 block">
+                {employee.numeroTelefono || "No registrado"}
+              </span>
             </div>
           </div>
         </div>
 
-        {/* Tarjeta 2: Acceso y Credenciales */}
-        <div className="col-12 col-md-6">
-          <div className="bg-white border rounded-3 p-4 h-100 shadow-xs">
-            <div className="d-flex align-items-center gap-2 pb-3 mb-3 border-bottom">
-              <span className="accent-bar"></span>
-              <h6
-                className="fw-bold text-dark m-0 text-uppercase"
-                style={{ fontSize: "0.8rem", letterSpacing: "0.5px" }}
-              >
-                Cuenta del Sistema
-              </h6>
+        {/* Tarjeta 2: Cuenta del Sistema & Credenciales */}
+        <div className="bg-white border border-zinc-200 rounded-2xl p-6 shadow-sm space-y-4">
+          <div className="flex items-center justify-between pb-3 border-b border-zinc-100">
+            <div className="flex items-center gap-2.5">
+              <div className="w-2.5 h-2.5 bg-zinc-900 rounded-full"></div>
+              <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-900">
+                Credenciales & Acceso
+              </h2>
+            </div>
+            <span className="text-[10px] font-mono text-zinc-400">SEGURIDAD</span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+            <div>
+              <span className="text-zinc-400 font-mono text-[11px] block uppercase">Nombre de Usuario</span>
+              <span className="font-mono font-bold text-zinc-900 text-sm mt-0.5 block">
+                @{employee.username}
+              </span>
             </div>
 
-            <div className="d-flex flex-column gap-3">
-              <div>
-                <span className="text-muted small d-block">
-                  Nombre de Usuario
-                </span>
-                <span className="font-monospace fw-bold text-secondary">
-                  @{employee.username}
-                </span>
-              </div>
-              <div>
-                <span className="text-muted small d-block">
-                  Correo Corporativo
-                </span>
-                <span className="fw-semibold text-dark">{employee.email}</span>
-              </div>
-              <div>
-                <span className="text-muted small d-block">
-                  Perfil de Seguridad
-                </span>
-                {employee.admin ? (
-                  <span className="badge bg-purple-soft text-purple border border-purple-subtle px-2 py-1">
-                    Administrador (Acceso Total)
-                  </span>
-                ) : (
-                  <span className="badge bg-light text-secondary border px-2 py-1">
-                    Personal (Acceso Limitado)
-                  </span>
-                )}
-              </div>
+            <div>
+              <span className="text-zinc-400 font-mono text-[11px] block uppercase">Correo Electrónico</span>
+              <span className="font-medium text-zinc-900 text-sm mt-0.5 block break-all">
+                {employee.email || "No registrado"}
+              </span>
+            </div>
+
+            <div className="sm:col-span-2">
+              <span className="text-zinc-400 font-mono text-[11px] block uppercase mb-1.5">Perfil de Acceso</span>
+              {employee.admin ? (
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-zinc-900 text-white font-mono text-xs font-bold">
+                  <span>●</span>
+                  <span>ADMINISTRADOR (ACCESO TOTAL AL SISTEMA)</span>
+                </div>
+              ) : (
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-zinc-100 text-zinc-800 border border-zinc-300 font-mono text-xs font-bold">
+                  <span>○</span>
+                  <span>OPERATIVO / CAJERO (ACCESO LIMITADO)</span>
+                </div>
+              )}
             </div>
           </div>
         </div>
 
-        {/* Tarjeta 3: Relación Laboral y Comisiones */}
-        <div className="col-12">
-          <div className="bg-white border rounded-3 p-4 shadow-xs">
-            <div className="d-flex align-items-center gap-2 pb-3 mb-3 border-bottom">
-              <span className="accent-bar"></span>
-              <h6
-                className="fw-bold text-dark m-0 text-uppercase"
-                style={{ fontSize: "0.8rem", letterSpacing: "0.5px" }}
-              >
-                Contratación & Comisiones
-              </h6>
+        {/* Tarjeta 3: Relación Laboral & Remuneración */}
+        <div className="bg-white border border-zinc-200 rounded-2xl p-6 shadow-sm space-y-4 md:col-span-2">
+          <div className="flex items-center justify-between pb-3 border-b border-zinc-100">
+            <div className="flex items-center gap-2.5">
+              <div className="w-2.5 h-2.5 bg-zinc-900 rounded-full"></div>
+              <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-900">
+                Relación Laboral & Comisiones
+              </h2>
+            </div>
+            <span className="text-[10px] font-mono text-zinc-400">CONDICIONES CONTRACTUALES</span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+            <div>
+              <span className="text-zinc-400 font-mono text-[11px] block uppercase">Cargo Asignado</span>
+              <span className="font-semibold text-zinc-900 text-base mt-0.5 block">
+                {employee.cargo || "Sin cargo especificado"}
+              </span>
             </div>
 
-            <div className="row g-3">
-              <div className="col-md-4">
-                <span className="text-muted small d-block">Cargo Asignado</span>
-                <span className="fw-bold text-dark">
-                  {employee.cargo || "Sin cargo especificado"}
-                </span>
-              </div>
-              <div className="col-md-4">
-                <span className="text-muted small d-block">
-                  Fecha de Ingreso
-                </span>
-                <span className="fw-bold text-dark">
-                  {formatDate(employee.fechaContratacion)}
-                </span>
-              </div>
-              <div className="col-md-4">
-                <span className="text-muted small d-block">
-                  Comisión por Ventas
-                </span>
-                <span className="fw-bold text-dark font-monospace fs-5">
-                  {employee.porcentajeComision
-                    ? `${employee.porcentajeComision}%`
-                    : "0%"}
-                </span>
-              </div>
+            <div>
+              <span className="text-zinc-400 font-mono text-[11px] block uppercase">Fecha de Contratación</span>
+              <span className="font-semibold text-zinc-900 text-base mt-0.5 block">
+                {formatDate(employee.fechaContratacion)}
+              </span>
+            </div>
+
+            <div>
+              <span className="text-zinc-400 font-mono text-[11px] block uppercase">Comisión por Ventas</span>
+              <span className="font-mono font-black text-zinc-900 text-base mt-0.5 block">
+                {employee.porcentajeComision ? `${employee.porcentajeComision}%` : "0.0%"}
+              </span>
             </div>
           </div>
         </div>
       </div>
-
-      <style>{`
-        .accent-bar { width: 4px; height: 18px; background-color: #006d77; border-radius: 2px; display: inline-block; }
-        .text-teal { color: #006d77 !important; }
-        .bg-teal-soft { background-color: #e6f4f1 !important; }
-        .text-purple { color: #5b21b6 !important; }
-        .bg-purple-soft { background-color: #f5f3ff !important; }
-        .border-purple-subtle { border-color: #ddd6fe !important; }
-
-        .btn-teal-primary {
-          background-color: #006d77;
-          color: #ffffff;
-          border: none;
-          transition: all 0.15s ease;
-        }
-        .btn-teal-primary:hover {
-          background-color: #084c53;
-          color: #ffffff;
-        }
-
-        .detail-avatar {
-          width: 48px;
-          height: 48px;
-          border-radius: 10px;
-          background-color: #e6f4f1;
-          color: #006d77;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 1.1rem;
-        }
-      `}</style>
     </div>
   );
 };
+
+export default EmployeeDetailPage;

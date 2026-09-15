@@ -10,9 +10,9 @@ export const KardexReport = ({
     loading = false,
 }) => {
     const kardexSubTabs = [
-        { id: "kardex_valorizado", label: "Kardex Valorizado", icon: "📊" },
-        { id: "kardex_movimiento", label: "Movimientos de Kardex", icon: "📦" },
-        { id: "kardex_producto", label: "Kardex por Producto", icon: "📑" },
+        { id: "kardex_valorizado", label: "Kardex Valorizado" },
+        { id: "kardex_movimiento", label: "Movimientos de Kardex" },
+        { id: "kardex_producto", label: "Kardex por Producto" },
     ];
 
     const [subTab, setSubTab] = useState("kardex_valorizado");
@@ -569,8 +569,8 @@ export const KardexReport = ({
             {/* Header con botones PDF y Excel */}
             <div className="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
                 <div className="d-flex align-items-center gap-2">
-                    <span className="badge bg-teal-subtle text-teal fw-bold px-3 py-1.5 rounded-pill" style={{ fontSize: "0.78rem" }}>
-                        📊 KARDEX FÍSICO Y VALORIZADO
+                    <span className="badge rounded-1 px-3 py-1.5 fw-bold" style={{ backgroundColor: "#09090b", color: "#ffffff", fontSize: "0.72rem" }}>
+                        KARDEX FÍSICO Y VALORIZADO
                     </span>
                     <span className="text-secondary small">
                         Historial cronológico, auditoría de existencias y trazabilidad
@@ -620,7 +620,6 @@ export const KardexReport = ({
                             setCurrentPage(1);
                         }}
                     >
-                        <span className="me-1">{tab.icon}</span>
                         <span>{tab.label}</span>
                     </button>
                 ))}
@@ -746,7 +745,7 @@ export const KardexReport = ({
             <div className="bg-white rounded-3 border shadow-sm overflow-hidden mb-3">
                 {loading ? (
                     <div className="p-5 text-center">
-                        <div className="spinner-border text-orange-custom" role="status" style={{ width: "2.5rem", height: "2.5rem" }}>
+                        <div className="spinner-border text-dark" role="status" style={{ width: "2rem", height: "2rem" }}>
                             <span className="visually-hidden">Cargando kardex...</span>
                         </div>
                         <p className="text-secondary small mt-2 mb-0">Calculando movimientos de kardex...</p>
@@ -793,14 +792,12 @@ export const KardexReport = ({
                                             <td className="small text-secondary">{item.barcode}</td>
                                             <td className="small text-secondary">{item.category}</td>
                                             <td className="text-center">
-                                                <span className={`badge-badge fw-bold ${item.movementType === "ENTRADA" ? "bg-teal-subtle text-teal" : "bg-rose-light text-rose"}`}>
+                                                <span className={`badge-badge fw-bold ${item.movementType === "ENTRADA" ? "bg-dark text-white" : "bg-light text-dark border"}`}>
                                                     {item.movementType}
                                                 </span>
                                             </td>
-                                            <td className="text-center fw-bold">
-                                                <span className={item.movementType === "ENTRADA" ? "text-emerald" : "text-rose"}>
-                                                    {item.movementType === "ENTRADA" ? `+${item.quantity}` : `-${item.quantity}`}
-                                                </span>
+                                            <td className="text-center fw-bold text-dark">
+                                                {item.movementType === "ENTRADA" ? `+${item.quantity}` : `-${item.quantity}`}
                                             </td>
                                             <td className="text-end text-dark">S/ {item.unitCost.toFixed(2)}</td>
                                             <td className="text-end fw-bold text-dark">S/ {item.totalCost.toFixed(2)}</td>
@@ -843,7 +840,7 @@ export const KardexReport = ({
                                             <td className="small text-secondary">{item.barcode}</td>
                                             <td className="text-center fw-bold">{item.quantitySold} uds</td>
                                             <td className="text-end text-muted small">S/ {item.precioCompra.toFixed(2)}</td>
-                                            <td className="text-end fw-bold text-orange-custom">S/ {item.totalCompra.toFixed(2)}</td>
+                                            <td className="text-end fw-bold text-dark">S/ {item.totalCompra.toFixed(2)}</td>
                                             <td className="text-end text-dark">S/ {item.precioVenta.toFixed(2)}</td>
                                             <td className="text-end fw-black text-emerald">S/ {item.totalVenta.toFixed(2)}</td>
                                         </tr>

@@ -11,14 +11,14 @@ export const FinanceReport = ({
     loading = false,
 }) => {
     const financeSubTabs = [
-        { id: "fin_profit_product", label: "Ganancia por Producto", icon: "$" },
-        { id: "fin_client_balances", label: "Saldos de Clientes", icon: "📁" },
-        { id: "fin_credits_due", label: "Créditos por Vencer", icon: "⏱️" },
-        { id: "fin_client_credits", label: "Créditos Clientes", icon: "⏱️" },
-        { id: "fin_credit_payments", label: "Crédito y pagos", icon: "💵" },
-        { id: "fin_payment_history", label: "Historial de Pagos", icon: "⏱️" },
-        { id: "fin_cash_closures", label: "Cierres de Caja", icon: "🏢" },
-        { id: "fin_cash_movements", label: "Movimientos de Caja", icon: "💳" },
+        { id: "fin_profit_product", label: "Ganancia por Producto" },
+        { id: "fin_client_balances", label: "Saldos de Clientes" },
+        { id: "fin_credits_due", label: "Créditos por Vencer" },
+        { id: "fin_client_credits", label: "Créditos Clientes" },
+        { id: "fin_credit_payments", label: "Crédito y pagos" },
+        { id: "fin_payment_history", label: "Historial de Pagos" },
+        { id: "fin_cash_closures", label: "Cierres de Caja" },
+        { id: "fin_cash_movements", label: "Movimientos de Caja" },
     ];
 
     const [subTab, setSubTab] = useState("fin_credits_due");
@@ -484,8 +484,8 @@ export const FinanceReport = ({
             {/* Header con botones PDF y Excel */}
             <div className="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
                 <div className="d-flex align-items-center gap-2">
-                    <span className="badge bg-emerald-subtle text-emerald fw-bold px-3 py-1.5 rounded-pill" style={{ fontSize: "0.78rem" }}>
-                        💰 BALANCE FINANCIERO & CRÉDITOS
+                    <span className="badge rounded-1 px-3 py-1.5 fw-bold" style={{ backgroundColor: "#09090b", color: "#ffffff", fontSize: "0.72rem" }}>
+                        BALANCE FINANCIERO & CRÉDITOS
                     </span>
                     <span className="text-secondary small">
                         Cuentas por cobrar, cobranzas, flujo de caja y rentabilidad
@@ -535,7 +535,6 @@ export const FinanceReport = ({
                             setCurrentPage(1);
                         }}
                     >
-                        <span className="me-1">{tab.icon}</span>
                         <span>{tab.label}</span>
                     </button>
                 ))}
@@ -546,12 +545,15 @@ export const FinanceReport = ({
                 <div className="col-12 col-sm-6 col-xl-3">
                     <div className="card-payment bg-white p-3 rounded-3 shadow-sm border d-flex align-items-center justify-content-between">
                         <div className="d-flex align-items-center gap-3">
-                            <div className="payment-icon-wrap bg-purple-subtle text-purple">
-                                <span style={{ fontSize: "1.2rem", fontWeight: "bold" }}>$</span>
+                            <div className="payment-icon-wrap" style={{ backgroundColor: "#f4f4f5", color: "#09090b" }}>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <line x1="12" y1="1" x2="12" y2="23" />
+                                    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                                </svg>
                             </div>
                             <div>
                                 <span className="payment-title text-secondary fw-bold">VENTAS TOTALES</span>
-                                <h5 className="m-0 fw-black text-dark">
+                                <h5 className="m-0 fw-bold text-dark font-monospace">
                                     S/ {financeTotalsSummary.totalSalesRevenue.toFixed(2)}
                                 </h5>
                             </div>
@@ -563,46 +565,55 @@ export const FinanceReport = ({
                 <div className="col-12 col-sm-6 col-xl-3">
                     <div className="card-payment bg-white p-3 rounded-3 shadow-sm border d-flex align-items-center justify-content-between">
                         <div className="d-flex align-items-center gap-3">
-                            <div className="payment-icon-wrap bg-emerald-subtle text-emerald">
-                                <span style={{ fontSize: "1.1rem" }}>📈</span>
+                            <div className="payment-icon-wrap" style={{ backgroundColor: "#f4f4f5", color: "#09090b" }}>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+                                    <polyline points="17 6 23 6 23 12" />
+                                </svg>
                             </div>
                             <div>
                                 <span className="payment-title text-secondary fw-bold">UTILIDAD BRUTA</span>
-                                <h5 className="m-0 fw-black text-emerald">
+                                <h5 className="m-0 fw-bold text-dark font-monospace">
                                     S/ {financeTotalsSummary.totalProfitEstimated.toFixed(2)}
                                 </h5>
                             </div>
                         </div>
-                        <span className="online-dot"></span>
+                        <span className="badge rounded-1 bg-light text-dark border small fw-bold">Margen</span>
                     </div>
                 </div>
 
                 <div className="col-12 col-sm-6 col-xl-3">
                     <div className="card-payment bg-white p-3 rounded-3 shadow-sm border d-flex align-items-center justify-content-between">
                         <div className="d-flex align-items-center gap-3">
-                            <div className="payment-icon-wrap bg-rose-subtle text-rose">
-                                <span style={{ fontSize: "1.1rem" }}>⏱️</span>
+                            <div className="payment-icon-wrap" style={{ backgroundColor: "#f4f4f5", color: "#09090b" }}>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <circle cx="12" cy="12" r="10" />
+                                    <polyline points="12 6 12 12 16 14" />
+                                </svg>
                             </div>
                             <div>
                                 <span className="payment-title text-secondary fw-bold">POR COBRAR (CARTERA)</span>
-                                <h5 className="m-0 fw-black text-rose">
+                                <h5 className="m-0 fw-bold text-dark font-monospace">
                                     S/ {financeTotalsSummary.totalPendingReceivable.toFixed(2)}
                                 </h5>
                             </div>
                         </div>
-                        <span className="badge bg-rose-light text-rose small">Créditos</span>
+                        <span className="badge rounded-1 bg-light text-dark border small fw-bold">Créditos</span>
                     </div>
                 </div>
 
                 <div className="col-12 col-sm-6 col-xl-3">
                     <div className="card-payment bg-white p-3 rounded-3 shadow-sm border d-flex align-items-center justify-content-between">
                         <div className="d-flex align-items-center gap-3">
-                            <div className="payment-icon-wrap bg-blue-subtle text-blue">
-                                <span style={{ fontSize: "1.1rem" }}>💵</span>
+                            <div className="payment-icon-wrap" style={{ backgroundColor: "#f4f4f5", color: "#09090b" }}>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                                    <polyline points="22 4 12 14.01 9 11.01" />
+                                </svg>
                             </div>
                             <div>
                                 <span className="payment-title text-secondary fw-bold">COBRANZAS RECUPERADAS</span>
-                                <h5 className="m-0 fw-black text-dark">
+                                <h5 className="m-0 fw-bold text-dark font-monospace">
                                     S/ {financeTotalsSummary.totalPaymentsCollected.toFixed(2)}
                                 </h5>
                             </div>
@@ -713,7 +724,7 @@ export const FinanceReport = ({
             <div className="bg-white rounded-3 border shadow-sm overflow-hidden mb-3">
                 {loading ? (
                     <div className="p-5 text-center">
-                        <div className="spinner-border text-orange-custom" role="status" style={{ width: "2.5rem", height: "2.5rem" }}>
+                        <div className="spinner-border text-dark" role="status" style={{ width: "2rem", height: "2rem" }}>
                             <span className="visually-hidden">Cargando reporte...</span>
                         </div>
                         <p className="text-secondary small mt-2 mb-0">Cargando datos financieros...</p>

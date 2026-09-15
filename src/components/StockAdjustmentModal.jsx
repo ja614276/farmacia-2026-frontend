@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
+import PropTypes from "prop-types";
 import Swal from "sweetalert2";
 import { findAll as findAllProducts } from "../services/ProductService";
 import { findLotsByProduct, createAdjustment, createLot } from "../services/InventoryAdjustmentService";
@@ -112,13 +113,11 @@ export const StockAdjustmentModal = ({ isOpen, onClose, onAdjustmentSaved }) => 
             Swal.fire("Atención", "Seleccione primero un producto para asociar el lote.", "warning");
             return;
         }
-        // Buscar si ya existe un lote "S/N"
         const existingSN = lots.find((l) => (l.nroLote || "").toUpperCase() === "S/N");
         if (existingSN) {
             setSelectedLot(existingSN);
             return;
         }
-        // Si no existe, crearlo al vuelo
         try {
             const nextYear = new Date();
             nextYear.setFullYear(nextYear.getFullYear() + 2);
@@ -250,8 +249,8 @@ export const StockAdjustmentModal = ({ isOpen, onClose, onAdjustmentSaved }) => 
             text: confirmMsg,
             icon: "question",
             showCancelButton: true,
-            confirmButtonColor: movementType === "ENTRADA" ? "#0d9488" : "#e11d48",
-            cancelButtonColor: "#475569",
+            confirmButtonColor: "#09090b",
+            cancelButtonColor: "#71717a",
             confirmButtonText: "Sí, Guardar Ajuste",
             cancelButtonText: "Cancelar",
         });
@@ -294,56 +293,81 @@ export const StockAdjustmentModal = ({ isOpen, onClose, onAdjustmentSaved }) => 
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md overflow-y-auto animate-fadeIn">
-            <div className="relative w-full max-w-4xl bg-[#0e1626] border border-slate-800/80 rounded-3xl shadow-2xl overflow-hidden my-6">
-                
-                {/* CABECERA (Imagen 2) */}
-                <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800/60 bg-[#121c30]/90">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs overflow-y-auto">
+            <div className="relative w-full max-w-4xl bg-white border border-zinc-200 rounded-xl shadow-2xl overflow-hidden my-6">
+                {/* Cabecera */}
+                <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-200 bg-zinc-50/50">
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-2xl bg-teal-500/10 border border-teal-500/20 text-teal-400 flex items-center justify-center shadow-inner">
+                        <div className="w-9 h-9 rounded-lg bg-zinc-900 text-white flex items-center justify-center font-bold shadow-xs">
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
                             </svg>
                         </div>
                         <div>
-                            <h2 className="text-base sm:text-lg font-black text-white tracking-wide flex items-center gap-2">
+                            <h2 className="text-base font-black text-zinc-950 tracking-tight">
                                 Nuevo Ajuste de Stock
                             </h2>
-                            <p className="text-[11px] text-slate-400 font-medium">
-                                Control manual de inventario y corrección de lotes
+                            <p className="text-xs text-zinc-500">
+                                Movimiento manual de existencias y corrección física por lote
                             </p>
                         </div>
                     </div>
                     <button
                         type="button"
                         onClick={onClose}
-                        className="w-8 h-8 rounded-xl bg-slate-800/60 hover:bg-slate-700/60 text-slate-400 hover:text-white flex items-center justify-center transition-all"
+                        className="w-8 h-8 rounded-lg border border-zinc-200 bg-white hover:bg-zinc-100 text-zinc-500 hover:text-zinc-900 flex items-center justify-center transition-colors"
                     >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
+                        ✕
                     </button>
                 </div>
 
-                {/* CUERPO DEL MODAL (Grid de 2 Columnas como en la Imagen 2) */}
+                {/* Formulario */}
                 <form onSubmit={handleSubmitAdjustment} className="p-6">
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                        
-                        {/* COLUMNA IZQUIERDA (8 COLS): Formulario de Ajuste */}
+                        {/* Columna Izquierda (8 cols) */}
                         <div className="lg:col-span-8 space-y-5">
-                            
-                            {/* 1. SECCIÓN PRODUCTO */}
-                            <div className="space-y-1.5">
-                                <label className="block text-[11px] font-bold text-slate-400 tracking-wider uppercase">
-                                    Producto
+                            {/* Selector de Tipo de Movimiento */}
+                            <div>
+                                <label className="block text-xs font-bold text-zinc-800 uppercase tracking-wider mb-2">
+                                    Tipo de Movimiento *
                                 </label>
-                                
+                                <div className="grid grid-cols-2 gap-3">
+                                    <button
+                                        type="button"
+                                        onClick={() => setMovementType("ENTRADA")}
+                                        className={`h-11 rounded-lg font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 border ${
+                                            movementType === "ENTRADA"
+                                                ? "bg-zinc-900 text-white border-zinc-900 shadow-sm"
+                                                : "bg-zinc-50 text-zinc-700 border-zinc-300 hover:bg-zinc-100"
+                                        }`}
+                                    >
+                                        <span>+ ENTRADA DE STOCK</span>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setMovementType("SALIDA")}
+                                        className={`h-11 rounded-lg font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 border ${
+                                            movementType === "SALIDA"
+                                                ? "bg-zinc-900 text-white border-zinc-900 shadow-sm"
+                                                : "bg-zinc-50 text-zinc-700 border-zinc-300 hover:bg-zinc-100"
+                                        }`}
+                                    >
+                                        <span>- SALIDA / MERMA</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Selector de Producto */}
+                            <div className="space-y-1.5">
+                                <label className="block text-xs font-bold text-zinc-800 uppercase tracking-wider">
+                                    Medicamento / Producto *
+                                </label>
                                 {!selectedProduct ? (
                                     <div className="relative">
                                         <div className="relative flex items-center">
-                                            <svg className="w-4 h-4 text-slate-400 absolute left-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <svg className="w-4 h-4 text-zinc-400 absolute left-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <circle cx="11" cy="11" r="8" strokeWidth="2" />
-                                                <line x1="21" y1="21" x2="16.65" y2="16.65" strokeWidth="2" />
+                                                <path strokeLinecap="round" strokeWidth="2" d="M21 21l-4.35-4.35" />
                                             </svg>
                                             <input
                                                 type="text"
@@ -353,53 +377,45 @@ export const StockAdjustmentModal = ({ isOpen, onClose, onAdjustmentSaved }) => 
                                                     setIsSearching(true);
                                                 }}
                                                 onFocus={() => setIsSearching(true)}
-                                                placeholder="Buscar por nombre o código..."
-                                                className="w-full pl-10 pr-4 py-2.5 bg-[#142036] border border-slate-700/80 rounded-2xl text-xs font-semibold text-slate-200 placeholder-slate-500 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 transition-all shadow-inner"
+                                                placeholder="Buscar producto por nombre o código..."
+                                                className="w-full h-11 pl-10 pr-4 text-xs font-medium text-zinc-900 bg-zinc-50/50 border border-zinc-300 rounded-lg hover:bg-white focus:bg-white focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 focus:outline-none transition-all shadow-2xs"
                                             />
                                         </div>
 
-                                        {/* Dropdown de Resultados de Búsqueda */}
+                                        {/* Dropdown de coincidencias */}
                                         {isSearching && filteredProducts.length > 0 && (
-                                            <div className="absolute left-0 right-0 top-full mt-1.5 z-20 bg-[#16233b] border border-slate-700 rounded-2xl shadow-2xl max-h-56 overflow-y-auto divide-y divide-slate-800">
-                                                {filteredProducts.map((prod) => (
+                                            <div className="absolute top-full left-0 right-0 z-30 mt-1 bg-white border border-zinc-300 rounded-xl shadow-2xl max-h-56 overflow-y-auto divide-y divide-zinc-100">
+                                                {filteredProducts.map((p) => (
                                                     <div
-                                                        key={prod.id || prod.idProducto}
-                                                        onClick={() => handleSelectProduct(prod)}
-                                                        className="p-3 hover:bg-teal-500/10 cursor-pointer flex items-center justify-between transition-colors"
+                                                        key={p.id || p.idProducto}
+                                                        onClick={() => handleSelectProduct(p)}
+                                                        className="p-3 hover:bg-zinc-50 cursor-pointer flex items-center justify-between text-xs transition-colors"
                                                     >
                                                         <div>
-                                                            <span className="text-xs font-bold text-slate-100 block">
-                                                                {prod.nombre || prod.name}
+                                                            <span className="font-bold text-zinc-950 uppercase block">
+                                                                {p.nombre || p.name}
                                                             </span>
-                                                            <span className="text-[10px] text-slate-400 font-medium">
-                                                                Cód: {prod.codigoBarras || "S/C"} • Lab: {prod.laboratorioNombre || "Genérico"}
+                                                            <span className="text-[11px] text-zinc-500">
+                                                                {[p.formaFarmaceutica, p.concentracion].filter(Boolean).join(" · ")} {p.laboratorioNombre ? `— ${p.laboratorioNombre}` : ""}
                                                             </span>
                                                         </div>
-                                                        <div className="text-right">
-                                                            <span className="text-xs font-black text-teal-400 block">
-                                                                Stock: {prod.stockReal ?? 0}
-                                                            </span>
-                                                            <span className="text-[10px] text-slate-500">Unidades</span>
-                                                        </div>
+                                                        <span className="font-mono text-[10px] font-bold bg-zinc-100 border border-zinc-200 text-zinc-800 px-2 py-0.5 rounded">
+                                                            Stock: {p.stockReal !== undefined ? p.stockReal : (p.stock || 0)}
+                                                        </span>
                                                     </div>
                                                 ))}
                                             </div>
                                         )}
                                     </div>
                                 ) : (
-                                    <div className="p-3.5 bg-[#142036] border border-teal-500/30 rounded-2xl flex items-center justify-between">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-xl bg-teal-500/10 border border-teal-500/20 text-teal-400 font-black text-xs flex items-center justify-center flex-shrink-0">
-                                                Rx
-                                            </div>
-                                            <div>
-                                                <span className="text-xs font-black text-white block uppercase">
-                                                    {selectedProduct.nombre || selectedProduct.name}
-                                                </span>
-                                                <span className="text-[10px] text-slate-400 font-medium block mt-0.5">
-                                                    Stock Real Total: <strong className="text-teal-400">{selectedProduct.stockReal ?? 0} uds</strong> • Lab: {selectedProduct.laboratorioNombre || "Genérico"}
-                                                </span>
-                                            </div>
+                                    <div className="p-3 bg-zinc-50 border border-zinc-200 rounded-lg flex items-center justify-between">
+                                        <div>
+                                            <span className="font-bold text-zinc-950 uppercase text-xs block">
+                                                {selectedProduct.nombre || selectedProduct.name}
+                                            </span>
+                                            <span className="text-[11px] text-zinc-500">
+                                                {[selectedProduct.formaFarmaceutica, selectedProduct.concentracion].filter(Boolean).join(" · ")} {selectedProduct.laboratorioNombre ? `— ${selectedProduct.laboratorioNombre}` : ""}
+                                            </span>
                                         </div>
                                         <button
                                             type="button"
@@ -408,7 +424,7 @@ export const StockAdjustmentModal = ({ isOpen, onClose, onAdjustmentSaved }) => 
                                                 setSelectedLot(null);
                                                 setLots([]);
                                             }}
-                                            className="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] font-bold rounded-xl transition-colors"
+                                            className="px-2.5 py-1 text-xs font-bold text-zinc-700 bg-white border border-zinc-300 hover:bg-zinc-100 rounded-md transition-colors"
                                         >
                                             Cambiar
                                         </button>
@@ -416,317 +432,225 @@ export const StockAdjustmentModal = ({ isOpen, onClose, onAdjustmentSaved }) => 
                                 )}
                             </div>
 
-                            {/* 2. SECCIÓN LOTE ASOCIADO (Imagen 2) */}
+                            {/* Selector de Lote */}
                             <div className="space-y-1.5">
                                 <div className="flex items-center justify-between">
-                                    <label className="text-[11px] font-bold text-slate-400 tracking-wider uppercase">
-                                        Lote Asociado
+                                    <label className="block text-xs font-bold text-zinc-800 uppercase tracking-wider">
+                                        Lote Asociado *
                                     </label>
-                                    <div className="flex items-center gap-2">
-                                        <button
-                                            type="button"
-                                            onClick={handleAssignGenericLot}
-                                            className="px-2.5 py-1 bg-[#1a2842] hover:bg-[#203152] text-slate-300 text-[10px] font-bold rounded-lg border border-slate-700/60 transition-colors"
-                                        >
-                                            Lote S/N
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={() => setShowNewLotForm(!showNewLotForm)}
-                                            className="px-2.5 py-1 bg-teal-500/15 hover:bg-teal-500/25 text-teal-300 text-[10px] font-bold rounded-lg border border-teal-500/30 transition-colors"
-                                        >
-                                            {showNewLotForm ? "Cancelar Lote" : "Registrar Lote Físico"}
-                                        </button>
-                                    </div>
+                                    {selectedProduct && (
+                                        <div className="flex items-center gap-2">
+                                            <button
+                                                type="button"
+                                                onClick={handleAssignGenericLot}
+                                                className="text-[11px] font-bold text-zinc-700 hover:text-black underline"
+                                            >
+                                                Lote S/N
+                                            </button>
+                                            <span className="text-zinc-300">•</span>
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowNewLotForm(!showNewLotForm)}
+                                                className="text-[11px] font-bold text-zinc-700 hover:text-black underline"
+                                            >
+                                                {showNewLotForm ? "Ocultar formulario" : "+ Crear Lote"}
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
 
-                                {/* Formulario rápido inline para crear lote físico si ingresa uno nuevo */}
+                                {/* Formulario rápido de nuevo lote */}
                                 {showNewLotForm && (
-                                    <div className="p-3.5 bg-[#142036] border border-teal-500/40 rounded-2xl space-y-3 animate-fadeIn">
-                                        <div className="flex items-center justify-between">
-                                            <span className="text-xs font-bold text-teal-300">
-                                                Nuevo Lote para {selectedProduct?.nombre || "Producto"}
-                                            </span>
-                                        </div>
-                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                                    <div className="p-3 bg-zinc-50 border border-zinc-300 rounded-lg space-y-3 mb-2">
+                                        <div className="grid grid-cols-2 gap-2.5">
                                             <div>
-                                                <label className="text-[10px] font-bold text-slate-400 block mb-1">Nro Lote *</label>
+                                                <label className="text-[10px] font-bold text-zinc-700 uppercase">Nº de Lote</label>
                                                 <input
                                                     type="text"
                                                     value={newLotData.nroLote}
-                                                    onChange={(e) => setNewLotData((prev) => ({ ...prev, nroLote: e.target.value }))}
-                                                    placeholder="Ej: L-2026-001"
-                                                    className="w-full px-2.5 py-1.5 bg-[#0e1626] border border-slate-700 rounded-xl text-xs text-white"
+                                                    onChange={(e) => setNewLotData({ ...newLotData, nroLote: e.target.value })}
+                                                    placeholder="EJ. L2026-05"
+                                                    className="w-full h-8 px-2 text-xs font-mono font-bold uppercase bg-white border border-zinc-300 rounded"
                                                 />
                                             </div>
                                             <div>
-                                                <label className="text-[10px] font-bold text-slate-400 block mb-1">Fecha Vencimiento *</label>
+                                                <label className="text-[10px] font-bold text-zinc-700 uppercase">Vencimiento</label>
                                                 <input
                                                     type="date"
                                                     value={newLotData.fechaVencimiento}
-                                                    onChange={(e) => setNewLotData((prev) => ({ ...prev, fechaVencimiento: e.target.value }))}
-                                                    className="w-full px-2.5 py-1.5 bg-[#0e1626] border border-slate-700 rounded-xl text-xs text-white"
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="text-[10px] font-bold text-slate-400 block mb-1">Costo Unit. (Opcional)</label>
-                                                <input
-                                                    type="number"
-                                                    step="0.01"
-                                                    value={newLotData.costoUnitario}
-                                                    onChange={(e) => setNewLotData((prev) => ({ ...prev, costoUnitario: e.target.value }))}
-                                                    className="w-full px-2.5 py-1.5 bg-[#0e1626] border border-slate-700 rounded-xl text-xs text-white"
+                                                    onChange={(e) => setNewLotData({ ...newLotData, fechaVencimiento: e.target.value })}
+                                                    className="w-full h-8 px-2 text-xs font-mono bg-white border border-zinc-300 rounded"
                                                 />
                                             </div>
                                         </div>
-                                        <div className="flex justify-end gap-2 pt-1">
-                                            <button
-                                                type="button"
-                                                onClick={handleSaveNewLot}
-                                                disabled={isSavingLot}
-                                                className="px-3 py-1 bg-teal-600 hover:bg-teal-500 text-white text-xs font-bold rounded-xl shadow-sm transition-all"
-                                            >
-                                                {isSavingLot ? "Guardando..." : "Guardar y Seleccionar"}
-                                            </button>
-                                        </div>
+                                        <button
+                                            type="button"
+                                            disabled={isSavingLot}
+                                            onClick={handleSaveNewLot}
+                                            className="w-full py-1.5 bg-zinc-900 hover:bg-black text-white text-xs font-bold rounded"
+                                        >
+                                            {isSavingLot ? "Guardando..." : "Guardar y Seleccionar Lote"}
+                                        </button>
                                     </div>
                                 )}
 
-                                {/* Selector de Lotes */}
-                                <select
-                                    disabled={!selectedProduct || isLoadingLots}
-                                    value={selectedLot?.idLote || ""}
-                                    onChange={(e) => {
-                                        const l = lots.find((item) => String(item.idLote) === String(e.target.value));
-                                        setSelectedLot(l || null);
-                                    }}
-                                    className="w-full px-3.5 py-2.5 bg-[#142036] border border-slate-700/80 rounded-2xl text-xs font-semibold text-slate-200 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 disabled:opacity-50 transition-all shadow-inner"
-                                >
-                                    {isLoadingLots ? (
-                                        <option>Cargando lotes disponibles...</option>
-                                    ) : lots.length === 0 ? (
-                                        <option value="">No hay lotes registrados para este producto</option>
-                                    ) : (
-                                        lots.map((lot) => {
-                                            const venc = lot.fechaVencimiento ? lot.fechaVencimiento.slice(0, 10) : "S/F";
-                                            return (
-                                                <option key={lot.idLote} value={lot.idLote}>
-                                                    #{lot.nroLote} | Vence: {venc} | Stock: {lot.cantidadActual ?? 0} uds
-                                                </option>
-                                            );
-                                        })
-                                    )}
-                                </select>
-                            </div>
-
-                            {/* 3. SECCIÓN TIPO DE MOVIMIENTO (Imagen 2 - Solo ENTRADA y SALIDA) */}
-                            <div className="space-y-1.5">
-                                <label className="block text-[11px] font-bold text-slate-400 tracking-wider uppercase">
-                                    Tipo de Movimiento
-                                </label>
-                                <div className="grid grid-cols-2 gap-3">
-                                    {/* Botón Entrada */}
-                                    <button
-                                        type="button"
-                                        onClick={() => setMovementType("ENTRADA")}
-                                        className={`flex items-center justify-center gap-2.5 py-3 rounded-2xl text-xs font-extrabold transition-all border ${
-                                            movementType === "ENTRADA"
-                                                ? "bg-teal-500 text-white border-teal-400 shadow-lg shadow-teal-500/20 ring-2 ring-teal-500/30"
-                                                : "bg-[#142036] text-slate-400 border-slate-700/80 hover:bg-[#182640] hover:text-slate-200"
-                                        }`}
-                                    >
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                                        </svg>
-                                        <span>Entrada</span>
-                                    </button>
-
-                                    {/* Botón Salida */}
-                                    <button
-                                        type="button"
-                                        onClick={() => setMovementType("SALIDA")}
-                                        className={`flex items-center justify-center gap-2.5 py-3 rounded-2xl text-xs font-extrabold transition-all border ${
-                                            movementType === "SALIDA"
-                                                ? "bg-rose-500 text-white border-rose-400 shadow-lg shadow-rose-500/20 ring-2 ring-rose-500/30"
-                                                : "bg-[#142036] text-slate-400 border-slate-700/80 hover:bg-[#182640] hover:text-slate-200"
-                                        }`}
-                                    >
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M13 17h8m0 0v-8m0 8l-8-8-4 4-6-6" />
-                                        </svg>
-                                        <span>Salida</span>
-                                    </button>
-                                </div>
-                            </div>
-
-                            {/* 4. SECCIÓN CANTIDAD Y FECHA */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                {/* Cantidad */}
-                                <div className="space-y-1.5">
-                                    <label className="block text-[11px] font-bold text-slate-400 tracking-wider uppercase">
-                                        Cantidad
-                                    </label>
-                                    <div className="relative flex items-center">
-                                        <input
-                                            type="number"
-                                            min="1"
-                                            value={quantity}
-                                            onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-                                            className="w-full pl-3.5 pr-20 py-2.5 bg-[#142036] border border-slate-700/80 rounded-2xl text-xs font-bold text-slate-100 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 transition-all"
-                                        />
-                                        <span className="absolute right-3 px-2 py-0.5 bg-slate-800 text-slate-400 text-[10px] font-bold rounded-lg uppercase tracking-wider">
-                                            UNIDADES
-                                        </span>
+                                {isLoadingLots ? (
+                                    <div className="p-3 bg-zinc-50 text-xs text-zinc-500 text-center rounded-lg border border-zinc-200">
+                                        Consultando lotes registrados...
                                     </div>
+                                ) : lots.length > 0 ? (
+                                    <select
+                                        value={selectedLot?.idLote || ""}
+                                        onChange={(e) => {
+                                            const match = lots.find((l) => String(l.idLote) === String(e.target.value));
+                                            setSelectedLot(match || null);
+                                        }}
+                                        className="w-full h-11 px-3.5 text-xs font-mono font-semibold text-zinc-900 bg-zinc-50/50 border border-zinc-300 rounded-lg hover:bg-white focus:bg-white focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 focus:outline-none transition-all cursor-pointer shadow-2xs"
+                                    >
+                                        {lots.map((l) => (
+                                            <option key={l.idLote} value={l.idLote}>
+                                                Lote: {l.nroLote} — Stock Actual: {l.cantidadActual ?? l.stock ?? 0} UND — Vence: {l.fechaVencimiento ? l.fechaVencimiento.slice(0, 10) : "S/F"}
+                                            </option>
+                                        ))}
+                                    </select>
+                                ) : (
+                                    <div className="p-3 bg-zinc-50 text-xs text-zinc-500 rounded-lg border border-zinc-200">
+                                        {selectedProduct ? "Este producto no tiene lotes. Utilice '+ Crear Lote' o 'Lote S/N'." : "Seleccione primero un producto."}
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Cantidad y Fecha */}
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-1.5">
+                                    <label className="block text-xs font-bold text-zinc-800 uppercase tracking-wider">
+                                        Cantidad (Unidades) *
+                                    </label>
+                                    <input
+                                        type="number"
+                                        min="1"
+                                        step="1"
+                                        value={quantity}
+                                        onChange={(e) => setQuantity(e.target.value)}
+                                        required
+                                        className="w-full h-11 px-3.5 text-xs font-mono font-bold text-center text-zinc-900 bg-zinc-50/50 border border-zinc-300 rounded-lg hover:bg-white focus:bg-white focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 focus:outline-none transition-all shadow-2xs"
+                                    />
                                 </div>
 
-                                {/* Fecha */}
                                 <div className="space-y-1.5">
-                                    <label className="block text-[11px] font-bold text-slate-400 tracking-wider uppercase">
-                                        Fecha
+                                    <label className="block text-xs font-bold text-zinc-800 uppercase tracking-wider">
+                                        Fecha del Movimiento
                                     </label>
                                     <input
                                         type="datetime-local"
                                         value={adjustmentDate}
                                         onChange={(e) => setAdjustmentDate(e.target.value)}
-                                        className="w-full px-3.5 py-2.5 bg-[#142036] border border-slate-700/80 rounded-2xl text-xs font-semibold text-slate-200 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 transition-all"
+                                        required
+                                        className="w-full h-11 px-3.5 text-xs font-mono text-zinc-900 bg-zinc-50/50 border border-zinc-300 rounded-lg hover:bg-white focus:bg-white focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 focus:outline-none transition-all shadow-2xs"
                                     />
                                 </div>
                             </div>
 
-                            {/* 5. SECCIÓN MOTIVO DEL AJUSTE */}
-                            <div className="space-y-2">
-                                <label className="block text-[11px] font-bold text-slate-400 tracking-wider uppercase">
-                                    Motivo del Ajuste
+                            {/* Motivo */}
+                            <div className="space-y-1.5">
+                                <label className="block text-xs font-bold text-zinc-800 uppercase tracking-wider">
+                                    Motivo / Justificación *
                                 </label>
-                                <textarea
-                                    rows="3"
+                                <input
+                                    type="text"
                                     value={reason}
                                     onChange={(e) => setReason(e.target.value)}
-                                    placeholder="Ej: Merma por daño en empaque, corrección de inventario físico, traslado de sucursal..."
-                                    className="w-full p-3.5 bg-[#142036] border border-slate-700/80 rounded-2xl text-xs font-medium text-slate-200 placeholder-slate-500 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 transition-all resize-none shadow-inner"
+                                    placeholder="Indique la justificación del ajuste..."
+                                    required
+                                    className="w-full h-11 px-3.5 text-xs font-medium text-zinc-900 placeholder:text-zinc-400 bg-zinc-50/50 border border-zinc-300 rounded-lg hover:bg-white focus:bg-white focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 focus:outline-none transition-all shadow-2xs"
                                 />
 
-                                {/* Chips de Sugerencia Rápida de Motivos */}
-                                <div className="flex flex-wrap gap-1.5 pt-0.5">
-                                    {reasonsSuggestions.map((sug, idx) => (
+                                {/* Sugerencias de motivo */}
+                                <div className="flex flex-wrap gap-1.5 pt-1">
+                                    {reasonsSuggestions.map((sug) => (
                                         <button
-                                            key={idx}
+                                            key={sug}
                                             type="button"
                                             onClick={() => setReason(sug)}
-                                            className="px-2.5 py-1 rounded-lg bg-[#142036] hover:bg-slate-700/60 border border-slate-700/50 text-[10px] font-semibold text-slate-300 transition-colors"
+                                            className="px-2 py-0.5 text-[10px] font-semibold text-zinc-600 hover:text-zinc-950 bg-zinc-100 hover:bg-zinc-200 border border-zinc-200 rounded transition-colors"
                                         >
                                             {sug}
                                         </button>
                                     ))}
                                 </div>
                             </div>
-
                         </div>
 
-                        {/* COLUMNA DERECHA (4 COLS): Resumen de Cambio + Empleado + Botón Guardar */}
-                        <div className="lg:col-span-4 space-y-5 flex flex-col justify-between">
-                            
-                            <div className="space-y-4">
-                                {/* RESUMEN DE CAMBIO (Imagen 2) */}
-                                <div className="bg-[#121c30] border border-slate-800/80 rounded-3xl p-5 space-y-4 shadow-xl">
-                                    <h3 className="text-[11px] font-black text-slate-300 tracking-wider uppercase pb-2 border-b border-slate-800">
-                                        RESUMEN DE CAMBIO
-                                    </h3>
+                        {/* Columna Derecha (4 cols): Ficha de Balance de Stock */}
+                        <div className="lg:col-span-4 bg-zinc-50 p-5 rounded-xl border border-zinc-200 flex flex-col justify-between space-y-4">
+                            <div>
+                                <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block mb-3">
+                                    Balance de Stock Proyectado
+                                </span>
 
-                                    {/* Stock Actual Lote */}
-                                    <div className="space-y-0.5">
-                                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
-                                            STOCK ACTUAL LOTE
-                                        </span>
-                                        <span className="text-2xl font-black text-white block">
-                                            {currentLotStock}
+                                <div className="space-y-3 text-xs">
+                                    <div className="flex items-center justify-between pb-2 border-b border-zinc-200">
+                                        <span className="text-zinc-600">Stock Actual del Lote:</span>
+                                        <span className="font-mono font-bold text-zinc-950">
+                                            {currentLotStock} UND
                                         </span>
                                     </div>
 
-                                    {/* Variación */}
-                                    <div className="space-y-0.5">
-                                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
-                                            VARIACIÓN
+                                    <div className="flex items-center justify-between pb-2 border-b border-zinc-200">
+                                        <span className="text-zinc-600">Variación por Ajuste:</span>
+                                        <span className={`font-mono font-bold ${movementType === "ENTRADA" ? "text-zinc-950" : "text-zinc-700"}`}>
+                                            {movementType === "ENTRADA" ? `+${qtyNum}` : `-${qtyNum}`} UND
                                         </span>
-                                        <div className="flex items-center gap-1.5">
-                                            <span className={`text-sm font-black ${movementType === "ENTRADA" ? "text-teal-400" : "text-rose-400"}`}>
-                                                {movementType === "ENTRADA" ? "+" : "-"}
-                                            </span>
-                                            <span className={`text-base font-black ${movementType === "ENTRADA" ? "text-teal-400" : "text-rose-400"}`}>
-                                                {qtyNum}
-                                            </span>
+                                    </div>
+
+                                    <div className="flex items-center justify-between pt-1">
+                                        <span className="font-bold text-zinc-900">Stock Final:</span>
+                                        <span className={`font-mono font-black text-sm ${isNegativeStock ? "text-red-600" : "text-zinc-950"}`}>
+                                            {projectedStock} UND
+                                        </span>
+                                    </div>
+
+                                    {isNegativeStock && (
+                                        <div className="p-2 bg-red-50 border border-red-200 rounded text-[11px] text-red-700 font-semibold mt-2">
+                                            Stock insuficiente para esta salida.
                                         </div>
-                                    </div>
-
-                                    {/* Stock Proyectado */}
-                                    <div className="space-y-0.5 pt-2 border-t border-slate-800/60">
-                                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
-                                            STOCK PROYECTADO
-                                        </span>
-                                        <span className={`text-3xl font-black block ${
-                                            isNegativeStock
-                                                ? "text-rose-500 animate-pulse"
-                                                : "text-[#00d26a]"
-                                        }`}>
-                                            {projectedStock}
-                                        </span>
-                                        {isNegativeStock && (
-                                            <p className="text-[10px] text-rose-400 font-bold mt-1">
-                                                ⚠️ El stock del lote no puede ser negativo.
-                                            </p>
-                                        )}
-                                    </div>
+                                    )}
                                 </div>
 
-                                {/* REGISTRADO POR (Imagen 2) */}
-                                <div className="bg-[#121c30] border border-slate-800/80 rounded-2xl p-4 flex items-center gap-3">
-                                    <div className="w-9 h-9 rounded-xl bg-teal-500/15 text-teal-400 flex items-center justify-center flex-shrink-0">
-                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                        </svg>
-                                    </div>
-                                    <div>
-                                        <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider block">
-                                            REGISTRADO POR
-                                        </span>
-                                        <span className="text-xs font-black text-slate-200 block uppercase">
-                                            {activeEmployee.name}
-                                        </span>
-                                    </div>
+                                <div className="mt-6 pt-4 border-t border-zinc-200 text-[11px] text-zinc-500 space-y-1">
+                                    <div><strong className="text-zinc-700 font-semibold">Responsable:</strong> {activeEmployee.name}</div>
+                                    <div><strong className="text-zinc-700 font-semibold">Lote:</strong> {selectedLot ? selectedLot.nroLote : "Sin seleccionar"}</div>
                                 </div>
                             </div>
 
-                            {/* BOTÓN GUARDAR AJUSTE (Imagen 2) */}
-                            <button
-                                type="submit"
-                                disabled={isSubmitting || (movementType === "SALIDA" && isNegativeStock)}
-                                className="w-full py-3.5 px-4 bg-teal-500 hover:bg-teal-400 active:bg-teal-600 disabled:opacity-50 disabled:cursor-not-allowed text-slate-950 font-black text-xs uppercase tracking-wider rounded-2xl shadow-lg shadow-teal-500/25 flex items-center justify-center gap-2 transition-all transform hover:-translate-y-0.5 active:translate-y-0"
-                            >
-                                {isSubmitting ? (
-                                    <>
-                                        <svg className="animate-spin h-4 w-4 text-slate-950" fill="none" viewBox="0 0 24 24">
-                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                                        </svg>
-                                        <span>Guardando Ajuste...</span>
-                                    </>
-                                ) : (
-                                    <>
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                        </svg>
-                                        <span>Guardar Ajuste</span>
-                                    </>
-                                )}
-                            </button>
-
+                            <div className="space-y-2 pt-4 border-t border-zinc-200">
+                                <button
+                                    type="submit"
+                                    disabled={isSubmitting || (movementType === "SALIDA" && isNegativeStock)}
+                                    className="w-full py-2.5 px-4 bg-zinc-900 hover:bg-black text-white text-xs font-bold rounded-lg shadow-sm transition-all disabled:opacity-50"
+                                >
+                                    {isSubmitting ? "REGISTRANDO..." : "Confirmar y Aplicar Ajuste"}
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={onClose}
+                                    className="w-full py-2 px-4 bg-white hover:bg-zinc-100 text-zinc-700 border border-zinc-300 text-xs font-semibold rounded-lg transition-colors"
+                                >
+                                    Cancelar
+                                </button>
+                            </div>
                         </div>
-
                     </div>
                 </form>
-
             </div>
         </div>
     );
 };
+
+StockAdjustmentModal.propTypes = {
+    isOpen: PropTypes.bool.isRequired,
+    onClose: PropTypes.func.isRequired,
+    onAdjustmentSaved: PropTypes.func,
+};
+
+export default StockAdjustmentModal;

@@ -244,32 +244,32 @@ export const PaymentMethodsPage = () => {
   };
 
   return (
-    <div className="container-fluid py-4 px-3 px-md-5 bg-light min-vh-100">
+    <div className="max-w-7xl mx-auto space-y-6">
       {/* 1. Header Principal */}
-      <div className="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+      <div className="bg-white border border-zinc-200 rounded-2xl p-5 sm:p-6 shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <div className="d-flex align-items-center gap-2">
-            
-            <span className="badge bg-teal-subtle text-teal fw-bold font-monospace">
+          <div className="flex items-center gap-2 mb-1.5">
+            <span className="bg-zinc-900 text-white font-mono font-bold text-[10px] px-2.5 py-0.5 rounded uppercase tracking-wider">
               CAJA Y FINANZAS
             </span>
-            <h3 className="m-0 fw-bolder text-dark">Formas de Pago</h3>
           </div>
-          <p className="text-secondary m-0 small mt-1">
-            Configuración de canales de cobranza, recargos por comisión y
-            disponibilidad en el POS.
+          <h1 className="text-2xl font-bold text-zinc-900 tracking-tight">
+            Formas de Pago
+          </h1>
+          <p className="text-xs text-zinc-500 font-mono mt-1">
+            Configuración de canales de cobranza, recargos por comisión y disponibilidad en el POS.
           </p>
         </div>
 
         <button
           type="button"
-          className="btn btn-teal-primary d-flex align-items-center gap-2 px-3 py-2 fw-semibold rounded-2 shadow-sm"
+          className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#09090b] hover:bg-zinc-800 text-white font-bold text-xs shadow transition-all cursor-pointer tracking-wider uppercase font-mono self-start sm:self-auto"
           onClick={() => handleOpenModal()}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            width="18"
-            height="18"
+            width="16"
+            height="16"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -280,118 +280,117 @@ export const PaymentMethodsPage = () => {
             <line x1="12" y1="5" x2="12" y2="19" />
             <line x1="5" y1="12" x2="19" y2="12" />
           </svg>
-          Nuevo Método
+          <span>Nuevo Método</span>
         </button>
       </div>
 
-      {/* 2. Tarjetas de Resumen */}
-      <div className="row g-3 mb-4">
-        <div className="col-12 col-sm-4">
-          <div className="card border-0 shadow-sm rounded-3 p-3 bg-white">
-            <div className="d-flex align-items-center justify-content-between">
-              <div>
-                <span className="text-muted small fw-bold d-block text-uppercase">
-                  Total Registrados
-                </span>
-                <span className="fs-4 fw-bolder text-dark">{totalMethods}</span>
-              </div>
-              <div className="icon-metric bg-teal-subtle text-teal">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
-                  <rect width="20" height="14" x="2" y="5" rx="2" />
-                  <line x1="2" x2="22" y1="10" y2="10" />
-                </svg>
-              </div>
-            </div>
+      {/* 2. Tarjetas de Resumen KPI */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="bg-white rounded-2xl p-5 border border-zinc-200 shadow-sm flex items-center justify-between">
+          <div>
+            <span className="text-[10px] font-mono font-bold text-zinc-500 uppercase tracking-wider block">
+              [#] Total Registrados
+            </span>
+            <span className="text-2xl font-bold text-zinc-900 font-mono tracking-tight mt-1 block">
+              {totalMethods}
+            </span>
+            <span className="inline-block mt-1 text-[10px] font-mono text-zinc-600 bg-zinc-100 px-2 py-0.5 rounded border border-zinc-200">
+              Canales registrados
+            </span>
+          </div>
+          <div className="w-10 h-10 rounded-xl bg-zinc-100 border border-zinc-200 text-zinc-900 flex items-center justify-center flex-shrink-0">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <rect width="20" height="14" x="2" y="5" rx="2" />
+              <line x1="2" x2="22" y1="10" y2="10" />
+            </svg>
           </div>
         </div>
 
-        <div className="col-12 col-sm-4">
-          <div className="card border-0 shadow-sm rounded-3 p-3 bg-white">
-            <div className="d-flex align-items-center justify-content-between">
-              <div>
-                <span className="text-muted small fw-bold d-block text-uppercase">
-                  Activos en Caja
-                </span>
-                <span className="fs-4 fw-bolder text-success">
-                  {activeMethods}
-                </span>
-              </div>
-              <div className="icon-metric bg-success-subtle text-success">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
-                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-                  <polyline points="22 4 12 14.01 9 11.01" />
-                </svg>
-              </div>
-            </div>
+        <div className="bg-white rounded-2xl p-5 border border-zinc-200 shadow-sm flex items-center justify-between">
+          <div>
+            <span className="text-[10px] font-mono font-bold text-zinc-500 uppercase tracking-wider block">
+              [✓] Activos en Caja
+            </span>
+            <span className="text-2xl font-bold text-zinc-900 font-mono tracking-tight mt-1 block">
+              {activeMethods}
+            </span>
+            <span className="inline-block mt-1 text-[10px] font-mono text-zinc-600 bg-zinc-100 px-2 py-0.5 rounded border border-zinc-200">
+              Disponibles para venta
+            </span>
+          </div>
+          <div className="w-10 h-10 rounded-xl bg-zinc-100 border border-zinc-200 text-zinc-900 flex items-center justify-center flex-shrink-0">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+              <polyline points="22 4 12 14.01 9 11.01" />
+            </svg>
           </div>
         </div>
 
-        <div className="col-12 col-sm-4">
-          <div className="card border-0 shadow-sm rounded-3 p-3 bg-white">
-            <div className="d-flex align-items-center justify-content-between">
-              <div>
-                <span className="text-muted small fw-bold d-block text-uppercase">
-                  Con Recargo / Comisión
-                </span>
-                <span className="fs-4 fw-bolder text-amber">{withFee}</span>
-              </div>
-              <div className="icon-metric bg-amber-subtle text-amber">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
-                  <line x1="12" y1="1" x2="12" y2="23" />
-                  <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-                </svg>
-              </div>
-            </div>
+        <div className="bg-white rounded-2xl p-5 border border-zinc-200 shadow-sm flex items-center justify-between">
+          <div>
+            <span className="text-[10px] font-mono font-bold text-zinc-500 uppercase tracking-wider block">
+              [%] Con Recargo / Comisión
+            </span>
+            <span className="text-2xl font-bold text-zinc-900 font-mono tracking-tight mt-1 block">
+              {withFee}
+            </span>
+            <span className="inline-block mt-1 text-[10px] font-mono text-zinc-600 bg-zinc-100 px-2 py-0.5 rounded border border-zinc-200">
+              Con tarifa adicional
+            </span>
+          </div>
+          <div className="w-10 h-10 rounded-xl bg-zinc-900 text-white flex items-center justify-center flex-shrink-0">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <line x1="12" y1="1" x2="12" y2="23" />
+              <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+            </svg>
           </div>
         </div>
       </div>
 
       {/* 3. Filtros y Búsqueda */}
-      <div className="bg-white rounded-3 p-3 mb-3 shadow-sm border d-flex flex-wrap justify-content-between align-items-center gap-3">
-        <div
-          className="d-flex align-items-center flex-grow-1 search-container"
-          style={{ maxWidth: "420px" }}
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="17"
-            height="17"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="#94a3b8"
-            strokeWidth="2"
-            className="me-2"
-          >
-            <circle cx="11" cy="11" r="8" />
-            <line x1="21" y1="21" x2="16.65" y2="16.65" />
-          </svg>
+      <div className="bg-white border border-zinc-200 rounded-2xl p-3.5 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="relative w-full sm:w-96 flex items-center">
+          <span className="absolute left-3 text-zinc-400">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+          </span>
           <input
             type="text"
-            className="form-control border-0 p-0 shadow-none bg-transparent"
+            className="w-full pl-9 pr-8 py-2 text-xs bg-zinc-50 border border-zinc-200 rounded-xl font-medium text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:bg-white focus:border-zinc-900 transition-all font-sans"
             placeholder="Buscar por método o descripción..."
             value={searchTerm}
             onChange={(e) => {
@@ -399,13 +398,21 @@ export const PaymentMethodsPage = () => {
               setCurrentPage(1);
             }}
           />
+          {searchTerm && (
+            <button
+              type="button"
+              onClick={() => setSearchTerm("")}
+              className="absolute right-2.5 text-zinc-400 hover:text-zinc-700 text-xs font-bold"
+            >
+              ✕
+            </button>
+          )}
         </div>
 
-        <div className="d-flex align-items-center gap-2 text-secondary small fw-medium">
+        <div className="flex items-center gap-2 text-xs text-zinc-500 font-mono self-end sm:self-auto">
           <span>Mostrar:</span>
           <select
-            className="form-select form-select-sm"
-            style={{ width: "70px" }}
+            className="px-2.5 py-1 bg-white border border-zinc-200 rounded-lg font-bold text-zinc-800 focus:outline-none text-xs"
             value={itemsPerPage}
             onChange={(e) => {
               setItemsPerPage(Number(e.target.value));
@@ -420,39 +427,47 @@ export const PaymentMethodsPage = () => {
       </div>
 
       {/* 4. Tabla de Formas de Pago */}
-      <div className="card shadow-sm border-0 rounded-3 overflow-hidden">
-        <div className="table-responsive">
-          <table className="table table-hover align-middle mb-0 custom-payment-table">
-            <thead className="table-light">
-              <tr>
-                <th style={{ width: "28%" }}>MÉTODO DE PAGO</th>
-                <th style={{ width: "34%" }}>DESCRIPCIÓN</th>
-                <th style={{ width: "16%" }} className="text-center">
+      <div className="bg-white border border-zinc-200 rounded-2xl shadow-sm overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr className="border-b border-zinc-200 bg-zinc-100/70 text-[11px] font-mono font-bold text-zinc-600 uppercase tracking-wider">
+                <th className="py-3 px-5" style={{ width: "30%" }}>MÉTODO DE PAGO</th>
+                <th className="py-3 px-5" style={{ width: "34%" }}>DESCRIPCIÓN</th>
+                <th className="py-3 px-5 text-center" style={{ width: "16%" }}>
                   RECARGO (%)
                 </th>
-                <th style={{ width: "12%" }} className="text-center">
+                <th className="py-3 px-5 text-center" style={{ width: "10%" }}>
                   ESTADO
                 </th>
-                <th style={{ width: "10%" }} className="text-end pe-4">
+                <th className="py-3 px-5 text-right" style={{ width: "10%" }}>
                   ACCIONES
                 </th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-zinc-100">
               {isLoading ? (
                 <tr>
-                  <td colSpan="5" className="text-center py-5 text-muted small">
-                    <div
-                      className="spinner-border spinner-border-sm text-teal me-2"
-                      role="status"
-                    ></div>
-                    Consultando métodos de pago en el servidor...
+                  <td colSpan="5" className="text-center py-20 text-zinc-400">
+                    <div className="flex flex-col items-center justify-center gap-3">
+                      <svg className="animate-spin h-6 w-6 text-zinc-900" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                      </svg>
+                      <span className="text-xs font-mono uppercase tracking-wider text-zinc-500">Consultando métodos de pago...</span>
+                    </div>
                   </td>
                 </tr>
               ) : currentRecords.length === 0 ? (
                 <tr>
-                  <td colSpan="5" className="text-center py-5 text-muted small">
-                    No se encontraron métodos de pago registrados.
+                  <td colSpan="5" className="text-center py-16 text-zinc-400">
+                    <div className="w-12 h-12 rounded-xl bg-zinc-100 text-zinc-400 flex items-center justify-center mx-auto mb-2">
+                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.5">
+                        <rect width="20" height="14" x="2" y="5" rx="2" />
+                        <line x1="2" x2="22" y1="10" y2="10" />
+                      </svg>
+                    </div>
+                    <span className="text-xs font-mono text-zinc-500">No se encontraron métodos de pago registrados.</span>
                   </td>
                 </tr>
               ) : (
@@ -469,15 +484,15 @@ export const PaymentMethodsPage = () => {
                   );
 
                   return (
-                    <tr key={methodId}>
+                    <tr key={methodId} className="hover:bg-zinc-50/80 transition-colors">
                       {/* Nombre */}
-                      <td>
-                        <div className="d-flex align-items-center gap-3">
-                          <div className="payment-icon-box">
+                      <td className="py-3 px-5">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-lg bg-zinc-100 border border-zinc-200 text-zinc-800 flex items-center justify-center flex-shrink-0">
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
-                              width="18"
-                              height="18"
+                              width="16"
+                              height="16"
                               viewBox="0 0 24 24"
                               fill="none"
                               stroke="currentColor"
@@ -488,72 +503,65 @@ export const PaymentMethodsPage = () => {
                             </svg>
                           </div>
                           <div>
-                            <span
-                              className="fw-bold text-dark d-block"
-                              style={{ fontSize: "0.88rem" }}
-                            >
+                            <span className="font-bold text-zinc-900 block text-xs">
                               {method.nombre || method.name}
                             </span>
-                            <small
-                              className="text-muted font-monospace"
-                              style={{ fontSize: "0.7rem" }}
-                            >
+                            <span className="text-zinc-400 font-mono text-[10px]">
                               ID: #{methodId}
-                            </small>
+                            </span>
                           </div>
                         </div>
                       </td>
 
                       {/* Descripción */}
-                      <td>
-                        <span className="text-secondary small">
+                      <td className="py-3 px-5">
+                        <span className="text-zinc-600 text-xs">
                           {method.descripcion ? method.descripcion : "—"}
                         </span>
                       </td>
 
                       {/* Recargo (%) */}
-                      <td className="text-center">
+                      <td className="py-3 px-5 text-center">
                         {fee > 0 ? (
-                          <span className="badge-recargo-active font-monospace">
+                          <span className="font-mono font-bold text-zinc-900 bg-zinc-100 px-2 py-0.5 rounded border border-zinc-200 text-xs">
                             +{fee.toFixed(2)}%
                           </span>
                         ) : (
-                          <span className="badge-recargo-zero font-monospace">
+                          <span className="font-mono text-zinc-400 text-xs">
                             0.00%
                           </span>
                         )}
                       </td>
 
                       {/* Estado */}
-                      <td className="text-center">
+                      <td className="py-3 px-5 text-center">
                         <button
                           type="button"
                           onClick={() => handleToggleStatus(method)}
-                          className={`badge border-0 px-2 py-1 fw-bold ${
+                          className={`border-0 px-2.5 py-0.5 rounded text-[10px] font-mono font-bold cursor-pointer transition-all ${
                             isActivo
-                              ? "bg-success-subtle text-success"
-                              : "bg-secondary-subtle text-secondary"
+                              ? "bg-zinc-900 text-white"
+                              : "bg-zinc-100 text-zinc-600 border border-zinc-300"
                           }`}
-                          style={{ cursor: "pointer", fontSize: "0.72rem" }}
                           title="Hacer clic para alternar estado"
                         >
-                          {isActivo ? "● ACTIVO" : "○ INACTIVO"}
+                          {isActivo ? "[ACTIVO]" : "[INACTIVO]"}
                         </button>
                       </td>
 
                       {/* Acciones */}
-                      <td className="text-end pe-4">
-                        <div className="d-inline-flex align-items-center gap-1">
+                      <td className="py-3 px-5 text-right">
+                        <div className="inline-flex items-center justify-end gap-1.5">
                           <button
                             type="button"
-                            className="btn-action-icon text-teal"
+                            className="w-7 h-7 flex items-center justify-center rounded-lg bg-zinc-100 text-zinc-700 hover:bg-zinc-200 border border-zinc-200 transition-colors"
                             title="Editar forma de pago"
                             onClick={() => handleOpenModal(method)}
                           >
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
-                              width="16"
-                              height="16"
+                              width="14"
+                              height="14"
                               viewBox="0 0 24 24"
                               fill="none"
                               stroke="currentColor"
@@ -565,7 +573,7 @@ export const PaymentMethodsPage = () => {
                           </button>
                           <button
                             type="button"
-                            className="btn-action-icon text-danger"
+                            className="w-7 h-7 flex items-center justify-center rounded-lg bg-zinc-100 text-zinc-700 hover:bg-zinc-200 border border-zinc-200 transition-colors"
                             title="Eliminar forma de pago"
                             onClick={() =>
                               handleDelete(
@@ -576,8 +584,8 @@ export const PaymentMethodsPage = () => {
                           >
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
-                              width="16"
-                              height="16"
+                              width="14"
+                              height="14"
                               viewBox="0 0 24 24"
                               fill="none"
                               stroke="currentColor"
@@ -600,30 +608,30 @@ export const PaymentMethodsPage = () => {
         </div>
 
         {/* 5. Paginación */}
-        <div className="d-flex justify-content-between align-items-center px-4 py-3 bg-white border-top">
-          <small className="text-muted fw-semibold">
+        <div className="px-5 py-3 border-t border-zinc-200 bg-zinc-50/50 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-zinc-500 font-mono">
+          <span>
             Mostrando {filtered.length === 0 ? 0 : startIndex + 1} a{" "}
             {Math.min(startIndex + itemsPerPage, filtered.length)} de{" "}
             {filtered.length} métodos
-          </small>
+          </span>
 
-          <div className="d-flex align-items-center gap-1">
+          <div className="flex items-center gap-1.5">
             <button
-              className="btn btn-sm btn-outline-secondary"
+              className="w-8 h-8 flex items-center justify-center rounded-xl bg-white border border-zinc-200 text-zinc-700 hover:bg-zinc-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-xs font-bold"
               disabled={currentPage === 1}
               onClick={() => setCurrentPage((p) => p - 1)}
             >
-              Anterior
+              &lt;
             </button>
-            <span className="badge bg-teal-primary px-3 py-2">
-              {currentPage} / {totalPages}
+            <span className="px-3 py-1 rounded-xl bg-[#09090b] text-white font-bold text-xs">
+              Pág. {currentPage} de {totalPages}
             </span>
             <button
-              className="btn btn-sm btn-outline-secondary"
+              className="w-8 h-8 flex items-center justify-center rounded-xl bg-white border border-zinc-200 text-zinc-700 hover:bg-zinc-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-xs font-bold"
               disabled={currentPage === totalPages}
               onClick={() => setCurrentPage((p) => p + 1)}
             >
-              Siguiente
+              &gt;
             </button>
           </div>
         </div>
@@ -631,33 +639,30 @@ export const PaymentMethodsPage = () => {
 
       {/* 6. Modal Crear / Editar */}
       {isModalOpen && (
-        <div className="payment-modal-backdrop d-flex justify-content-center align-items-center p-3">
-          <div className="payment-modal-card bg-white rounded-4 shadow-xl overflow-hidden animate__animated animate__fadeIn">
-            <div className="px-4 py-3 border-bottom d-flex justify-content-between align-items-center">
-              <h5
-                className="m-0 fw-bold text-dark text-uppercase"
-                style={{ fontSize: "0.95rem" }}
-              >
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/60 backdrop-blur-xs p-4 animate-in fade-in duration-150">
+          <div className="bg-white border border-zinc-200 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all">
+            <div className="p-5 border-b border-zinc-100 flex items-center justify-between bg-white">
+              <h3 className="font-bold text-sm text-zinc-900 uppercase font-mono tracking-wider">
                 {editingMethod ? "Editar Forma de Pago" : "Nueva Forma de Pago"}
-              </h5>
+              </h3>
               <button
                 type="button"
-                className="btn-close-modal"
+                className="w-8 h-8 rounded-full bg-zinc-100 hover:bg-zinc-200 text-zinc-600 hover:text-zinc-900 flex items-center justify-center text-sm font-bold transition-colors cursor-pointer"
                 onClick={handleCloseModal}
               >
-                &times;
+                ✕
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="p-4">
-              <div className="mb-3">
-                <label className="form-label text-secondary small fw-bold mb-1">
-                  NOMBRE DEL MÉTODO *
+            <form onSubmit={handleSubmit} className="p-5 space-y-4">
+              <div>
+                <label className="block text-xs font-mono font-bold text-zinc-600 mb-1.5 uppercase">
+                  NOMBRE DEL MÉTODO <span className="text-zinc-400">*</span>
                 </label>
                 <input
                   type="text"
                   required
-                  className="form-control"
+                  className="w-full px-3.5 py-2 text-xs bg-zinc-50 border border-zinc-300 rounded-xl font-medium text-zinc-900 focus:bg-white focus:outline-none focus:border-zinc-900 transition-all font-sans"
                   placeholder="Ej: Yape / Plin, Tarjeta Débito..."
                   value={formData.nombre}
                   onChange={(e) =>
@@ -666,13 +671,13 @@ export const PaymentMethodsPage = () => {
                 />
               </div>
 
-              <div className="mb-3">
-                <label className="form-label text-secondary small fw-bold mb-1">
+              <div>
+                <label className="block text-xs font-mono font-bold text-zinc-600 mb-1.5 uppercase">
                   DESCRIPCIÓN
                 </label>
                 <input
                   type="text"
-                  className="form-control"
+                  className="w-full px-3.5 py-2 text-xs bg-zinc-50 border border-zinc-300 rounded-xl font-medium text-zinc-900 focus:bg-white focus:outline-none focus:border-zinc-900 transition-all font-sans"
                   placeholder="Detalles de uso o indicaciones para caja..."
                   value={formData.descripcion}
                   onChange={(e) =>
@@ -681,54 +686,50 @@ export const PaymentMethodsPage = () => {
                 />
               </div>
 
-              <div className="row g-3 mb-4">
-                <div className="col-6">
-                  <label className="form-label text-secondary small fw-bold mb-1">
-                    RECARGO ADICIONAL (%)
+              <div className="grid grid-cols-2 gap-3 items-end">
+                <div>
+                  <label className="block text-xs font-mono font-bold text-zinc-600 mb-1.5 uppercase">
+                    RECARGO (%)
                   </label>
-                  <div className="input-group">
+                  <div className="relative">
                     <input
                       type="number"
                       step="0.01"
                       min="0"
                       max="100"
-                      className="form-control font-monospace fw-bold"
+                      className="w-full pl-3 pr-8 py-2 text-xs bg-zinc-50 border border-zinc-300 rounded-xl font-bold font-mono text-zinc-900 focus:bg-white focus:outline-none focus:border-zinc-900 transition-all"
                       value={formData.recargo}
                       onChange={(e) =>
                         setFormData({ ...formData, recargo: e.target.value })
                       }
                     />
-                    <span className="input-group-text bg-light text-muted fw-bold">
+                    <span className="absolute right-3 top-2 text-xs font-mono text-zinc-400 font-bold">
                       %
                     </span>
                   </div>
                 </div>
 
-                <div className="col-6 d-flex flex-column justify-content-end">
-                  <div className="form-check form-switch mb-2">
+                <div className="pb-2">
+                  <label className="flex items-center gap-2 cursor-pointer select-none">
                     <input
-                      className="form-check-input"
                       type="checkbox"
-                      id="activoSwitch"
+                      className="w-4 h-4 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900"
                       checked={formData.activo}
                       onChange={(e) =>
                         setFormData({ ...formData, activo: e.target.checked })
                       }
                     />
-                    <label
-                      className="form-check-label fw-bold text-dark small"
-                      htmlFor="activoSwitch"
-                    >
-                      {formData.activo ? "Método Activo" : "Método Inactivo"}
-                    </label>
-                  </div>
+                    <span className="text-xs font-mono font-bold text-zinc-800 uppercase">
+                      {formData.activo ? "[ACTIVO]" : "[INACTIVO]"}
+                    </span>
+                  </label>
                 </div>
               </div>
 
-              <div className="d-flex justify-content-end gap-2 border-top pt-3">
+              <div className="flex justify-end gap-2 border-t border-zinc-100 pt-4">
                 <button
                   type="button"
-                  className="btn btn-outline-secondary px-3 btn-sm"
+                  className="px-4 py-2 rounded-xl border border-zinc-200 text-zinc-600 hover:bg-zinc-100 font-medium text-xs transition-colors cursor-pointer"
                   onClick={handleCloseModal}
                   disabled={isSubmitting}
                 >
@@ -736,7 +737,7 @@ export const PaymentMethodsPage = () => {
                 </button>
                 <button
                   type="submit"
-                  className="btn btn-teal-primary px-4 btn-sm fw-semibold"
+                  className="px-5 py-2 rounded-xl bg-[#09090b] hover:bg-zinc-800 text-white font-semibold text-xs shadow transition-all disabled:opacity-50 cursor-pointer font-mono"
                   disabled={isSubmitting}
                 >
                   {isSubmitting
@@ -750,114 +751,6 @@ export const PaymentMethodsPage = () => {
           </div>
         </div>
       )}
-
-      {/* Estilos */}
-      <style>{`
-        .text-teal { color: #006d77 !important; }
-        .bg-teal-subtle { background-color: #ccfbf1 !important; }
-        .btn-teal-primary {
-          background-color: #006d77;
-          color: #fff;
-          border: none;
-          transition: 0.15s;
-        }
-        .btn-teal-primary:hover {
-          background-color: #084c53;
-          color: #fff;
-        }
-        .text-amber { color: #b45309 !important; }
-        .bg-amber-subtle { background-color: #fef3c7 !important; }
-        .icon-metric {
-          width: 44px;
-          height: 44px;
-          border-radius: 10px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-        .search-container {
-          background-color: #f8fafc;
-          border: 1px solid #e2e8f0;
-          padding: 8px 14px;
-          border-radius: 8px;
-        }
-        .custom-payment-table thead th {
-          font-size: 0.73rem;
-          font-weight: 700;
-          color: #64748b;
-          letter-spacing: 0.5px;
-          padding: 14px 18px;
-          border-bottom: 1px solid #e2e8f0;
-        }
-        .custom-payment-table tbody td {
-          padding: 14px 18px;
-          border-bottom: 1px solid #f1f5f9;
-        }
-        .payment-icon-box {
-          width: 36px;
-          height: 36px;
-          border-radius: 8px;
-          background-color: #e6f4f1;
-          color: #006d77;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          flex-shrink: 0;
-        }
-        .badge-recargo-active {
-          background-color: #fef3c7;
-          color: #b45309;
-          font-weight: 700;
-          font-size: 0.78rem;
-          padding: 4px 8px;
-          border-radius: 6px;
-          border: 1px solid #fde68a;
-        }
-        .badge-recargo-zero {
-          color: #94a3b8;
-          font-size: 0.78rem;
-        }
-        .btn-action-icon {
-          background: transparent;
-          border: none;
-          padding: 6px;
-          border-radius: 6px;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          transition: 0.15s;
-        }
-        .btn-action-icon:hover {
-          background-color: #f1f5f9;
-          transform: scale(1.1);
-        }
-        .payment-modal-backdrop {
-          position: fixed;
-          top: 0;
-          left: 0;
-          width: 100vw;
-          height: 100vh;
-          background: rgba(15, 23, 42, 0.55);
-          backdrop-filter: blur(4px);
-          z-index: 1060;
-        }
-        .payment-modal-card {
-          width: 100%;
-          max-width: 480px;
-        }
-        .btn-close-modal {
-          background: transparent;
-          border: none;
-          font-size: 1.5rem;
-          line-height: 1;
-          color: #94a3b8;
-          cursor: pointer;
-        }
-        .btn-close-modal:hover {
-          color: #0f172a;
-        }
-      `}</style>
     </div>
   );
 };

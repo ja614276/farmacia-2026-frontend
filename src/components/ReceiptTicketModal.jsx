@@ -85,7 +85,7 @@ export const ReceiptTicketModal = ({ isOpen, onClose, saleData }) => {
                 const parsed = JSON.parse(stored);
                 if (parsed.ticketPaperSize) setPaperSize(parsed.ticketPaperSize);
             }
-        } catch (_) {}
+        } catch (_) { }
 
         // Cargar datos de la empresa y configuración desde la base de datos
         productsApi.get("/company")
@@ -384,13 +384,13 @@ export const ReceiptTicketModal = ({ isOpen, onClose, saleData }) => {
                     </thead>
                     <tbody>
                         ${details.map((d, index) => {
-                            const prodName = d.productName || d.nombre || "Producto";
-                            const presName = d.presentationName || d.presentacion || "";
-                            const displayName = presName ? `${prodName} ${presName}` : prodName;
-                            const qty = d.presentationQuantity || d.cantidad || 1;
-                            const price = Number(d.presentationUnitPrice || d.precioUnitario || d.precio || 0).toFixed(2);
-                            const sub = Number(d.subtotal || (qty * price)).toFixed(2);
-                            return `
+                const prodName = d.productName || d.nombre || "Producto";
+                const presName = d.presentationName || d.presentacion || "";
+                const displayName = presName ? `${prodName} ${presName}` : prodName;
+                const qty = d.presentationQuantity || d.cantidad || 1;
+                const price = Number(d.presentationUnitPrice || d.precioUnitario || d.precio || 0).toFixed(2);
+                const sub = Number(d.subtotal || (qty * price)).toFixed(2);
+                return `
                             <tr>
                                 <td style="text-align: center; color: #64748b;">${index + 1}</td>
                                 <td style="text-transform: uppercase; font-weight: 600;">${displayName}</td>
@@ -399,7 +399,7 @@ export const ReceiptTicketModal = ({ isOpen, onClose, saleData }) => {
                                 <td style="text-align: right; font-weight: bold;">S/ ${sub}</td>
                             </tr>
                             `;
-                        }).join('')}
+            }).join('')}
                     </tbody>
                 </table>
 
@@ -564,13 +564,13 @@ export const ReceiptTicketModal = ({ isOpen, onClose, saleData }) => {
                     </thead>
                     <tbody>
                         ${details.map(d => {
-                            const prodName = d.productName || d.nombre || "Producto";
-                            const presName = d.presentationName || d.presentacion || "";
-                            const displayName = presName ? `${prodName} ${presName}` : prodName;
-                            const qty = d.presentationQuantity || d.cantidad || 1;
-                            const price = Number(d.presentationUnitPrice || d.precioUnitario || d.precio || 0).toFixed(2);
-                            const sub = Number(d.subtotal || (qty * price)).toFixed(2);
-                            return `
+                const prodName = d.productName || d.nombre || "Producto";
+                const presName = d.presentationName || d.presentacion || "";
+                const displayName = presName ? `${prodName} ${presName}` : prodName;
+                const qty = d.presentationQuantity || d.cantidad || 1;
+                const price = Number(d.presentationUnitPrice || d.precioUnitario || d.precio || 0).toFixed(2);
+                const sub = Number(d.subtotal || (qty * price)).toFixed(2);
+                return `
                             <tr>
                                 <td style="text-transform: uppercase;">${displayName}</td>
                                 <td style="text-align: center; font-weight: bold;">${qty}</td>
@@ -578,7 +578,7 @@ export const ReceiptTicketModal = ({ isOpen, onClose, saleData }) => {
                                 <td style="text-align: right; font-weight: bold;">${sub}</td>
                             </tr>
                             `;
-                        }).join('')}
+            }).join('')}
                     </tbody>
                 </table>
 
@@ -635,43 +635,41 @@ export const ReceiptTicketModal = ({ isOpen, onClose, saleData }) => {
     };
 
     return (
-        <div 
+        <div
             className="fixed inset-0 z-50 bg-slate-900/75 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 overflow-hidden print:p-0 print:bg-white print:static print:overflow-visible"
             onClick={onClose}
         >
             {/* Contenedor del Modal Principal - Ancho dinámico según el formato (58mm, 80mm, A4) */}
-            <div 
-                className={`bg-slate-200/90 rounded-2xl shadow-2xl w-full ${
-                    paperSize === "A4" ? "max-w-[700px]" : paperSize === "58mm" ? "max-w-[390px]" : "max-w-[460px]"
-                } h-[88vh] max-h-[840px] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150 print:max-w-none print:w-full print:h-auto print:border-none print:shadow-none print:rounded-none print:p-0 print:bg-white print:max-h-none print:overflow-visible ring-1 ring-black/10`}
+            <div
+                className={`bg-slate-200/90 rounded-2xl shadow-2xl w-full ${paperSize === "A4" ? "max-w-[700px]" : paperSize === "58mm" ? "max-w-[390px]" : "max-w-[460px]"
+                    } h-[88vh] max-h-[840px] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150 print:max-w-none print:w-full print:h-auto print:border-none print:shadow-none print:rounded-none print:p-0 print:bg-white print:max-h-none print:overflow-visible ring-1 ring-black/10`}
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Header Fijo Superior con selector de tamaño */}
-                <div className="bg-[#005f60] text-white px-4 sm:px-5 py-3 flex items-center justify-between shadow-md flex-shrink-0 print:hidden rounded-t-2xl">
+                <div className="bg-zinc-950 text-white px-4 sm:px-5 py-3 flex items-center justify-between shadow-md flex-shrink-0 print:hidden rounded-t-xl border-b border-zinc-800">
                     <div className="flex items-center gap-2.5">
-                        <div className="w-8 h-8 rounded-lg bg-teal-400/20 flex items-center justify-center text-teal-200">
+                        <div className="w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center text-zinc-300">
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
                             </svg>
                         </div>
                         <div>
                             <h3 className="font-bold text-xs sm:text-sm text-white leading-tight">Vista de Comprobante</h3>
-                            <span className="text-[11px] text-teal-200/80 font-medium">Formato: {paperSize}</span>
+                            <span className="text-[11px] text-zinc-400 font-mono">Formato: {paperSize}</span>
                         </div>
                     </div>
 
                     {/* Selector de Tamaño de Papel Rápido (58mm, 80mm, A4) */}
-                    <div className="flex items-center gap-1.5 bg-black/20 p-1 rounded-xl">
+                    <div className="flex items-center gap-1.5 bg-zinc-900 border border-zinc-800 p-1 rounded-lg">
                         {["58mm", "80mm", "A4"].map((size) => (
                             <button
                                 key={size}
                                 type="button"
                                 onClick={() => setPaperSize(size)}
-                                className={`px-2 py-0.5 rounded-lg text-[11px] font-bold transition-all ${
-                                    paperSize === size
-                                        ? "bg-white text-[#005f60] shadow-sm"
-                                        : "text-teal-100 hover:text-white hover:bg-white/10"
-                                }`}
+                                className={`px-2 py-0.5 rounded text-[11px] font-bold transition-all font-mono ${paperSize === size
+                                        ? "bg-white text-zinc-950 shadow-sm"
+                                        : "text-zinc-400 hover:text-white hover:bg-zinc-800"
+                                    }`}
                                 title={`Cambiar a formato ${size}`}
                             >
                                 {size}
@@ -683,7 +681,7 @@ export const ReceiptTicketModal = ({ isOpen, onClose, saleData }) => {
                         <button
                             type="button"
                             onClick={handlePrint}
-                            className="bg-white text-[#005f60] hover:bg-teal-50 active:scale-95 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm flex items-center gap-1.5"
+                            className="bg-white text-zinc-950 hover:bg-zinc-200 active:scale-95 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm flex items-center gap-1.5"
                             title="Imprimir comprobante"
                         >
                             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -694,7 +692,7 @@ export const ReceiptTicketModal = ({ isOpen, onClose, saleData }) => {
                         <button
                             type="button"
                             onClick={onClose}
-                            className="text-teal-100 hover:text-white hover:bg-teal-700/60 p-1.5 rounded-lg transition-colors"
+                            className="text-zinc-400 hover:text-white hover:bg-zinc-800 p-1.5 rounded-lg transition-colors"
                             title="Cerrar (Esc)"
                         >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="24 24" strokeWidth="2.5">
@@ -705,15 +703,15 @@ export const ReceiptTicketModal = ({ isOpen, onClose, saleData }) => {
                 </div>
 
                 {/* Área Scrollable del Comprobante */}
-                <div className="flex-1 overflow-y-auto p-3 sm:p-5 flex justify-center bg-slate-200/75 print:p-0 print:bg-white print:overflow-visible">
-                    
+                <div className="flex-1 overflow-y-auto p-3 sm:p-5 flex justify-center bg-zinc-200 print:p-0 print:bg-white print:overflow-visible">
+
                     {paperSize === "A4" ? (
                         /* ========================================================
                            PREVIEW A4: Hoja Bond Formal Tamaño A4
                            ======================================================== */
-                        <div className="bg-white w-full max-w-[620px] shadow-lg rounded-xl p-6 sm:p-8 font-sans text-[11px] leading-relaxed text-slate-800 border border-slate-200 h-fit print:max-w-none print:w-full print:p-0 print:border-none print:shadow-none">
+                        <div className="bg-white w-full max-w-[620px] shadow-lg rounded-lg p-6 sm:p-8 font-sans text-[11px] leading-relaxed text-zinc-900 border border-zinc-300 h-fit print:max-w-none print:w-full print:p-0 print:border-none print:shadow-none">
                             {/* Header A4 */}
-                            <div className="flex justify-between items-start mb-5 pb-3 border-b border-slate-200">
+                            <div className="flex justify-between items-start mb-5 pb-3 border-b border-zinc-200">
                                 <div className="w-[60%]">
                                     {companyInfo.logoUrl && (
                                         <div className="mb-2">
@@ -724,28 +722,28 @@ export const ReceiptTicketModal = ({ isOpen, onClose, saleData }) => {
                                             />
                                         </div>
                                     )}
-                                    <h2 className="font-extrabold text-base text-[#005f60] uppercase tracking-wide">
+                                    <h2 className="font-bold text-base text-zinc-950 uppercase tracking-wide">
                                         {companyInfo.commercialName || companyInfo.legalName || "VidSalud SAC"}
                                     </h2>
-                                    <p className="text-[11px] text-slate-600 mt-0.5">
+                                    <p className="text-[11px] text-zinc-600 mt-0.5">
                                         <strong>RUC:</strong> {companyInfo.taxId}
                                     </p>
-                                    <p className="text-[10.5px] text-slate-600 leading-snug">
+                                    <p className="text-[10.5px] text-zinc-600 leading-snug">
                                         {companyInfo.address}
                                     </p>
                                     {companyInfo.phone && (
-                                        <p className="text-[10.5px] text-slate-600">
+                                        <p className="text-[10.5px] text-zinc-600">
                                             Tel: {companyInfo.phone}
                                         </p>
                                     )}
                                 </div>
 
-                                <div className="w-[36%] border-2 border-[#005f60] rounded-xl p-3 text-center bg-slate-50/80 shadow-sm">
-                                    <div className="font-bold text-xs text-slate-800">R.U.C. N° {companyInfo.taxId}</div>
-                                    <div className="font-black text-sm text-[#005f60] uppercase my-1 tracking-wider">
+                                <div className="w-[36%] border-2 border-zinc-900 rounded-lg p-3 text-center bg-zinc-50 shadow-sm">
+                                    <div className="font-bold text-xs text-zinc-900">R.U.C. N° {companyInfo.taxId}</div>
+                                    <div className="font-bold text-sm text-zinc-950 uppercase my-1 tracking-wider">
                                         {receiptType === "FACTURA" ? "FACTURA ELECTRÓNICA" : receiptType === "BOLETA" ? "BOLETA ELECTRÓNICA" : "TICKET ELECTRÓNICO"}
                                     </div>
-                                    <div className="font-bold text-xs text-slate-900 tracking-widest">{fullReceipt}</div>
+                                    <div className="font-mono font-bold text-xs text-zinc-900 tracking-widest">{fullReceipt}</div>
                                 </div>
                             </div>
 
@@ -840,11 +838,10 @@ export const ReceiptTicketModal = ({ isOpen, onClose, saleData }) => {
                         /* ========================================================
                            PREVIEW TÉRMICO: 58mm o 80mm
                            ======================================================== */
-                        <div 
-                            id="thermal-receipt" 
-                            className={`bg-white w-full ${
-                                paperSize === "58mm" ? "max-w-[290px] text-[10.5px] p-4" : "max-w-[350px] text-[12px] p-6"
-                            } shadow-lg rounded-xl font-mono leading-relaxed text-slate-800 border border-slate-200 h-fit print:max-w-none print:w-full print:p-2 print:border-none print:shadow-none print:rounded-none`}
+                        <div
+                            id="thermal-receipt"
+                            className={`bg-white w-full ${paperSize === "58mm" ? "max-w-[290px] text-[10.5px] p-4" : "max-w-[350px] text-[12px] p-6"
+                                } shadow-lg rounded-xl font-mono leading-relaxed text-slate-800 border border-slate-200 h-fit print:max-w-none print:w-full print:p-2 print:border-none print:shadow-none print:rounded-none`}
                         >
                             {/* Logotipo Empresa (si existe) */}
                             {companyInfo.logoUrl && (
@@ -977,13 +974,12 @@ export const ReceiptTicketModal = ({ isOpen, onClose, saleData }) => {
                                 </div>
                                 <div className="flex justify-between">
                                     <span className="text-slate-500">ESTADO</span>
-                                    <span className={`font-bold uppercase ${
-                                        paymentStatus === "PAGADO"
+                                    <span className={`font-bold uppercase ${paymentStatus === "PAGADO"
                                             ? "text-emerald-700"
                                             : paymentStatus === "PARCIAL"
-                                            ? "text-amber-700"
-                                            : "text-rose-700"
-                                    }`}>
+                                                ? "text-amber-700"
+                                                : "text-rose-700"
+                                        }`}>
                                         {paymentStatus}
                                     </span>
                                 </div>

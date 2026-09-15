@@ -15,7 +15,6 @@ export const EmployeeForm = ({ initialData = null, onSubmit, onCancel }) => {
       ? String(initialData.fechaContratacion).substring(0, 10)
       : new Date().toISOString().substring(0, 10),
     activo: initialData?.activo ?? true,
-    // Datos User
     username: initialData?.username || "",
     email: initialData?.email || "",
     password: "",
@@ -26,26 +25,26 @@ export const EmployeeForm = ({ initialData = null, onSubmit, onCancel }) => {
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
-  if (initialData) {
-    setFormData({
-      idEmpleado: initialData.idEmpleado || initialData.id || 0,
-      nombre: initialData.nombre || "",
-      apellidos: initialData.apellidos || "",
-      nIdentificacion: initialData.nIdentificacion || "",
-      numeroTelefono: initialData.numeroTelefono || "",
-      cargo: initialData.cargo || "",
-      porcentajeComision: initialData.porcentajeComision ?? 0,
-      fechaContratacion: initialData.fechaContratacion
-        ? String(initialData.fechaContratacion).substring(0, 10)
-        : "",
-      activo: initialData.activo ?? true,
-      username: initialData.username || "",
-      email: initialData.email || "",
-      password: "", // Contraseña siempre vacía para que no se sobreescriba accidentalmente
-      admin: Boolean(initialData.admin),
-    });
-  }
-}, [initialData]);
+    if (initialData) {
+      setFormData({
+        idEmpleado: initialData.idEmpleado || initialData.id || 0,
+        nombre: initialData.nombre || "",
+        apellidos: initialData.apellidos || "",
+        nIdentificacion: initialData.nIdentificacion || "",
+        numeroTelefono: initialData.numeroTelefono || "",
+        cargo: initialData.cargo || "",
+        porcentajeComision: initialData.porcentajeComision ?? 0,
+        fechaContratacion: initialData.fechaContratacion
+          ? String(initialData.fechaContratacion).substring(0, 10)
+          : "",
+        activo: initialData.activo ?? true,
+        username: initialData.username || "",
+        email: initialData.email || "",
+        password: "",
+        admin: Boolean(initialData.admin),
+      });
+    }
+  }, [initialData]);
 
   const onInputChange = ({ target }) => {
     const { name, value, type } = target;
@@ -69,8 +68,7 @@ export const EmployeeForm = ({ initialData = null, onSubmit, onCancel }) => {
   const validate = () => {
     const newErrors = {};
     if (!formData.nombre.trim()) newErrors.nombre = "El nombre es obligatorio";
-    
-    // Regla de tu entidad User: username entre 4 y 8 caracteres
+
     if (!formData.username.trim()) {
       newErrors.username = "El nombre de usuario es obligatorio";
     } else if (formData.username.trim().length < 4 || formData.username.trim().length > 8) {
@@ -84,7 +82,7 @@ export const EmployeeForm = ({ initialData = null, onSubmit, onCancel }) => {
     }
 
     if (!isEditing && !formData.password.trim()) {
-      newErrors.password = "La contraseña es obligatoria";
+      newErrors.password = "La contraseña es obligatoria para nuevos registros";
     }
 
     return newErrors;
@@ -129,334 +127,387 @@ export const EmployeeForm = ({ initialData = null, onSubmit, onCancel }) => {
   };
 
   return (
-    <div className="w-100 bg-white border rounded-3 p-4 p-md-5 user-form-container">
-      {/* Cabecera */}
-      <div className="pb-4 mb-4 border-bottom">
-        <div className="d-flex align-items-center gap-2">
-          <span className="accent-bar"></span>
-          <h4 className="fw-bold text-dark m-0" style={{ letterSpacing: "-0.3px" }}>
-            {isEditing ? "Editar Empleado" : "Registrar Empleado"}
-          </h4>
-          <span
-            className={`badge fw-bold font-monospace ${
-              isEditing ? "bg-amber-soft text-amber" : "bg-teal-soft text-teal"
-            }`}
-            style={{ fontSize: "0.72rem" }}
-          >
-            {isEditing ? `ID: #${formData.idEmpleado}` : "NUEVO"}
-          </span>
-        </div>
-        <p className="text-muted small m-0 mt-1 ms-3 ps-1">
-          {isEditing
-            ? `Actualización del expediente y credenciales de ${formData.nombre}`
-            : "Complete los datos del empleado y su cuenta de acceso al sistema."}
-        </p>
-      </div>
-
-      <form onSubmit={handleSubmit}>
-        <div className="row g-3">
-          {/* Nombre */}
-          <div className="col-md-6">
-            <label className="form-label text-dark-emphasis small fw-bold text-uppercase mb-1" style={{ fontSize: "0.74rem" }}>
-              Nombres *
-            </label>
-            <input
-              type="text"
-              name="nombre"
-              className={`form-control modern-input ${errors.nombre ? "is-invalid" : ""}`}
-              placeholder="Ej. Juan Carlos"
-              value={formData.nombre}
-              onChange={onInputChange}
-            />
-            {errors.nombre && <div className="text-danger small mt-1">• {errors.nombre}</div>}
-          </div>
-
-          {/* Apellidos */}
-          <div className="col-md-6">
-            <label className="form-label text-dark-emphasis small fw-bold text-uppercase mb-1" style={{ fontSize: "0.74rem" }}>
-              Apellidos
-            </label>
-            <input
-              type="text"
-              name="apellidos"
-              className="form-control modern-input"
-              placeholder="Ej. Pérez Ramos"
-              value={formData.apellidos}
-              onChange={onInputChange}
-            />
-          </div>
-
-          {/* DNI / N° Identificación */}
-          <div className="col-md-4">
-            <label className="form-label text-dark-emphasis small fw-bold text-uppercase mb-1" style={{ fontSize: "0.74rem" }}>
-              N° Identificación / DNI
-            </label>
-            <input
-              type="text"
-              name="nIdentificacion"
-              className="form-control modern-input"
-              placeholder="Ej. 12345678"
-              value={formData.nIdentificacion}
-              onChange={onInputChange}
-            />
-          </div>
-
-          {/* Teléfono / Celular */}
-          <div className="col-md-4">
-            <label className="form-label text-dark-emphasis small fw-bold text-uppercase mb-1" style={{ fontSize: "0.74rem" }}>
-              Teléfono / Celular
-            </label>
-            <input
-              type="text"
-              name="numeroTelefono"
-              className="form-control modern-input"
-              placeholder="Ej. 987654321"
-              value={formData.numeroTelefono}
-              onChange={onInputChange}
-            />
-          </div>
-
-          {/* Cargo */}
-          <div className="col-md-4">
-            <label className="form-label text-dark-emphasis small fw-bold text-uppercase mb-1" style={{ fontSize: "0.74rem" }}>
-              Cargo
-            </label>
-            <input
-              type="text"
-              name="cargo"
-              className="form-control modern-input"
-              placeholder="Ej. Cajero, Farmacéutico"
-              value={formData.cargo}
-              onChange={onInputChange}
-            />
-          </div>
-
-          {/* % Comisión */}
-          <div className="col-md-4">
-            <label className="form-label text-dark-emphasis small fw-bold text-uppercase mb-1" style={{ fontSize: "0.74rem" }}>
-              % Comisión por Venta
-            </label>
-            <input
-              type="number"
-              step="0.1"
-              name="porcentajeComision"
-              className="form-control modern-input"
-              value={formData.porcentajeComision}
-              onChange={onInputChange}
-            />
-          </div>
-
-          {/* Fecha Contratación */}
-          <div className="col-md-4">
-            <label className="form-label text-dark-emphasis small fw-bold text-uppercase mb-1" style={{ fontSize: "0.74rem" }}>
-              Fecha de Contratación
-            </label>
-            <input
-              type="date"
-              name="fechaContratacion"
-              className="form-control modern-input"
-              value={formData.fechaContratacion}
-              onChange={onInputChange}
-            />
-          </div>
-
-          {/* Switch Activo */}
-          <div className="col-md-4 d-flex align-items-end">
-            <div
-              onClick={onToggleActivo}
-              className={`p-2 border rounded-3 w-100 d-flex justify-content-between align-items-center cursor-pointer ${
-                formData.activo ? "role-box-active" : "role-box-default"
-              }`}
-              style={{ minHeight: "42px", cursor: "pointer" }}
-            >
-              <span className="small fw-bold ms-2 text-dark">
-                {formData.activo ? "Empleado Activo" : "Empleado Inactivo"}
-              </span>
-              <div className="form-check form-switch m-0 pe-2">
-                <input
-                  type="checkbox"
-                  role="switch"
-                  checked={formData.activo}
-                  onChange={onToggleActivo}
-                  className="form-check-input custom-checkbox"
-                  style={{ cursor: "pointer" }}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Divisor */}
-          <div className="col-12 my-2 border-top pt-2">
-            <span className="text-muted small fw-bold text-uppercase" style={{ fontSize: "0.7rem", letterSpacing: "0.5px" }}>
-              Credenciales de Acceso (Usuario)
+    <div className="space-y-6">
+      {/* 1. Header Superior */}
+      <div className="bg-white border border-zinc-200 rounded-2xl p-5 sm:p-6 shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-2 mb-1.5">
+            <span className="bg-zinc-900 text-white font-mono font-bold text-[10px] px-2.5 py-0.5 rounded uppercase tracking-wider">
+              {isEditing ? `EXPEDIENTE #${formData.idEmpleado}` : "NUEVO INGRESO"}
+            </span>
+            <span className="bg-zinc-100 text-zinc-800 border border-zinc-300 font-mono text-[10px] font-bold px-2 py-0.5 rounded uppercase">
+              RECURSOS HUMANOS
             </span>
           </div>
+          <h1 className="text-2xl font-bold text-zinc-900 tracking-tight">
+            {isEditing ? `Editar Colaborador: ${formData.nombre}` : "Registrar Nuevo Colaborador"}
+          </h1>
+          <p className="text-xs text-zinc-500 font-mono mt-1">
+            {isEditing
+              ? "Actualización de datos generales, credenciales de acceso y porcentajes de comisión."
+              : "Ingrese la información personal y las credenciales de acceso para el nuevo personal de farmacia."}
+          </p>
+        </div>
 
-          {/* Username */}
-          <div className="col-md-4">
-            <label className="form-label text-dark-emphasis small fw-bold text-uppercase mb-1" style={{ fontSize: "0.74rem" }}>
-              Usuario (4-8 car.) *
-            </label>
-            <input
-              type="text"
-              name="username"
-              maxLength={8}
-              className={`form-control modern-input ${errors.username ? "is-invalid" : ""}`}
-              placeholder="Ej. admin"
-              value={formData.username}
-              onChange={onInputChange}
-            />
-            {errors.username && <div className="text-danger small mt-1">• {errors.username}</div>}
+        {onCancel && (
+          <button
+            type="button"
+            onClick={onCancel}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-white hover:bg-zinc-100 text-zinc-700 text-xs font-bold rounded-xl border border-zinc-300 shadow-xs transition-all cursor-pointer self-start sm:self-auto"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="19" y1="12" x2="5" y2="12" />
+              <polyline points="12 19 5 12 12 5" />
+            </svg>
+            <span>Volver al Directorio</span>
+          </button>
+        )}
+      </div>
+
+      {/* 2. Formulario Principal */}
+      <form onSubmit={handleSubmit} className="bg-white border border-zinc-200 rounded-2xl p-6 sm:p-8 shadow-sm space-y-8">
+        
+        {/* SECCIÓN 1: Identificación y Datos Personales */}
+        <div>
+          <div className="flex items-center gap-2.5 pb-3 mb-5 border-b border-zinc-100">
+            <div className="w-2.5 h-2.5 bg-zinc-900 rounded-full"></div>
+            <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-900">
+              1. Identificación y Contacto
+            </h2>
           </div>
 
-          {/* Email */}
-          <div className="col-md-4">
-            <label className="form-label text-dark-emphasis small fw-bold text-uppercase mb-1" style={{ fontSize: "0.74rem" }}>
-              Correo Electrónico *
-            </label>
-            <input
-              type="email"
-              name="email"
-              className={`form-control modern-input ${errors.email ? "is-invalid" : ""}`}
-              placeholder="ejemplo@farmacia.com"
-              value={formData.email}
-              onChange={onInputChange}
-            />
-            {errors.email && <div className="text-danger small mt-1">• {errors.email}</div>}
-          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {/* Nombres */}
+            <div className="space-y-1.5">
+              <label className="block text-xs font-bold text-zinc-800 uppercase tracking-wider">
+                Nombres <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                name="nombre"
+                value={formData.nombre}
+                onChange={onInputChange}
+                placeholder="Ej. Juan Carlos"
+                className={`w-full h-10 px-3.5 bg-zinc-50/60 border rounded-xl text-xs font-medium text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:bg-white transition-all ${
+                  errors.nombre
+                    ? "border-red-500 focus:border-red-500 focus:ring-1 focus:ring-red-500"
+                    : "border-zinc-300 focus:border-zinc-950 focus:ring-1 focus:ring-zinc-950"
+                }`}
+              />
+              {errors.nombre && (
+                <p className="text-[11px] font-mono font-bold text-red-600 mt-1">
+                  • {errors.nombre}
+                </p>
+              )}
+            </div>
 
-          {/* Contraseña */}
-          <div className="col-md-4">
-            <label className="form-label text-dark-emphasis small fw-bold text-uppercase mb-1" style={{ fontSize: "0.74rem" }}>
-              {isEditing ? "Contraseña (Opcional)" : "Contraseña *"}
-            </label>
-            <input
-              type="password"
-              name="password"
-              className={`form-control modern-input ${errors.password ? "is-invalid" : ""}`}
-              placeholder={isEditing ? "Dejar vacía para conservar" : "••••••••"}
-              value={formData.password}
-              onChange={onInputChange}
-            />
-            {errors.password && <div className="text-danger small mt-1">• {errors.password}</div>}
-          </div>
+            {/* Apellidos */}
+            <div className="space-y-1.5">
+              <label className="block text-xs font-bold text-zinc-800 uppercase tracking-wider">
+                Apellidos
+              </label>
+              <input
+                type="text"
+                name="apellidos"
+                value={formData.apellidos}
+                onChange={onInputChange}
+                placeholder="Ej. Pérez Ramos"
+                className="w-full h-10 px-3.5 bg-zinc-50/60 border border-zinc-300 rounded-xl text-xs font-medium text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:bg-white focus:border-zinc-950 focus:ring-1 focus:ring-zinc-950 transition-all"
+              />
+            </div>
 
-          {/* Asignar Administrador */}
-          <div className="col-12">
-            <div
-              className={`p-3 border rounded-3 w-100 ${
-                formData.admin ? "role-box-active" : "role-box-default"
-              }`}
-            >
-              <div className="form-check m-0 d-flex align-items-start gap-2">
-                <input
-                  type="checkbox"
-                  name="admin"
-                  id="adminCheckbox"
-                  checked={formData.admin}
-                  className="form-check-input custom-checkbox mt-1"
-                  onChange={onCheckboxAdminChange}
-                  style={{ cursor: "pointer" }}
-                />
-                <div>
-                  <label
-                    className="form-check-label text-dark fw-bold small d-block"
-                    htmlFor="adminCheckbox"
-                    style={{ cursor: "pointer" }}
-                  >
-                    Asignar rol de Administrador
-                  </label>
-                  <span className="text-muted small" style={{ fontSize: "0.75rem" }}>
-                    {formData.admin
-                      ? "Privilegios habilitados para administración general, catálogo y reportes."
-                      : "Acceso operativo limitado a ventas en caja y atención al cliente."}
-                  </span>
+            {/* DNI / N° Identificación */}
+            <div className="space-y-1.5">
+              <label className="block text-xs font-bold text-zinc-800 uppercase tracking-wider">
+                N° Identificación / DNI
+              </label>
+              <input
+                type="text"
+                name="nIdentificacion"
+                value={formData.nIdentificacion}
+                onChange={onInputChange}
+                placeholder="Ej. 12345678"
+                className="w-full h-10 px-3.5 bg-zinc-50/60 border border-zinc-300 rounded-xl text-xs font-mono font-medium text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:bg-white focus:border-zinc-950 focus:ring-1 focus:ring-zinc-950 transition-all"
+              />
+            </div>
+
+            {/* Teléfono */}
+            <div className="space-y-1.5">
+              <label className="block text-xs font-bold text-zinc-800 uppercase tracking-wider">
+                Teléfono / Celular
+              </label>
+              <input
+                type="text"
+                name="numeroTelefono"
+                value={formData.numeroTelefono}
+                onChange={onInputChange}
+                placeholder="Ej. 987654321"
+                className="w-full h-10 px-3.5 bg-zinc-50/60 border border-zinc-300 rounded-xl text-xs font-mono font-medium text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:bg-white focus:border-zinc-950 focus:ring-1 focus:ring-zinc-950 transition-all"
+              />
+            </div>
+
+            {/* Cargo */}
+            <div className="space-y-1.5">
+              <label className="block text-xs font-bold text-zinc-800 uppercase tracking-wider">
+                Cargo / Función
+              </label>
+              <input
+                type="text"
+                name="cargo"
+                value={formData.cargo}
+                onChange={onInputChange}
+                placeholder="Ej. Farmacéutico, Cajero"
+                className="w-full h-10 px-3.5 bg-zinc-50/60 border border-zinc-300 rounded-xl text-xs font-medium text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:bg-white focus:border-zinc-950 focus:ring-1 focus:ring-zinc-950 transition-all"
+              />
+            </div>
+
+            {/* Estado Activo / Inactivo */}
+            <div className="space-y-1.5 flex flex-col justify-end">
+              <label className="block text-xs font-bold text-zinc-800 uppercase tracking-wider">
+                Estado del Colaborador
+              </label>
+              <div
+                onClick={onToggleActivo}
+                className={`h-10 px-4 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${
+                  formData.activo
+                    ? "bg-zinc-900 text-white border-zinc-900 shadow-xs"
+                    : "bg-zinc-50 text-zinc-600 border-zinc-300"
+                }`}
+              >
+                <span className="text-xs font-mono font-bold uppercase tracking-wider">
+                  {formData.activo ? "[ACTIVO / OPERATIVO]" : "[INACTIVO / BLOQUEADO]"}
+                </span>
+                <div
+                  className={`w-9 h-5 flex items-center rounded-full p-0.5 transition-colors ${
+                    formData.activo ? "bg-white" : "bg-zinc-300"
+                  }`}
+                >
+                  <div
+                    className={`bg-zinc-900 w-4 h-4 rounded-full shadow-md transform transition-transform ${
+                      formData.activo ? "translate-x-4 bg-zinc-900" : "translate-x-0 bg-white"
+                    }`}
+                  ></div>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Acciones */}
-        <div className="d-flex justify-content-end align-items-center gap-2 mt-4 pt-3 border-top">
+        {/* SECCIÓN 2: Condiciones Laborales y Comisiones */}
+        <div>
+          <div className="flex items-center gap-2.5 pb-3 mb-5 border-b border-zinc-100">
+            <div className="w-2.5 h-2.5 bg-zinc-900 rounded-full"></div>
+            <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-900">
+              2. Condiciones de Contrato & Remuneración
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            {/* Fecha Contratación */}
+            <div className="space-y-1.5">
+              <label className="block text-xs font-bold text-zinc-800 uppercase tracking-wider">
+                Fecha de Contratación
+              </label>
+              <input
+                type="date"
+                name="fechaContratacion"
+                value={formData.fechaContratacion}
+                onChange={onInputChange}
+                className="w-full h-10 px-3.5 bg-zinc-50/60 border border-zinc-300 rounded-xl text-xs font-medium text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:bg-white focus:border-zinc-950 focus:ring-1 focus:ring-zinc-950 transition-all"
+              />
+            </div>
+
+            {/* % Comisión por Venta */}
+            <div className="space-y-1.5">
+              <label className="block text-xs font-bold text-zinc-800 uppercase tracking-wider">
+                % Comisión por Ventas
+              </label>
+              <div className="relative">
+                <input
+                  type="number"
+                  step="0.1"
+                  min="0"
+                  max="100"
+                  name="porcentajeComision"
+                  value={formData.porcentajeComision}
+                  onChange={onInputChange}
+                  placeholder="0.0"
+                  className="w-full h-10 pl-3.5 pr-10 bg-zinc-50/60 border border-zinc-300 rounded-xl text-xs font-mono font-bold text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:bg-white focus:border-zinc-950 focus:ring-1 focus:ring-zinc-950 transition-all"
+                />
+                <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-mono font-bold text-zinc-400">
+                  %
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* SECCIÓN 3: Credenciales de Acceso */}
+        <div>
+          <div className="flex items-center gap-2.5 pb-3 mb-5 border-b border-zinc-100">
+            <div className="w-2.5 h-2.5 bg-zinc-900 rounded-full"></div>
+            <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-900">
+              3. Credenciales y Seguridad del Sistema
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-5">
+            {/* Usuario */}
+            <div className="space-y-1.5">
+              <label className="block text-xs font-bold text-zinc-800 uppercase tracking-wider">
+                Usuario (4-8 car.) <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 font-mono text-xs">
+                  @
+                </span>
+                <input
+                  type="text"
+                  name="username"
+                  maxLength={8}
+                  value={formData.username}
+                  onChange={onInputChange}
+                  placeholder="admin"
+                  className={`w-full h-10 pl-7 pr-3.5 bg-zinc-50/60 border rounded-xl text-xs font-mono font-bold text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:bg-white transition-all ${
+                    errors.username
+                      ? "border-red-500 focus:border-red-500 focus:ring-1 focus:ring-red-500"
+                      : "border-zinc-300 focus:border-zinc-950 focus:ring-1 focus:ring-zinc-950"
+                  }`}
+                />
+              </div>
+              {errors.username && (
+                <p className="text-[11px] font-mono font-bold text-red-600 mt-1">
+                  • {errors.username}
+                </p>
+              )}
+            </div>
+
+            {/* Correo Electrónico */}
+            <div className="space-y-1.5">
+              <label className="block text-xs font-bold text-zinc-800 uppercase tracking-wider">
+                Correo Electrónico <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={onInputChange}
+                placeholder="colaborador@farmacia.com"
+                className={`w-full h-10 px-3.5 bg-zinc-50/60 border rounded-xl text-xs font-medium text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:bg-white transition-all ${
+                  errors.email
+                    ? "border-red-500 focus:border-red-500 focus:ring-1 focus:ring-red-500"
+                    : "border-zinc-300 focus:border-zinc-950 focus:ring-1 focus:ring-zinc-950"
+                }`}
+              />
+              {errors.email && (
+                <p className="text-[11px] font-mono font-bold text-red-600 mt-1">
+                  • {errors.email}
+                </p>
+              )}
+            </div>
+
+            {/* Contraseña */}
+            <div className="space-y-1.5">
+              <label className="block text-xs font-bold text-zinc-800 uppercase tracking-wider">
+                {isEditing ? "Nueva Contraseña (Opcional)" : "Contraseña de Acceso"} {!isEditing && <span className="text-red-500">*</span>}
+              </label>
+              <input
+                type="password"
+                name="password"
+                value={formData.password}
+                onChange={onInputChange}
+                placeholder={isEditing ? "Dejar vacío para conservar actual" : "••••••••"}
+                className={`w-full h-10 px-3.5 bg-zinc-50/60 border rounded-xl text-xs font-mono font-medium text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:bg-white transition-all ${
+                  errors.password
+                    ? "border-red-500 focus:border-red-500 focus:ring-1 focus:ring-red-500"
+                    : "border-zinc-300 focus:border-zinc-950 focus:ring-1 focus:ring-zinc-950"
+                }`}
+              />
+              {errors.password && (
+                <p className="text-[11px] font-mono font-bold text-red-600 mt-1">
+                  • {errors.password}
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Permiso Administrador */}
+          <div
+            onClick={onCheckboxAdminChange}
+            className={`p-4 rounded-xl border transition-all cursor-pointer flex items-start gap-3.5 ${
+              formData.admin
+                ? "bg-zinc-900 text-white border-zinc-900"
+                : "bg-zinc-50 border-zinc-200 text-zinc-800 hover:border-zinc-400"
+            }`}
+          >
+            <input
+              type="checkbox"
+              id="adminCheckbox"
+              checked={formData.admin}
+              onChange={onCheckboxAdminChange}
+              className="mt-1 w-4 h-4 rounded border-zinc-400 accent-zinc-900 cursor-pointer"
+            />
+            <div>
+              <label
+                htmlFor="adminCheckbox"
+                className="text-xs font-bold uppercase tracking-wider cursor-pointer block"
+              >
+                Asignar Rol de Administrador
+              </label>
+              <p
+                className={`text-xs mt-0.5 ${
+                  formData.admin ? "text-zinc-300" : "text-zinc-500"
+                }`}
+              >
+                {formData.admin
+                  ? "Este usuario tendrá privilegios completos para gestionar inventarios, reportes, compras y configuración."
+                  : "Acceso operativo estándar: caja, emisión de ventas y consultas de inventario."}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Botones de Acción */}
+        <div className="flex flex-col-reverse sm:flex-row items-center justify-end gap-3 pt-4 border-t border-zinc-100">
           {onCancel && (
             <button
               type="button"
-              className="btn btn-light border px-4 py-2 text-secondary fw-semibold btn-sm rounded-2"
-              onClick={onCancel}
               disabled={loading}
+              onClick={onCancel}
+              className="w-full sm:w-auto px-5 py-2.5 bg-white hover:bg-zinc-100 text-zinc-700 text-xs font-bold rounded-xl border border-zinc-300 shadow-xs transition-all uppercase tracking-wider font-mono cursor-pointer"
             >
               Cancelar
             </button>
           )}
+
           <button
             type="submit"
             disabled={loading}
-            className="btn btn-teal-submit px-4 py-2 fw-semibold btn-sm rounded-2 shadow-xs"
-            style={{ minWidth: "140px" }}
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-[#09090b] hover:bg-zinc-800 text-white font-mono font-bold text-xs shadow transition-all cursor-pointer tracking-wider uppercase disabled:opacity-50"
           >
-            {loading ? "Guardando..." : isEditing ? "Guardar Cambios" : "Crear Empleado"}
+            {loading ? (
+              <>
+                <svg className="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                </svg>
+                <span>Guardando...</span>
+              </>
+            ) : (
+              <>
+                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+                  <polyline points="17 21 17 13 7 13 7 21" />
+                  <polyline points="7 3 7 8 15 8" />
+                </svg>
+                <span>{isEditing ? "Actualizar Expediente" : "Crear Colaborador"}</span>
+              </>
+            )}
           </button>
         </div>
       </form>
-
-      {/* Estilos acordes a tu diseño actual */}
-      <style>{`
-        .user-form-container {
-          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-        }
-        .accent-bar {
-          width: 4px;
-          height: 20px;
-          background-color: #006d77;
-          border-radius: 2px;
-          display: inline-block;
-        }
-        .text-teal { color: #006d77 !important; }
-        .bg-teal-soft { background-color: #e6f4f1 !important; }
-        .text-amber { color: #b45309 !important; }
-        .bg-amber-soft { background-color: #fef3c7 !important; }
-        
-        .modern-input {
-          border-color: #cbd5e1;
-          padding: 8px 12px;
-          border-radius: 6px;
-          font-size: 0.88rem;
-          color: #1e293b;
-          transition: border-color 0.15s, box-shadow 0.15s;
-        }
-        .modern-input:focus {
-          border-color: #006d77;
-          box-shadow: 0 0 0 3px rgba(0, 109, 119, 0.12);
-        }
-        
-        .role-box-active {
-          background-color: #f0fdfa;
-          border-color: #99f6e4 !important;
-          transition: all 0.2s ease;
-        }
-        .role-box-default {
-          background-color: #f8fafc;
-          border-color: #e2e8f0 !important;
-          transition: all 0.2s ease;
-        }
-        
-        .custom-checkbox:checked {
-          background-color: #006d77;
-          border-color: #006d77;
-        }
-        
-        .btn-teal-submit {
-          background-color: #006d77;
-          color: #ffffff;
-          border: none;
-          transition: all 0.15s ease;
-        }
-        .btn-teal-submit:hover {
-          background-color: #084c53;
-          color: #ffffff;
-        }
-      `}</style>
     </div>
   );
 };
+
+export default EmployeeForm;

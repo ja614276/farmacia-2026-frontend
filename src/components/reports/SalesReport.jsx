@@ -12,12 +12,12 @@ export const SalesReport = ({
     loading = false,
 }) => {
     const salesSubTabs = [
-        { id: "daily", label: "Ventas Diarias", icon: "📈" },
-        { id: "employee", label: "Ventas por Empleado", icon: "👥" },
-        { id: "client", label: "Ventas por Cliente", icon: "👤" },
-        { id: "details", label: "Detalle de Ventas", icon: "📑" },
-        { id: "top", label: "Top Más Vendidos", icon: "⭐" },
-        { id: "profit", label: "Utilidad por Venta", icon: "📊" },
+        { id: "daily", label: "Ventas Diarias" },
+        { id: "employee", label: "Ventas por Empleado" },
+        { id: "client", label: "Ventas por Cliente" },
+        { id: "details", label: "Detalle de Ventas" },
+        { id: "top", label: "Top Más Vendidos" },
+        { id: "profit", label: "Utilidad por Venta" },
     ];
 
     const [subTab, setSubTab] = useState("daily");
@@ -254,8 +254,8 @@ export const SalesReport = ({
             {/* Header con botones PDF y Excel */}
             <div className="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
                 <div className="d-flex align-items-center gap-2">
-                    <span className="badge bg-emerald-subtle text-emerald fw-bold px-3 py-1.5 rounded-pill" style={{ fontSize: "0.78rem" }}>
-                        📈 MÓDULO DE VENTAS & FACTURACIÓN
+                    <span className="badge rounded-1 px-3 py-1.5 fw-bold" style={{ backgroundColor: "#09090b", color: "#ffffff", fontSize: "0.72rem" }}>
+                        MÓDULO DE VENTAS & FACTURACIÓN
                     </span>
                     <span className="text-secondary small">
                         Control de ingresos, rendimiento por empleado y clientes
@@ -305,7 +305,6 @@ export const SalesReport = ({
                             setCurrentPage(1);
                         }}
                     >
-                        <span className="me-1">{tab.icon}</span>
                         <span>{tab.label}</span>
                     </button>
                 ))}
@@ -373,7 +372,6 @@ export const SalesReport = ({
                             </div>
                             <div className="d-flex align-items-center gap-2">
                                 <span className="text-muted small">{salesSummary ? salesSummary.efectivoCount : 0} oper.</span>
-                                <span className="online-dot"></span>
                             </div>
                         </div>
                     </div>
@@ -522,7 +520,7 @@ export const SalesReport = ({
             <div className="bg-white rounded-3 border shadow-sm overflow-hidden mb-3">
                 {loading ? (
                     <div className="p-5 text-center">
-                        <div className="spinner-border text-orange-custom" role="status" style={{ width: "2.5rem", height: "2.5rem" }}>
+                        <div className="spinner-border text-dark" role="status" style={{ width: "2rem", height: "2rem" }}>
                             <span className="visually-hidden">Cargando reporte...</span>
                         </div>
                         <p className="text-secondary small mt-2 mb-0">Cargando datos de ventas...</p>
@@ -582,7 +580,7 @@ export const SalesReport = ({
                                                 <td className="text-end fw-black text-dark">S/ {total}</td>
                                                 <td className="text-center">
                                                     <div className="d-flex align-items-center justify-content-center gap-1">
-                                                        <button type="button" className="btn-action-icon text-teal" onClick={() => handleOpenTicket(sale)} title="Imprimir Ticket">
+                                                        <button type="button" className="btn-action-icon text-red" onClick={() => handleOpenTicket(sale)} title="Imprimir Ticket">
                                                             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                                                 <polyline points="6 9 6 2 18 2 18 9" />
                                                                 <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />

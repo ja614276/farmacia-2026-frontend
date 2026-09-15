@@ -9,6 +9,11 @@ export const SidebarNavItem = ({
   onToggle,
   isAdmin,
 }) => {
+  // Ocultar si requiere permisos de administrador y el usuario no lo es
+  if (item.adminOnly && !isAdmin) {
+    return null;
+  }
+
   // Enlace directo
   if (item.type === "link") {
     return (
@@ -23,17 +28,20 @@ export const SidebarNavItem = ({
           justifyContent: isCollapsed ? "center" : "flex-start",
         }}
       >
-        {item.icon}
+        <span className={styles.itemIcon}>{item.icon}</span>
         {!isCollapsed && <span className={styles.linkText}>{item.title}</span>}
       </NavLink>
     );
   }
 
-  // Acordeón
-  const hasSubItems = item.subItems && item.subItems.length > 0;
+  // Acordeón con subítems
+  const visibleSubItems = (item.subItems || []).filter(
+    (sub) => !sub.adminOnly || isAdmin
+  );
+  const hasSubItems = visibleSubItems.length > 0;
 
   return (
-    <div>
+    <div className={styles.navGroup}>
       <div
         onClick={onToggle}
         title={item.title}
@@ -43,9 +51,11 @@ export const SidebarNavItem = ({
         style={{
           justifyContent: isCollapsed ? "center" : "space-between",
         }}
+        role="button"
+        tabIndex={0}
       >
         <div className={styles.headerLeft}>
-          {item.icon}
+          <span className={styles.itemIcon}>{item.icon}</span>
           {!isCollapsed && <span className={styles.linkText}>{item.title}</span>}
         </div>
 
@@ -56,7 +66,9 @@ export const SidebarNavItem = ({
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
-            strokeWidth="2"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
             className={`${styles.arrowIcon} ${
               isOpen ? styles.arrowIconOpen : ""
             }`}
@@ -68,20 +80,18 @@ export const SidebarNavItem = ({
 
       {!isCollapsed && isOpen && hasSubItems && (
         <div className={styles.submenu}>
-          {item.subItems
-            .filter((sub) => !sub.adminOnly || isAdmin)
-            .map((sub) => (
-              <NavLink
-                key={sub.path}
-                to={sub.path}
-                end={sub.end}
-                className={({ isActive }) =>
-                  `${styles.subItem} ${isActive ? styles.subItemActive : ""}`
-                }
-              >
-                {sub.label}
-              </NavLink>
-            ))}
+          {visibleSubItems.map((sub) => (
+            <NavLink
+              key={sub.path}
+              to={sub.path}
+              end={sub.end}
+              className={({ isActive }) =>
+                `${styles.subItem} ${isActive ? styles.subItemActive : ""}`
+              }
+            >
+              {sub.label}
+            </NavLink>
+          ))}
         </div>
       )}
     </div>

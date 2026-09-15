@@ -4,11 +4,11 @@ import { formatDateTime, isDateInFilter, downloadCSV } from "./reportUtils.js";
 export const SuppliersReport = ({ suppliers = [], purchases = [], loading = false }) => {
     // Subpestañas del módulo Proveedores
     const subTabs = [
-        { id: "supp_directory", label: "Directorio de Proveedores", icon: "🏢" },
-        { id: "supp_purchases", label: "Compras Proveedor", icon: "🚚" },
-        { id: "supp_min_prices", label: "Precios Mínimos", icon: "$" },
-        { id: "supp_price_comparison", label: "Comparativo Precios", icon: "📊" },
-        { id: "supp_purchase_details", label: "Compra - Detalle Compra", icon: "📑" },
+        { id: "supp_directory", label: "Directorio de Proveedores" },
+        { id: "supp_purchases", label: "Compras Proveedor" },
+        { id: "supp_min_prices", label: "Precios Mínimos" },
+        { id: "supp_price_comparison", label: "Comparativo de Precios" },
+        { id: "supp_purchase_details", label: "Compra - Detalle Compra" },
     ];
 
     const [subTab, setSubTab] = useState("supp_directory");
@@ -529,8 +529,8 @@ export const SuppliersReport = ({ suppliers = [], purchases = [], loading = fals
             {/* 1. Header con botones de acción PDF / Excel */}
             <div className="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
                 <div className="d-flex align-items-center gap-2">
-                    <span className="badge bg-teal-subtle text-teal fw-bold px-3 py-1.5 rounded-pill" style={{ fontSize: "0.78rem" }}>
-                        🚚 GESTIÓN & ANÁLISIS DE PROVEEDORES
+                    <span className="badge rounded-1 px-3 py-1.5 fw-bold" style={{ backgroundColor: "#09090b", color: "#ffffff", fontSize: "0.72rem" }}>
+                        GESTIÓN & ANÁLISIS DE PROVEEDORES
                     </span>
                     <span className="text-secondary small">
                         Seguimiento comercial, catálogo y comparativa de compras
@@ -586,8 +586,10 @@ export const SuppliersReport = ({ suppliers = [], purchases = [], loading = fals
                                 {kpiSummary.inactiveSuppliers > 0 ? `${kpiSummary.inactiveSuppliers} Inactivos` : "Todos operativos"}
                             </div>
                         </div>
-                        <div className="rounded-3 bg-teal-subtle text-teal p-3 d-flex align-items-center justify-content-center" style={{ width: "48px", height: "48px" }}>
-                            <span style={{ fontSize: "1.4rem" }}>🏢</span>
+                        <div className="rounded-2 p-2 d-flex align-items-center justify-content-center shadow-sm" style={{ width: "42px", height: "42px", backgroundColor: "#09090b", color: "#ffffff" }}>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="M3 21h18M3 7v14M21 7v14M6 11h4M6 15h4M14 11h4M14 15h4M9 3h6v4H9z" />
+                            </svg>
                         </div>
                     </div>
                 </div>
@@ -606,8 +608,13 @@ export const SuppliersReport = ({ suppliers = [], purchases = [], loading = fals
                                 Órdenes filtradas en rango
                             </div>
                         </div>
-                        <div className="rounded-3 bg-blue-subtle text-blue p-3 d-flex align-items-center justify-content-center" style={{ width: "48px", height: "48px" }}>
-                            <span style={{ fontSize: "1.4rem" }}>🚚</span>
+                        <div className="rounded-2 p-2 d-flex align-items-center justify-content-center shadow-sm" style={{ width: "42px", height: "42px", backgroundColor: "#09090b", color: "#ffffff" }}>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <rect x="1" y="3" width="15" height="13" />
+                                <polygon points="16 8 20 8 23 11 23 16 16 16 16 8" />
+                                <circle cx="5.5" cy="18.5" r="2.5" />
+                                <circle cx="18.5" cy="18.5" r="2.5" />
+                            </svg>
                         </div>
                     </div>
                 </div>
@@ -619,7 +626,7 @@ export const SuppliersReport = ({ suppliers = [], purchases = [], loading = fals
                                 TOTAL GASTADO EN COMPRAS
                             </span>
                             <div className="d-flex align-items-baseline gap-2 mt-1">
-                                <span className="fs-3 fw-black text-orange-custom">
+                                <span className="fs-3 fw-black text-dark">
                                     S/ {kpiSummary.totalSpentAmount.toFixed(2)}
                                 </span>
                             </div>
@@ -627,8 +634,11 @@ export const SuppliersReport = ({ suppliers = [], purchases = [], loading = fals
                                 Inversión acumulada
                             </div>
                         </div>
-                        <div className="rounded-3 bg-amber-light text-amber p-3 d-flex align-items-center justify-content-center" style={{ width: "48px", height: "48px" }}>
-                            <span style={{ fontSize: "1.4rem" }}>💰</span>
+                        <div className="rounded-2 p-2 d-flex align-items-center justify-content-center shadow-sm" style={{ width: "42px", height: "42px", backgroundColor: "#09090b", color: "#ffffff" }}>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <line x1="12" y1="1" x2="12" y2="23" />
+                                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                            </svg>
                         </div>
                     </div>
                 </div>
@@ -642,12 +652,15 @@ export const SuppliersReport = ({ suppliers = [], purchases = [], loading = fals
                             <div className="fw-black text-dark text-truncate mt-1" style={{ fontSize: "1.05rem" }} title={kpiSummary.topSupplierName}>
                                 {kpiSummary.topSupplierName}
                             </div>
-                            <div className="text-emerald fw-semibold small mt-0.5" style={{ fontSize: "0.75rem" }}>
+                            <div className="text-secondary fw-semibold small mt-0.5" style={{ fontSize: "0.75rem" }}>
                                 {kpiSummary.topSupplierSpent > 0 ? `S/ ${kpiSummary.topSupplierSpent.toFixed(2)} acumulados` : "Sin compras"}
                             </div>
                         </div>
-                        <div className="rounded-3 bg-purple-subtle text-purple p-3 d-flex align-items-center justify-content-center" style={{ width: "48px", height: "48px" }}>
-                            <span style={{ fontSize: "1.4rem" }}>🏆</span>
+                        <div className="rounded-2 p-2 d-flex align-items-center justify-content-center shadow-sm" style={{ width: "42px", height: "42px", backgroundColor: "#09090b", color: "#ffffff" }}>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <circle cx="12" cy="8" r="6" />
+                                <path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11" />
+                            </svg>
                         </div>
                     </div>
                 </div>
@@ -665,7 +678,6 @@ export const SuppliersReport = ({ suppliers = [], purchases = [], loading = fals
                             setCurrentPage(1);
                         }}
                     >
-                        <span className="me-1">{tab.icon}</span>
                         <span>{tab.label}</span>
                     </button>
                 ))}
@@ -692,9 +704,9 @@ export const SuppliersReport = ({ suppliers = [], purchases = [], loading = fals
                                 }}
                                 placeholder={
                                     subTab === "supp_directory" ? "Buscar por razón social, contacto, teléfono, RUC..." :
-                                    subTab === "supp_purchases" ? "Buscar por nombre del proveedor..." :
-                                    subTab === "supp_min_prices" ? "Buscar por producto, proveedor, comprobante..." :
-                                    "Buscar producto, proveedor, factura..."
+                                        subTab === "supp_purchases" ? "Buscar por nombre del proveedor..." :
+                                            subTab === "supp_min_prices" ? "Buscar por producto, proveedor, comprobante..." :
+                                                "Buscar producto, proveedor, factura..."
                                 }
                                 className="form-control border-start-0 bg-light shadow-none"
                                 style={{ fontSize: "0.78rem" }}
@@ -801,7 +813,7 @@ export const SuppliersReport = ({ suppliers = [], purchases = [], loading = fals
             <div className="bg-white rounded-3 border shadow-sm overflow-hidden mb-3">
                 {loading ? (
                     <div className="p-5 text-center">
-                        <div className="spinner-border text-orange-custom" role="status" style={{ width: "2.5rem", height: "2.5rem" }}>
+                        <div className="spinner-border text-dark" role="status" style={{ width: "2rem", height: "2rem" }}>
                             <span className="visually-hidden">Cargando reporte...</span>
                         </div>
                         <p className="text-secondary small mt-2 mb-0">Cargando y consolidando reporte de proveedores...</p>
@@ -864,7 +876,6 @@ export const SuppliersReport = ({ suppliers = [], purchases = [], loading = fals
                                             <td>
                                                 {sup.telefono !== "—" ? (
                                                     <span className="d-inline-flex align-items-center gap-1 small text-dark fw-semibold">
-                                                        <span>📞</span>
                                                         <span>{sup.telefono}</span>
                                                     </span>
                                                 ) : (
@@ -891,7 +902,7 @@ export const SuppliersReport = ({ suppliers = [], purchases = [], loading = fals
                                                     {sup.purchaseCount}
                                                 </span>
                                             </td>
-                                            <td className="text-end fw-bold text-orange-custom">
+                                            <td className="text-end fw-bold text-dark">
                                                 S/ {sup.totalSpent.toFixed(2)}
                                             </td>
                                             <td className="text-center">
@@ -941,12 +952,11 @@ export const SuppliersReport = ({ suppliers = [], purchases = [], loading = fals
                                             <td className="small text-secondary">• {supp.lastPurchaseFormatted}</td>
                                             <td className="fw-bold text-dark">{supp.supplierName}</td>
                                             <td className="text-center">
-                                                <span className="d-inline-flex align-items-center gap-1.5 fw-bold text-dark">
-                                                    <span style={{ color: "#f59e0b", fontSize: "0.8rem" }}>🟡</span>
-                                                    <span>{supp.purchaseCount}</span>
+                                                <span className="fw-bold text-dark">
+                                                    {supp.purchaseCount}
                                                 </span>
                                             </td>
-                                            <td className="text-end fw-bold text-orange-custom">
+                                            <td className="text-end fw-bold text-dark">
                                                 S/ {supp.totalSpent.toFixed(2)}
                                             </td>
                                             <td className="text-center">
@@ -1052,8 +1062,8 @@ export const SuppliersReport = ({ suppliers = [], purchases = [], loading = fals
                                             </td>
                                             <td className="text-center">
                                                 {item.isBestPrice ? (
-                                                    <span className="badge-badge bg-emerald-light text-emerald fw-bold">
-                                                        ⭐ Mejor Precio
+                                                    <span className="badge-badge fw-bold" style={{ backgroundColor: "#09090b", color: "#ffffff" }}>
+                                                        Mejor Precio
                                                     </span>
                                                 ) : (
                                                     <span className="badge-badge bg-amber-light text-amber fw-bold">
@@ -1096,7 +1106,7 @@ export const SuppliersReport = ({ suppliers = [], purchases = [], loading = fals
                                             </td>
                                             <td className="text-center fw-semibold text-dark">{item.quantity}</td>
                                             <td className="text-end text-dark">S/ {item.precioCosto.toFixed(2)}</td>
-                                            <td className="text-end fw-bold text-orange-custom">S/ {item.subtotal.toFixed(2)}</td>
+                                            <td className="text-end fw-bold text-dark">S/ {item.subtotal.toFixed(2)}</td>
                                         </tr>
                                     ))}
                                 </tbody>
@@ -1181,7 +1191,7 @@ export const SuppliersReport = ({ suppliers = [], purchases = [], loading = fals
                                     <div className="small text-secondary">
                                         <strong>Órdenes Registradas:</strong> {selectedSupplierPurchasesModal.purchaseCount}
                                     </div>
-                                    <div className="fw-bold text-orange-custom fs-5">
+                                    <div className="fw-bold text-dark fs-5">
                                         Total Acumulado: S/ {selectedSupplierPurchasesModal.totalSpent.toFixed(2)}
                                     </div>
                                 </div>

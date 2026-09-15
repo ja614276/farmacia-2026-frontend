@@ -23,7 +23,6 @@ export const LocationForm = ({ locationSelected = null, onSuccess = null }) => {
     const [isLoadingData, setIsLoadingData] = useState(false);
 
     const { nombre, descripcion, pasillo, estante, nivel, isActive } = formState;
-
     const isEditMode = Boolean(formState.id || id || locationSelected?.id);
 
     useEffect(() => {
@@ -79,9 +78,9 @@ export const LocationForm = ({ locationSelected = null, onSuccess = null }) => {
         if (!nombre.trim()) {
             Swal.fire({
                 title: "Campo requerido",
-                text: "El nombre o código del área de almacenamiento es obligatorio.",
+                text: "El nombre o denominación del área de almacenamiento es obligatorio.",
                 icon: "warning",
-                confirmButtonColor: "#0f766e",
+                confirmButtonColor: "#09090b",
             });
             return;
         }
@@ -93,7 +92,7 @@ export const LocationForm = ({ locationSelected = null, onSuccess = null }) => {
 
             if (targetId) {
                 await updateLocation(targetId, formState);
-                Swal.fire({
+                await Swal.fire({
                     title: "¡Actualizada!",
                     text: "Ubicación actualizada correctamente.",
                     icon: "success",
@@ -102,24 +101,21 @@ export const LocationForm = ({ locationSelected = null, onSuccess = null }) => {
                 });
             } else {
                 await saveLocation(formState);
-                Swal.fire({
-                    title: "¡Guardada!",
-                    text: "Ubicación de inventario registrada con éxito.",
+                await Swal.fire({
+                    title: "¡Registrada!",
+                    text: "Ubicación creada con éxito.",
                     icon: "success",
                     timer: 1500,
                     showConfirmButton: false,
                 });
             }
 
-            if (onSuccess) {
-                onSuccess();
-            } else {
-                navigate("/locations");
-            }
+            if (onSuccess) onSuccess();
+            else navigate("/locations");
         } catch (error) {
             console.error("Error al persistir ubicación:", error);
-            const errorMsg = error.response?.data?.nombre || error.response?.data?.message || "Ocurrió un error en el servidor.";
-            Swal.fire("Error", errorMsg, "error");
+            const msg = error.response?.data?.message || "Ocurrió un error al guardar la ubicación.";
+            Swal.fire("Error", msg, "error");
         } finally {
             setIsSubmitting(false);
         }
@@ -127,9 +123,9 @@ export const LocationForm = ({ locationSelected = null, onSuccess = null }) => {
 
     if (isLoadingData) {
         return (
-            <div className="flex items-center justify-center min-h-[300px]">
-                <div className="flex items-center gap-3 text-teal-700 font-medium text-sm">
-                    <svg className="animate-spin h-5 w-5 text-teal-600" fill="none" viewBox="0 0 24 24">
+            <div className="w-full min-h-[350px] flex items-center justify-center">
+                <div className="flex items-center gap-3 text-zinc-700 font-semibold text-xs">
+                    <svg className="animate-spin h-5 w-5 text-zinc-900" fill="none" viewBox="0 0 24 24">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                     </svg>
@@ -140,81 +136,74 @@ export const LocationForm = ({ locationSelected = null, onSuccess = null }) => {
     }
 
     return (
-        <div className="max-w-4xl mx-auto">
-            {/* Cabecera */}
-            <div className="flex items-center justify-between gap-4 mb-6">
-                <div className="flex items-center gap-3.5">
-                    <div className="w-11 h-11 rounded-xl bg-teal-50 text-teal-700 flex items-center justify-center border border-teal-100 shadow-sm flex-shrink-0">
-                        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
-                        </svg>
+        <div className="w-full max-w-4xl mx-auto space-y-6 pb-12">
+            {/* Header */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-zinc-200">
+                <div>
+                    <div className="flex items-center gap-2 text-xs font-semibold text-zinc-500 mb-1">
+                        <span className="hover:text-zinc-900 cursor-pointer" onClick={() => navigate("/dashboard")}>Dashboard</span>
+                        <span>/</span>
+                        <span className="hover:text-zinc-900 cursor-pointer" onClick={() => navigate("/locations")}>Ubicaciones</span>
+                        <span>/</span>
+                        <span className="text-zinc-950 font-bold">{isEditMode ? "Editar" : "Nueva"}</span>
                     </div>
-                    <div>
-                        <h2 className="text-xl sm:text-2xl font-bold text-slate-800 tracking-tight">
-                            {isEditMode ? "Editar Ubicación" : "Nueva Ubicación"}
-                        </h2>
-                        <p className="text-sm text-slate-500 mt-0.5">
-                            {isEditMode 
-                                ? "Modifica la nomenclatura o distribución del espacio de inventario" 
-                                : "Define un nuevo estante, pasillo o área de almacenaje"}
-                        </p>
+                    <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-lg bg-zinc-900 text-white flex items-center justify-center font-bold shadow-xs">
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h1 className="text-xl sm:text-2xl font-black text-zinc-950 tracking-tight">
+                                {isEditMode ? "Editar Ubicación" : "Registrar Nueva Ubicación"}
+                            </h1>
+                            <p className="text-xs text-zinc-500 mt-0.5">
+                                Definición de áreas, vitrinas, anaqueles y estantes para inventario.
+                            </p>
+                        </div>
                     </div>
                 </div>
 
                 <button
                     type="button"
-                    onClick={() => navigate("/locations")}
-                    className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
+                    onClick={() => navigate(-1)}
+                    className="px-4 py-2 text-xs font-bold text-zinc-700 bg-white border border-zinc-300 hover:bg-zinc-100 rounded-lg transition-colors shadow-2xs self-start sm:self-auto"
                 >
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
-                    </svg>
-                    <span>Volver</span>
+                    Volver
                 </button>
             </div>
 
-            {/* Formulario */}
-            <form
-                onSubmit={onSubmit}
-                className="bg-white rounded-2xl p-6 sm:p-8 shadow-[0_4px_25px_rgba(0,0,0,0.03)] border border-slate-100"
-            >
+            {/* Tarjeta del Formulario */}
+            <form onSubmit={onSubmit} className="bg-white rounded-xl p-6 sm:p-7 border border-zinc-200 shadow-xs space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {/* Campo: Ubicación / Área Principal */}
-                    <div className="md:col-span-3">
+                    {/* Nombre del Área */}
+                    <div className="md:col-span-3 space-y-1.5">
                         <label 
                             htmlFor="location-nombre"
-                            className="block text-sm font-semibold text-slate-700 mb-2"
+                            className="block text-xs font-bold text-zinc-800 uppercase tracking-wider"
                         >
-                            Ubicación / Área Principal <span className="text-rose-500 font-bold ml-0.5">*</span>
+                            Nombre o Código del Área Principal *
                         </label>
-                        <div className="relative flex items-center">
-                            <span className="absolute left-3.5 text-slate-400 pointer-events-none">
-                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
-                                </svg>
-                            </span>
-                            <input
-                                id="location-nombre"
-                                type="text"
-                                name="nombre"
-                                value={nombre}
-                                onChange={onInputChange}
-                                placeholder="Ej. Estante A1, Almacén Central, Refrigerador 01..."
-                                autoFocus
-                                disabled={isSubmitting}
-                                className="w-full h-11 pl-10 pr-4 bg-white border border-slate-200 rounded-lg text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-600/15 transition-all disabled:opacity-60"
-                            />
-                        </div>
+                        <input
+                            id="location-nombre"
+                            type="text"
+                            name="nombre"
+                            value={nombre}
+                            onChange={onInputChange}
+                            placeholder="EJ. ESTANTERÍA CENTRAL A, VITRINA REFRIGERADA, ALMACÉN 2"
+                            autoFocus
+                            disabled={isSubmitting}
+                            className="w-full h-11 px-3.5 text-xs font-semibold uppercase text-zinc-900 placeholder:text-zinc-400 placeholder:font-normal bg-zinc-50/50 border border-zinc-300 rounded-lg hover:bg-white focus:bg-white focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 focus:outline-none transition-all shadow-2xs disabled:opacity-60"
+                        />
                     </div>
 
-                    {/* Campo: Pasillo */}
-                    <div>
+                    {/* Pasillo */}
+                    <div className="space-y-1.5">
                         <label 
                             htmlFor="location-pasillo"
-                            className="block text-sm font-semibold text-slate-700 mb-2"
+                            className="block text-xs font-bold text-zinc-800 uppercase tracking-wider"
                         >
-                            Pasillo (Opcional)
+                            Pasillo
                         </label>
                         <input
                             id="location-pasillo"
@@ -222,19 +211,19 @@ export const LocationForm = ({ locationSelected = null, onSuccess = null }) => {
                             name="pasillo"
                             value={pasillo}
                             onChange={onInputChange}
-                            placeholder="Ej. Pasillo 02"
+                            placeholder="EJ. P-01"
                             disabled={isSubmitting}
-                            className="w-full h-11 px-4 bg-white border border-slate-200 rounded-lg text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-600/15 transition-all disabled:opacity-60"
+                            className="w-full h-11 px-3.5 text-xs font-mono font-bold uppercase text-zinc-900 placeholder:text-zinc-400 placeholder:font-normal bg-zinc-50/50 border border-zinc-300 rounded-lg hover:bg-white focus:bg-white focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 focus:outline-none transition-all shadow-2xs disabled:opacity-60"
                         />
                     </div>
 
-                    {/* Campo: Estante */}
-                    <div>
+                    {/* Estante */}
+                    <div className="space-y-1.5">
                         <label 
                             htmlFor="location-estante"
-                            className="block text-sm font-semibold text-slate-700 mb-2"
+                            className="block text-xs font-bold text-zinc-800 uppercase tracking-wider"
                         >
-                            Estante / Sección (Opcional)
+                            Estante / Módulo
                         </label>
                         <input
                             id="location-estante"
@@ -242,19 +231,19 @@ export const LocationForm = ({ locationSelected = null, onSuccess = null }) => {
                             name="estante"
                             value={estante}
                             onChange={onInputChange}
-                            placeholder="Ej. Columna B"
+                            placeholder="EJ. E-03"
                             disabled={isSubmitting}
-                            className="w-full h-11 px-4 bg-white border border-slate-200 rounded-lg text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-600/15 transition-all disabled:opacity-60"
+                            className="w-full h-11 px-3.5 text-xs font-mono font-bold uppercase text-zinc-900 placeholder:text-zinc-400 placeholder:font-normal bg-zinc-50/50 border border-zinc-300 rounded-lg hover:bg-white focus:bg-white focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 focus:outline-none transition-all shadow-2xs disabled:opacity-60"
                         />
                     </div>
 
-                    {/* Campo: Nivel */}
-                    <div>
+                    {/* Nivel */}
+                    <div className="space-y-1.5">
                         <label 
                             htmlFor="location-nivel"
-                            className="block text-sm font-semibold text-slate-700 mb-2"
+                            className="block text-xs font-bold text-zinc-800 uppercase tracking-wider"
                         >
-                            Nivel / Altura (Opcional)
+                            Nivel / Baldosa
                         </label>
                         <input
                             id="location-nivel"
@@ -262,86 +251,68 @@ export const LocationForm = ({ locationSelected = null, onSuccess = null }) => {
                             name="nivel"
                             value={nivel}
                             onChange={onInputChange}
-                            placeholder="Ej. Nivel 3 (Superior)"
+                            placeholder="EJ. NIVEL 2"
                             disabled={isSubmitting}
-                            className="w-full h-11 px-4 bg-white border border-slate-200 rounded-lg text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-600/15 transition-all disabled:opacity-60"
+                            className="w-full h-11 px-3.5 text-xs font-mono font-bold uppercase text-zinc-900 placeholder:text-zinc-400 placeholder:font-normal bg-zinc-50/50 border border-zinc-300 rounded-lg hover:bg-white focus:bg-white focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 focus:outline-none transition-all shadow-2xs disabled:opacity-60"
                         />
                     </div>
 
-                    {/* Campo: Notas de Almacenamiento / Descripción */}
-                    <div className="md:col-span-3">
+                    {/* Descripción */}
+                    <div className="md:col-span-3 space-y-1.5">
                         <label 
                             htmlFor="location-descripcion"
-                            className="block text-sm font-semibold text-slate-700 mb-2"
+                            className="block text-xs font-bold text-zinc-800 uppercase tracking-wider"
                         >
-                            Notas de Almacenamiento (Opcional)
+                            Notas de Almacenamiento / Observaciones
                         </label>
-                        <div className="relative flex items-center">
-                            <span className="absolute left-3.5 top-3 text-slate-400 pointer-events-none">
-                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
-                                </svg>
-                            </span>
-                            <textarea
-                                id="location-descripcion"
-                                name="descripcion"
-                                rows={3}
-                                value={descripcion}
-                                onChange={onInputChange}
-                                placeholder="Ej. Área con temperatura controlada (15°C a 25°C), exclusiva para antibióticos y analgésicos..."
-                                disabled={isSubmitting}
-                                className="w-full pt-2.5 pb-2.5 pl-10 pr-4 bg-white border border-slate-200 rounded-lg text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-600/15 transition-all disabled:opacity-60"
-                            />
-                        </div>
+                        <input
+                            id="location-descripcion"
+                            type="text"
+                            name="descripcion"
+                            value={descripcion}
+                            onChange={onInputChange}
+                            placeholder="EJ. MANTENER CADENA DE FRÍO (2°C A 8°C), ZONA DE ALTA ROTACIÓN"
+                            disabled={isSubmitting}
+                            className="w-full h-11 px-3.5 text-xs font-medium text-zinc-900 placeholder:text-zinc-400 bg-zinc-50/50 border border-zinc-300 rounded-lg hover:bg-white focus:bg-white focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 focus:outline-none transition-all shadow-2xs disabled:opacity-60"
+                        />
                     </div>
 
-                    {/* Campo: Estado Activo */}
-                    <div className="md:col-span-3 pt-2">
+                    {/* Checkbox Activo */}
+                    <div className="md:col-span-3 pt-1">
                         <label className="inline-flex items-center gap-2.5 cursor-pointer select-none">
                             <input
                                 type="checkbox"
                                 name="isActive"
                                 checked={isActive}
                                 onChange={onInputChange}
-                                className="w-4 h-4 rounded text-teal-600 focus:ring-teal-500 border-slate-300"
+                                className="w-4 h-4 rounded text-zinc-950 focus:ring-zinc-950 border-zinc-300"
                             />
-                            <span className="text-sm font-medium text-slate-700">
-                                Zona activa para asignación y almacenamiento de productos
+                            <span className="text-xs font-semibold text-zinc-800">
+                                Ubicación Activa y habilitada para asignación de productos
                             </span>
                         </label>
                     </div>
                 </div>
 
                 {/* Acciones */}
-                <div className="flex items-center justify-end gap-3 mt-8 pt-6 border-t border-slate-100">
+                <div className="flex items-center justify-end gap-3 pt-5 border-t border-zinc-100">
                     <button
                         type="button"
                         onClick={() => navigate("/locations")}
                         disabled={isSubmitting}
-                        className="px-5 py-2.5 rounded-lg border border-slate-200 text-slate-600 font-medium text-sm hover:bg-slate-50 transition-colors disabled:opacity-60"
+                        className="px-5 py-2.5 text-xs font-semibold text-zinc-700 bg-white border border-zinc-300 hover:bg-zinc-100 rounded-lg transition-colors"
                     >
                         Cancelar
                     </button>
                     <button
                         type="submit"
                         disabled={isSubmitting}
-                        className="px-5 py-2.5 rounded-lg bg-teal-800 hover:bg-teal-900 active:bg-teal-950 text-white font-semibold text-sm shadow-sm transition-all flex items-center gap-2 disabled:opacity-75 disabled:cursor-not-allowed"
+                        className="px-6 py-2.5 text-xs font-bold text-white bg-zinc-900 hover:bg-black rounded-lg shadow-sm transition-all flex items-center gap-2"
                     >
                         {isSubmitting ? (
-                            <>
-                                <svg className="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                                </svg>
-                                <span>Guardando...</span>
-                            </>
+                            <span>GUARDANDO...</span>
                         ) : (
-                            <>
-                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M8 7H5a2 2 0 00-2 2v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
-                                </svg>
-                                <span>{isEditMode ? "Actualizar Ubicación" : "Guardar Ubicación"}</span>
-                            </>
+                            <span>{isEditMode ? "Actualizar Ubicación" : "Guardar Ubicación"}</span>
                         )}
                     </button>
                 </div>
@@ -354,3 +325,5 @@ LocationForm.propTypes = {
     locationSelected: PropTypes.object,
     onSuccess: PropTypes.func,
 };
+
+export default LocationForm;

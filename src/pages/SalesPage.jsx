@@ -39,12 +39,12 @@ export const SalesPage = () => {
         const receipt = `${sale.receiptType || sale.tipoComprobante || "COMPROBANTE"} ${sale.series || sale.serie || ""}-${sale.receiptNumber || sale.numComprobante || sale.id}`;
 
         const result = await Swal.fire({
-            title: "¿Anular venta?",
+            title: "¿Anular comprobante?",
             text: `¿Seguro que deseas anular el comprobante "${receipt}"? Esta acción revertirá la transacción.`,
             icon: "warning",
             showCancelButton: true,
-            confirmButtonColor: "#dc2626",
-            cancelButtonColor: "#64748b",
+            confirmButtonColor: "#09090b",
+            cancelButtonColor: "#71717a",
             confirmButtonText: "Sí, anular venta",
             cancelButtonText: "Cancelar",
         });
@@ -54,8 +54,8 @@ export const SalesPage = () => {
                 await removeSale(sale.id);
                 setSales((prev) => prev.filter((s) => s.id !== sale.id));
                 Swal.fire({
-                    title: "¡Venta Anulada!",
-                    text: "La venta ha sido anulada correctamente.",
+                    title: "Comprobante Anulado",
+                    text: "La venta ha sido anulada correctamente en el sistema.",
                     icon: "success",
                     timer: 1500,
                     showConfirmButton: false,
@@ -101,6 +101,7 @@ export const SalesPage = () => {
         .reduce((acc, curr) => acc + Number(curr.total || 0), 0);
 
     const totalGeneral = filteredSales.reduce((acc, curr) => acc + Number(curr.total || 0), 0);
+    const totalPendienteCobro = filteredSales.reduce((acc, curr) => acc + Number(curr.pendingBalance || curr.saldoPendiente || 0), 0);
 
     // Pagination
     const totalPages = Math.ceil(filteredSales.length / pageSize) || 1;
@@ -119,22 +120,36 @@ export const SalesPage = () => {
     );
 
     return (
-        <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 space-y-6">
-            {/* Header superior y controles de búsqueda */}
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <div className="sales-monochrome-page w-full min-h-screen py-4 px-3 sm:px-6">
+            {/* Header superior y controles */}
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-4">
                 <div>
-                    <h1 className="text-2xl font-black text-slate-800 tracking-tight">
-                        Historial de Ventas
+                    <nav aria-label="breadcrumb" className="mb-1">
+                        <ol className="flex items-center gap-1.5 text-xs text-zinc-500">
+                            <li>
+                                <span
+                                    className="cursor-pointer text-zinc-800 hover:text-black underline"
+                                    onClick={() => navigate("/dashboard")}
+                                >
+                                    Dashboard
+                                </span>
+                            </li>
+                            <li className="text-zinc-400">/</li>
+                            <li className="text-zinc-900 font-semibold">Ventas</li>
+                        </ol>
+                    </nav>
+                    <h1 className="text-xl font-bold text-zinc-900 tracking-tight m-0">
+                        Historial de Ventas y Facturación
                     </h1>
-                    <p className="text-xs font-medium text-slate-400 mt-0.5">
-                        Gestiona y monitorea todas las transacciones comerciales
+                    <p className="text-xs text-zinc-500 mt-0.5 m-0">
+                        Registro y fiscalización de comprobantes emitidos, medios de pago y saldos de crédito.
                     </p>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-3 self-start lg:self-auto">
+                <div className="flex flex-wrap items-center gap-2 self-start lg:self-auto">
                     {/* Buscador */}
                     <div className="relative min-w-[220px] sm:min-w-[260px]">
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-400">
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <circle cx="11" cy="11" r="8" strokeWidth="2" />
                                 <path strokeLinecap="round" strokeWidth="2" d="M21 21l-4.35-4.35" />
@@ -147,8 +162,8 @@ export const SalesPage = () => {
                                 setSearchTerm(e.target.value);
                                 setCurrentPage(1);
                             }}
-                            placeholder="Buscar por comprobante o cliente..."
-                            className="w-full pl-9 pr-3 py-2 text-xs bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-600 transition-all placeholder:text-slate-400 shadow-sm"
+                            placeholder="Buscar comprobante o cliente..."
+                            className="w-full pl-9 pr-3 py-1.5 text-xs bg-white border border-zinc-300 rounded-md focus:outline-none focus:border-zinc-900 transition-colors text-zinc-900 placeholder:text-zinc-400"
                         />
                     </div>
 
@@ -159,9 +174,9 @@ export const SalesPage = () => {
                             setUserFilter(e.target.value);
                             setCurrentPage(1);
                         }}
-                        className="bg-white border border-slate-200 text-slate-700 text-xs rounded-xl px-3 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-600 transition-all cursor-pointer font-medium"
+                        className="bg-white border border-zinc-300 text-zinc-800 text-xs rounded-md px-3 py-1.5 focus:outline-none focus:border-zinc-900 cursor-pointer font-medium"
                     >
-                        <option value="ALL">Todos los usuarios</option>
+                        <option value="ALL">Todos los cajeros/usuarios</option>
                         {uniqueUsers.map((u) => (
                             <option key={u} value={u}>
                                 {u}
@@ -169,173 +184,133 @@ export const SalesPage = () => {
                         ))}
                     </select>
 
-                    {/* Reportes del Día */}
-                    <button
-                        type="button"
-                        onClick={() => setDateFilter(dateFilter === "TODAY" ? "ALL" : "TODAY")}
-                        className={`inline-flex items-center gap-2 px-3 py-2 text-xs font-semibold rounded-xl border transition-all shadow-sm ${
-                            dateFilter === "TODAY"
-                                ? "bg-teal-50 text-teal-700 border-teal-200"
-                                : "bg-white text-slate-700 border-slate-200 hover:bg-slate-50"
-                        }`}
-                        title="Alternar entre transacciones de hoy y todas"
-                    >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth="2"
-                                d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"
-                            />
-                        </svg>
-                        <span>{dateFilter === "TODAY" ? "Ventas de Hoy" : "Todas las Ventas"}</span>
-                    </button>
+                    {/* Segmented Filter: Hoy / Todas */}
+                    <div className="inline-flex rounded-md border border-zinc-300 p-0.5 bg-zinc-100">
+                        <button
+                            type="button"
+                            onClick={() => setDateFilter("TODAY")}
+                            className={`px-3 py-1 text-xs font-semibold rounded ${
+                                dateFilter === "TODAY"
+                                    ? "bg-zinc-900 text-white shadow-xs"
+                                    : "text-zinc-600 hover:text-zinc-900"
+                            }`}
+                        >
+                            Ventas de Hoy
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setDateFilter("ALL")}
+                            className={`px-3 py-1 text-xs font-semibold rounded ${
+                                dateFilter === "ALL"
+                                    ? "bg-zinc-900 text-white shadow-xs"
+                                    : "text-zinc-600 hover:text-zinc-900"
+                            }`}
+                        >
+                            Todas
+                        </button>
+                    </div>
 
                     {/* Botón Nueva Venta */}
                     <Link
                         to="/sales/register"
-                        className="inline-flex items-center gap-2 px-4 py-2 bg-[#005f60] hover:bg-[#004e4f] text-white text-xs font-bold rounded-xl shadow-sm hover:shadow transition-all"
+                        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-semibold rounded-md shadow-xs transition-colors"
                     >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" />
                         </svg>
-                        <span>+ Nueva Venta</span>
+                        <span>Nueva Venta</span>
                     </Link>
                 </div>
             </div>
 
-            {/* 3 Tarjetas de Resumen (KPIs) */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {/* KPI 1: TOTAL VENTAS (CONTADO) */}
-                <div className="bg-white rounded-2xl p-5 shadow-[0_4px_25px_rgba(0,0,0,0.03)] border border-slate-100 flex items-center justify-between">
-                    <div>
-                        <span className="text-[11px] font-bold tracking-wider text-indigo-900/60 uppercase block mb-1">
-                            TOTAL VENTAS (CONTADO)
-                        </span>
-                        <div className="text-2xl font-black text-indigo-600">
-                            S/ {totalContado.toLocaleString("es-PE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                        </div>
-                    </div>
-                    <div className="w-11 h-11 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 flex-shrink-0">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <ellipse cx="12" cy="6" rx="8" ry="3" strokeWidth="2" />
-                            <path strokeLinecap="round" strokeWidth="2" d="M4 6v6c0 1.66 3.58 3 8 3s8-1.34 8-3V6" />
-                            <path strokeLinecap="round" strokeWidth="2" d="M4 12v6c0 1.66 3.58 3 8 3s8-1.34 8-3v-6" />
-                        </svg>
-                    </div>
+            {/* BARRA CONSOLIDADA DE MÉTRICAS (SIN CARDS - FRANJA ESTRUCTURADA MONOCROMÁTICA) */}
+            <div className="sales-summary-strip mb-4">
+                <div className="summary-strip-cell">
+                    <span className="summary-label">Total Facturado</span>
+                    <span className="summary-val">
+                        S/ {totalGeneral.toLocaleString("es-PE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </span>
+                    <span className="summary-hint">{filteredSales.length} transacciones registradas</span>
                 </div>
 
-                {/* KPI 2: TOTAL CRÉDITOS */}
-                <div className="bg-white rounded-2xl p-5 shadow-[0_4px_25px_rgba(0,0,0,0.03)] border border-slate-100 flex items-center justify-between">
-                    <div>
-                        <span className="text-[11px] font-bold tracking-wider text-purple-900/60 uppercase block mb-1">
-                            TOTAL CRÉDITOS
-                        </span>
-                        <div className="text-2xl font-black text-purple-600">
-                            S/ {totalCreditos.toLocaleString("es-PE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                        </div>
-                    </div>
-                    <div className="w-11 h-11 rounded-2xl bg-purple-50 border border-purple-100 flex items-center justify-center text-purple-600 flex-shrink-0">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <rect width="20" height="14" x="2" y="5" rx="2" strokeWidth="2" />
-                            <line x1="2" x2="22" y1="10" y2="10" strokeWidth="2" />
-                        </svg>
-                    </div>
+                <div className="summary-strip-divider"></div>
+
+                <div className="summary-strip-cell">
+                    <span className="summary-label">Ventas al Contado</span>
+                    <span className="summary-val">
+                        S/ {totalContado.toLocaleString("es-PE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </span>
+                    <span className="summary-hint">Efectivo, tarjetas y billeteras</span>
                 </div>
 
-                {/* KPI 3: TOTAL GENERAL */}
-                <div className="bg-white rounded-2xl p-5 shadow-[0_4px_25px_rgba(0,0,0,0.03)] border border-slate-100 flex items-center justify-between">
-                    <div>
-                        <span className="text-[11px] font-bold tracking-wider text-emerald-900/60 uppercase block mb-1">
-                            TOTAL GENERAL
-                        </span>
-                        <div className="text-2xl font-black text-emerald-600">
-                            S/ {totalGeneral.toLocaleString("es-PE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                        </div>
-                    </div>
-                    <div className="w-11 h-11 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 flex-shrink-0">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                        </svg>
-                    </div>
+                <div className="summary-strip-divider"></div>
+
+                <div className="summary-strip-cell">
+                    <span className="summary-label">Ventas a Crédito</span>
+                    <span className="summary-val">
+                        S/ {totalCreditos.toLocaleString("es-PE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </span>
+                    <span className="summary-hint">Financiamiento otorgado</span>
+                </div>
+
+                <div className="summary-strip-divider"></div>
+
+                <div className="summary-strip-cell highlight-cell">
+                    <span className="summary-label">Saldo Pendiente</span>
+                    <span className="summary-val">
+                        S/ {totalPendienteCobro.toLocaleString("es-PE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </span>
+                    <span className="summary-hint">Por recaudar en cartera</span>
                 </div>
             </div>
 
-            {/* Tarjeta principal con tabla */}
-            <div className="bg-white rounded-2xl shadow-[0_4px_25px_rgba(0,0,0,0.03)] border border-slate-100 overflow-hidden">
+            {/* TABLA CORPORATIVA DE VENTAS (NO CARDS) */}
+            <div className="data-table-wrapper shadow-xs">
                 <div className="overflow-x-auto">
                     {isLoading ? (
-                        <div className="flex flex-col items-center justify-center py-20 text-slate-400">
-                            <svg className="animate-spin h-7 w-7 text-teal-600 mb-3" fill="none" viewBox="0 0 24 24">
-                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                                <path
-                                    className="opacity-75"
-                                    fill="currentColor"
-                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                                />
-                            </svg>
-                            <span className="text-xs font-medium text-slate-500">Cargando transacciones...</span>
+                        <div className="text-center py-16">
+                            <div className="spinner-border text-dark spinner-border-sm mb-2" role="status"></div>
+                            <p className="text-zinc-500 text-xs m-0">Cargando registros de ventas...</p>
                         </div>
                     ) : paginatedSales.length === 0 ? (
-                        /* Estado Vacío idéntico a la captura */
-                        <div className="flex flex-col items-center justify-center py-24 text-center px-4">
-                            <div className="w-16 h-16 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-300 mb-4 shadow-sm">
-                                <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <circle cx="11" cy="11" r="8" strokeWidth="2" />
-                                    <path strokeLinecap="round" strokeWidth="2" d="M21 21l-4.35-4.35" />
-                                    <line x1="8" y1="11" x2="14" y2="11" strokeWidth="2" strokeLinecap="round" />
-                                </svg>
-                            </div>
-                            <h3 className="text-sm font-bold text-slate-700 mb-1">
-                                No se encontraron registros
-                            </h3>
-                            <p className="text-xs text-slate-400 max-w-sm mb-5">
+                        <div className="text-center py-16 px-4">
+                            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#71717a" strokeWidth="1.5" className="mb-2 mx-auto">
+                                <circle cx="11" cy="11" r="8" strokeWidth="2" />
+                                <path strokeLinecap="round" strokeWidth="2" d="M21 21l-4.35-4.35" />
+                                <line x1="8" y1="11" x2="14" y2="11" strokeWidth="2" strokeLinecap="round" />
+                            </svg>
+                            <h6 className="font-bold text-zinc-900 text-sm m-0">No se encontraron ventas</h6>
+                            <p className="text-zinc-500 text-xs m-0 mt-1 max-w-sm mx-auto">
                                 {searchTerm
                                     ? `No hay ventas que coincidan con "${searchTerm}".`
                                     : dateFilter === "TODAY"
-                                    ? "No hay ventas registradas para el día de hoy."
+                                    ? "No hay transacciones registradas para el día de hoy."
                                     : "Aún no se han emitido ventas en el sistema."}
                             </p>
                             <Link
                                 to="/sales/register"
-                                className="px-4 py-2 bg-[#005f60] hover:bg-[#004e4f] text-white text-xs font-semibold rounded-lg shadow-sm transition-all"
+                                className="inline-block mt-3 px-3.5 py-1.5 bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-semibold rounded-md shadow-xs transition-colors"
                             >
-                                + Emitir Primera Venta
+                                + Emitir Nueva Venta
                             </Link>
                         </div>
                     ) : (
-                        <table className="w-full text-left border-collapse">
+                        <table className="table table-hover align-middle m-0 enterprise-table">
                             <thead>
-                                <tr className="border-b border-slate-100 bg-slate-50/40">
-                                    <th className="py-3.5 px-5 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                                        COMPROBANTE
-                                    </th>
-                                    <th className="py-3.5 px-5 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                                        CLIENTE / FECHA
-                                    </th>
-                                    <th className="py-3.5 px-5 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                                        TIPO
-                                    </th>
-                                    <th className="py-3.5 px-5 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                                        MEDIO DE PAGO
-                                    </th>
-                                    <th className="py-3.5 px-5 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                                        TOTAL
-                                    </th>
-                                    <th className="py-3.5 px-5 text-[10px] font-bold text-slate-400 uppercase tracking-wider text-center">
-                                        ESTADO DE PAGO
-                                    </th>
-                                    <th className="py-3.5 px-5 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                                        SALDO
-                                    </th>
-                                    <th className="py-3.5 px-5 text-[10px] font-bold text-slate-400 uppercase tracking-wider text-right">
-                                        ACCIONES
-                                    </th>
+                                <tr>
+                                    <th style={{ width: "170px" }}>COMPROBANTE</th>
+                                    <th>CLIENTE / TITULAR</th>
+                                    <th style={{ width: "120px" }}>CONDICIÓN</th>
+                                    <th style={{ width: "140px" }}>MEDIO DE PAGO</th>
+                                    <th style={{ width: "120px" }}>TOTAL</th>
+                                    <th style={{ width: "130px" }} className="text-center">ESTADO PAGO</th>
+                                    <th style={{ width: "110px" }}>SALDO</th>
+                                    <th style={{ width: "120px" }} className="text-end pe-3">ACCIONES</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-100 text-xs">
+                            <tbody>
                                 {paginatedSales.map((s) => {
-                                    const receiptType = s.receiptType || s.tipoComprobante || "TICKET";
+                                    const receiptType = (s.receiptType || s.tipoComprobante || "TICKET").toUpperCase();
                                     const series = s.series || s.serie || "B001";
                                     const receiptNum = s.receiptNumber || s.numComprobante || s.id;
                                     const fullReceipt = `${series}-${receiptNum}`;
@@ -354,94 +329,77 @@ export const SalesPage = () => {
                                     const isPartial = !isPaid && (payStatus === "PARCIAL" || (balance > 0 && Number(s.amountPaid || s.montoPagado || 0) > 0));
 
                                     return (
-                                        <tr key={s.id} className="hover:bg-slate-50/60 transition-colors">
+                                        <tr key={s.id}>
                                             {/* COMPROBANTE */}
-                                            <td className="py-3.5 px-5">
-                                                <div className="flex items-center gap-2">
-                                                    <span className={`text-[10px] font-black px-1.5 py-0.5 rounded ${
-                                                        receiptType === "FACTURA"
-                                                            ? "bg-blue-50 text-blue-700 border border-blue-200"
-                                                            : receiptType === "BOLETA"
-                                                            ? "bg-teal-50 text-teal-700 border border-teal-200"
-                                                            : "bg-slate-100 text-slate-700"
-                                                    }`}>
-                                                        {receiptType}
-                                                    </span>
-                                                    <span className="font-mono font-bold text-slate-800 text-xs">
+                                            <td>
+                                                <div className="flex items-center gap-1.5">
+                                                    <span className="tag-mono-receipt">{receiptType}</span>
+                                                    <span className="font-mono font-bold text-zinc-900 text-xs">
                                                         {fullReceipt}
                                                     </span>
                                                 </div>
                                             </td>
 
                                             {/* CLIENTE / FECHA */}
-                                            <td className="py-3.5 px-5">
-                                                <div>
-                                                    <span className="font-bold text-slate-800 block text-xs">
-                                                        {client}
-                                                    </span>
-                                                    <span className="text-[11px] text-slate-400 block font-normal mt-0.5">
-                                                        {formattedDate}
-                                                    </span>
+                                            <td>
+                                                <div className="font-semibold text-zinc-900 text-xs">
+                                                    {client}
+                                                </div>
+                                                <div className="text-[11px] text-zinc-500 font-normal">
+                                                    {formattedDate} {s.employeeName ? `· Cajero: ${s.employeeName}` : ""}
                                                 </div>
                                             </td>
 
-                                            {/* TIPO */}
-                                            <td className="py-3.5 px-5">
-                                                <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold ${
-                                                    saleType === "CREDITO"
-                                                        ? "bg-purple-50 text-purple-700 border border-purple-200"
-                                                        : "bg-slate-100 text-slate-700"
-                                                }`}>
+                                            {/* CONDICIÓN */}
+                                            <td>
+                                                <span className={`badge-tag ${saleType === "CREDITO" ? "tag-credit" : "tag-cash"}`}>
                                                     {saleType}
                                                 </span>
                                             </td>
 
                                             {/* MEDIO DE PAGO */}
-                                            <td className="py-3.5 px-5">
-                                                <span className="font-medium text-slate-700 text-xs">
+                                            <td>
+                                                <span className="text-zinc-800 text-xs font-medium uppercase">
                                                     {paymentMethod}
                                                 </span>
                                             </td>
 
                                             {/* TOTAL */}
-                                            <td className="py-3.5 px-5">
-                                                <span className="font-bold text-slate-800 text-xs">
+                                            <td>
+                                                <span className="font-bold text-zinc-900 text-xs">
                                                     S/ {total.toFixed(2)}
                                                 </span>
                                             </td>
 
                                             {/* ESTADO DE PAGO */}
-                                            <td className="py-3.5 px-5 text-center">
+                                            <td className="text-center">
                                                 {isPaid ? (
-                                                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                                                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                                    <span className="badge-tag tag-paid">
                                                         PAGADO
                                                     </span>
                                                 ) : isPartial ? (
-                                                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
-                                                        <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                                                    <span className="badge-tag tag-partial">
                                                         PARCIAL
                                                     </span>
                                                 ) : (
-                                                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
-                                                        <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+                                                    <span className="badge-tag tag-pending">
                                                         PENDIENTE
                                                     </span>
                                                 )}
                                             </td>
 
                                             {/* SALDO */}
-                                            <td className="py-3.5 px-5">
-                                                <span className={`text-xs font-semibold ${
-                                                    !isPaid && balance > 0.001 ? "text-rose-600 font-bold" : "text-slate-400"
+                                            <td>
+                                                <span className={`text-xs ${
+                                                    !isPaid && balance > 0.001 ? "font-bold text-zinc-900" : "text-zinc-400"
                                                 }`}>
                                                     S/ {isPaid ? "0.00" : balance.toFixed(2)}
                                                 </span>
                                             </td>
 
                                             {/* ACCIONES */}
-                                            <td className="py-3.5 px-5 text-right">
-                                                <div className="flex items-center justify-end gap-1.5">
+                                            <td className="text-end pe-3">
+                                                <div className="inline-flex items-center gap-1">
                                                     <button
                                                         type="button"
                                                         onClick={async () => {
@@ -459,8 +417,8 @@ export const SalesPage = () => {
                                                             setSelectedSaleForTicket(saleToPrint);
                                                             setIsTicketOpen(true);
                                                         }}
-                                                        className="p-1.5 rounded-lg text-slate-500 hover:text-[#005f60] hover:bg-teal-50 transition-colors"
-                                                        title="Imprimir comprobante / ticket"
+                                                        className="p-1 rounded text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 transition-colors"
+                                                        title="Imprimir ticket térmico"
                                                     >
                                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
@@ -469,8 +427,8 @@ export const SalesPage = () => {
                                                     <button
                                                         type="button"
                                                         onClick={() => navigate(`/sales/edit/${s.id}`)}
-                                                        className="p-1.5 rounded-lg text-slate-500 hover:text-teal-700 hover:bg-teal-50 transition-colors"
-                                                        title="Editar / Ver venta"
+                                                        className="p-1 rounded text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 transition-colors"
+                                                        title="Ver / Editar venta"
                                                     >
                                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                             <path
@@ -484,16 +442,11 @@ export const SalesPage = () => {
                                                     <button
                                                         type="button"
                                                         onClick={() => handleDelete(s)}
-                                                        className="p-1.5 rounded-lg text-slate-500 hover:text-red-600 hover:bg-red-50 transition-colors"
+                                                        className="p-1 rounded text-zinc-500 hover:text-black hover:bg-zinc-100 transition-colors"
                                                         title="Anular venta"
                                                     >
                                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path
-                                                                strokeLinecap="round"
-                                                                strokeLinejoin="round"
-                                                                strokeWidth="2"
-                                                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                                                            />
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                                         </svg>
                                                     </button>
                                                 </div>
@@ -506,37 +459,21 @@ export const SalesPage = () => {
                     )}
                 </div>
 
-                {/* Footer: Conteo, Leyenda y Paginación idénticos al diseño */}
-                <div className="p-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-                        <span className="text-[11px] text-slate-400">
-                            Mostrando {paginatedSales.length} de {filteredSales.length} transacciones {dateFilter === "TODAY" ? "de hoy" : "totales"}
+                {/* Footer: Paginación formal */}
+                {!isLoading && filteredSales.length > 0 && (
+                    <div className="p-3 border-t border-zinc-200 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-zinc-500 bg-white">
+                        <span className="text-[11px] text-zinc-500">
+                            Mostrando {paginatedSales.length} de {filteredSales.length} comprobantes {dateFilter === "TODAY" ? "(Hoy)" : ""}
                         </span>
-                        {/* Leyenda de Puntos */}
-                        <div className="flex items-center gap-3 text-[11px]">
-                            <span className="flex items-center gap-1.5">
-                                <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" />
-                                <span>Pagadas</span>
-                            </span>
-                            <span className="flex items-center gap-1.5">
-                                <span className="w-2 h-2 rounded-full bg-rose-500 inline-block" />
-                                <span>Pendientes</span>
-                            </span>
-                        </div>
-                    </div>
 
-                    {/* Controles de paginación */}
-                    {filteredSales.length > 0 && (
                         <div className="flex items-center gap-1">
                             <button
                                 type="button"
                                 onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
                                 disabled={currentPage === 1}
-                                className="w-8 h-8 rounded-lg flex items-center justify-center border border-slate-200 text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                                className="w-7 h-7 rounded border border-zinc-200 flex items-center justify-center text-xs text-zinc-700 hover:bg-zinc-100 disabled:opacity-30 disabled:cursor-not-allowed"
                             >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
-                                </svg>
+                                &lt;
                             </button>
 
                             {Array.from({ length: totalPages }, (_, i) => i + 1)
@@ -546,10 +483,10 @@ export const SalesPage = () => {
                                         key={page}
                                         type="button"
                                         onClick={() => setCurrentPage(page)}
-                                        className={`w-8 h-8 rounded-lg text-xs font-bold transition-colors ${
+                                        className={`w-7 h-7 rounded text-xs font-semibold ${
                                             currentPage === page
-                                                ? "bg-teal-700 text-white shadow-sm"
-                                                : "border border-slate-200 text-slate-600 hover:bg-slate-50"
+                                                ? "bg-zinc-900 text-white"
+                                                : "border border-zinc-200 text-zinc-700 hover:bg-zinc-100"
                                         }`}
                                     >
                                         {page}
@@ -560,15 +497,13 @@ export const SalesPage = () => {
                                 type="button"
                                 onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
                                 disabled={currentPage === totalPages}
-                                className="w-8 h-8 rounded-lg flex items-center justify-center border border-slate-200 text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                                className="w-7 h-7 rounded border border-zinc-200 flex items-center justify-center text-xs text-zinc-700 hover:bg-zinc-100 disabled:opacity-30 disabled:cursor-not-allowed"
                             >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-                                </svg>
+                                &gt;
                             </button>
                         </div>
-                    )}
-                </div>
+                    </div>
+                )}
             </div>
 
             {/* Modal para Reimprimir Comprobante / Ticket Térmico */}
@@ -577,6 +512,130 @@ export const SalesPage = () => {
                 onClose={() => setIsTicketOpen(false)}
                 saleData={selectedSaleForTicket}
             />
+
+            {/* ESTILOS MONOCROMÁTICOS DE ALTA PRECISIÓN */}
+            <style>{`
+                .sales-monochrome-page {
+                    background-color: #fafafa;
+                    color: #09090b;
+                    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+                }
+
+                /* Franja de Resumen Monocromática */
+                .sales-summary-strip {
+                    display: flex;
+                    align-items: stretch;
+                    background-color: #ffffff;
+                    border: 1px solid #e4e4e7;
+                    border-radius: 6px;
+                    overflow: hidden;
+                }
+                .summary-strip-cell {
+                    flex: 1;
+                    padding: 12px 16px;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 2px;
+                }
+                .summary-strip-divider {
+                    width: 1px;
+                    background-color: #e4e4e7;
+                }
+                .summary-label {
+                    font-size: 0.68rem;
+                    font-weight: 700;
+                    text-transform: uppercase;
+                    letter-spacing: 0.06em;
+                    color: #71717a;
+                }
+                .summary-val {
+                    font-size: 1.45rem;
+                    font-weight: 700;
+                    color: #09090b;
+                    line-height: 1.1;
+                    letter-spacing: -0.02em;
+                }
+                .summary-hint {
+                    font-size: 0.7rem;
+                    color: #a1a1aa;
+                }
+                .highlight-cell {
+                    background-color: #fcfcfc;
+                }
+
+                /* Tabla Corporativa */
+                .data-table-wrapper {
+                    background-color: #ffffff;
+                    border: 1px solid #e4e4e7;
+                    border-radius: 6px;
+                    overflow: hidden;
+                }
+                .enterprise-table thead th {
+                    background-color: #f4f4f5;
+                    color: #52525b;
+                    font-size: 0.7rem;
+                    font-weight: 700;
+                    letter-spacing: 0.05em;
+                    border-bottom: 1px solid #e4e4e7;
+                    padding: 10px 14px;
+                }
+                .enterprise-table tbody td {
+                    padding: 10px 14px;
+                    border-bottom: 1px solid #f4f4f5;
+                    font-size: 0.8rem;
+                }
+                .enterprise-table tbody tr:hover td {
+                    background-color: #fafafa;
+                }
+
+                /* Monospace Receipt Tag */
+                .tag-mono-receipt {
+                    font-family: ui-monospace, SFMono-Regular, monospace;
+                    font-size: 0.68rem;
+                    font-weight: 700;
+                    background-color: #f4f4f5;
+                    border: 1px solid #e4e4e7;
+                    padding: 2px 6px;
+                    border-radius: 4px;
+                    color: #09090b;
+                }
+
+                /* Badges Monocromáticos */
+                .badge-tag {
+                    font-size: 0.66rem;
+                    font-weight: 700;
+                    letter-spacing: 0.04em;
+                    padding: 2px 7px;
+                    border-radius: 4px;
+                    display: inline-block;
+                    white-space: nowrap;
+                }
+                .tag-cash {
+                    background-color: #f4f4f5;
+                    border: 1px solid #d4d4d8;
+                    color: #09090b;
+                }
+                .tag-credit {
+                    background-color: #09090b;
+                    border: 1px solid #09090b;
+                    color: #ffffff;
+                }
+                .tag-paid {
+                    background-color: #09090b;
+                    border: 1px solid #09090b;
+                    color: #ffffff;
+                }
+                .tag-partial {
+                    background-color: #27272a;
+                    border: 1px solid #27272a;
+                    color: #ffffff;
+                }
+                .tag-pending {
+                    background-color: #ffffff;
+                    border: 1.5px solid #09090b;
+                    color: #09090b;
+                }
+            `}</style>
         </div>
     );
 };

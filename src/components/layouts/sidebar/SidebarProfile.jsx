@@ -8,18 +8,20 @@ export const SidebarProfile = ({ isCollapsed, user, isAdmin }) => {
     <div
       className={styles.profileBox}
       style={{ justifyContent: isCollapsed ? "center" : "flex-start" }}
+      title={`${user?.username || "Usuario"} (${isAdmin ? "Administrador" : "Personal"})`}
     >
-      <div className={styles.avatar}>{initial}</div>
+      <div className={styles.avatarWrap}>
+        <div className={styles.avatar}>{initial}</div>
+        <span className={styles.onlineDot} />
+      </div>
+
       {!isCollapsed && (
         <div className={styles.profileInfo}>
-          <span
-            className={styles.profileName}
-            title={user?.username || "Usuario"}
-          >
+          <span className={styles.profileName}>
             {user?.username || "Usuario"}
           </span>
           <span className={styles.profileRole}>
-            Rol: {isAdmin ? "Administrador" : "Personal"}
+            {isAdmin ? "Administrador" : "Personal"}
           </span>
         </div>
       )}

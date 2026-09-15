@@ -56,7 +56,7 @@ export const CategoriesRegisterPage = () => {
                 title: "Campo requerido",
                 text: "Por favor ingresa el nombre de la categoría.",
                 icon: "warning",
-                confirmButtonColor: "#0f766e",
+                confirmButtonColor: "#09090b",
             });
             return;
         }
@@ -66,7 +66,7 @@ export const CategoriesRegisterPage = () => {
 
             if (id) {
                 await updateCategory(id, categoryForm);
-                Swal.fire({
+                await Swal.fire({
                     title: "¡Actualizada!",
                     text: "Categoría actualizada con éxito.",
                     icon: "success",
@@ -75,7 +75,7 @@ export const CategoriesRegisterPage = () => {
                 });
             } else {
                 await saveCategory(categoryForm);
-                Swal.fire({
+                await Swal.fire({
                     title: "¡Creada!",
                     text: "Nueva categoría guardada con éxito.",
                     icon: "success",
@@ -96,9 +96,9 @@ export const CategoriesRegisterPage = () => {
 
     if (isLoadingData) {
         return (
-            <div className="flex items-center justify-center min-h-[300px]">
-                <div className="flex items-center gap-3 text-teal-700 font-medium text-sm">
-                    <svg className="animate-spin h-5 w-5 text-teal-600" fill="none" viewBox="0 0 24 24">
+            <div className="w-full min-h-[350px] flex items-center justify-center">
+                <div className="flex items-center gap-3 text-zinc-700 font-semibold text-xs">
+                    <svg className="animate-spin h-5 w-5 text-zinc-900" fill="none" viewBox="0 0 24 24">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                     </svg>
@@ -109,137 +109,107 @@ export const CategoriesRegisterPage = () => {
     }
 
     return (
-        <div className="max-w-5xl mx-auto px-4 py-6 sm:px-6">
-            {/* Cabecera / Header superior */}
-            <div className="flex items-center justify-between gap-4 mb-6">
-                <div className="flex items-center gap-3.5">
-                    {/* Badge con ícono + */}
-                    <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-teal-50 text-teal-700 flex items-center justify-center font-bold text-xl border border-teal-100/70 shadow-sm flex-shrink-0">
-                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth="2.2" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                        </svg>
+        <div className="w-full max-w-4xl mx-auto space-y-6 pb-12">
+            {/* Header */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-zinc-200">
+                <div>
+                    <div className="flex items-center gap-2 text-xs font-semibold text-zinc-500 mb-1">
+                        <span className="hover:text-zinc-900 cursor-pointer" onClick={() => navigate("/dashboard")}>Dashboard</span>
+                        <span>/</span>
+                        <span className="hover:text-zinc-900 cursor-pointer" onClick={() => navigate("/categories")}>Categorías</span>
+                        <span>/</span>
+                        <span className="text-zinc-950 font-bold">{id ? "Editar" : "Nueva"}</span>
                     </div>
-                    <div>
-                        <h1 className="text-xl sm:text-2xl font-bold text-slate-800 tracking-tight">
-                            {id ? "Editar Categoría" : "Nueva Categoría"}
-                        </h1>
-                        <p className="text-sm text-slate-500 mt-0.5">
-                            Organiza tus productos por grupos lógicos
-                        </p>
+                    <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-lg bg-zinc-900 text-white flex items-center justify-center font-bold shadow-xs">
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h1 className="text-xl sm:text-2xl font-black text-zinc-950 tracking-tight">
+                                {id ? "Editar Categoría" : "Registrar Nueva Categoría"}
+                            </h1>
+                            <p className="text-xs text-zinc-500 mt-0.5">
+                                Definición de grupo terapéutico para clasificación de productos.
+                            </p>
+                        </div>
                     </div>
                 </div>
 
-                {/* Botón Volver */}
                 <button
                     type="button"
                     onClick={() => navigate(-1)}
-                    className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
+                    className="px-4 py-2 text-xs font-bold text-zinc-700 bg-white border border-zinc-300 hover:bg-zinc-100 rounded-lg transition-colors shadow-2xs self-start sm:self-auto"
                 >
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
-                    </svg>
-                    <span>Volver</span>
+                    Volver
                 </button>
             </div>
 
-            {/* Contenedor de la Tarjeta del Formulario */}
-            <form 
-                onSubmit={onSubmit}
-                className="bg-white rounded-2xl p-6 sm:p-8 shadow-[0_4px_25px_rgba(0,0,0,0.03)] border border-slate-100"
-            >
+            {/* Tarjeta del Formulario */}
+            <form onSubmit={onSubmit} className="bg-white rounded-xl p-6 sm:p-7 border border-zinc-200 shadow-xs space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* Campo: Nombre de la Categoría */}
-                    <div>
+                    {/* Campo: Nombre */}
+                    <div className="space-y-1.5">
                         <label 
                             htmlFor="category-nombre"
-                            className="block text-sm font-semibold text-slate-700 mb-2"
+                            className="block text-xs font-bold text-zinc-800 uppercase tracking-wider"
                         >
-                            Nombre de la Categoría <span className="text-rose-500 font-bold ml-0.5">*</span>
+                            Nombre de la Categoría *
                         </label>
-                        <div className="relative flex items-center">
-                            {/* Ícono tipográfico 'T' */}
-                            <span 
-                                className="absolute left-3.5 text-slate-400 font-serif font-bold text-lg select-none pointer-events-none"
-                                aria-hidden="true"
-                            >
-                                T
-                            </span>
-                            <input
-                                id="category-nombre"
-                                type="text"
-                                name="nombre"
-                                value={nombre}
-                                onChange={onInputChange}
-                                placeholder="Nombre de la categoría..."
-                                autoFocus
-                                disabled={isSubmitting}
-                                className="w-full h-11 pl-10 pr-4 bg-white border border-slate-200 rounded-lg text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-600/15 transition-all disabled:opacity-60"
-                            />
-                        </div>
+                        <input
+                            id="category-nombre"
+                            type="text"
+                            name="nombre"
+                            value={nombre}
+                            onChange={onInputChange}
+                            placeholder="EJ. ANALGÉSICOS, ANTIBIÓTICOS, DERMATOLOGÍA"
+                            autoFocus
+                            disabled={isSubmitting}
+                            className="w-full h-11 px-3.5 text-xs font-semibold uppercase text-zinc-900 placeholder:text-zinc-400 placeholder:font-normal bg-zinc-50/50 border border-zinc-300 rounded-lg hover:bg-white focus:bg-white focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 focus:outline-none transition-all shadow-2xs disabled:opacity-60"
+                        />
                     </div>
 
-                    {/* Campo: Descripción (Opcional) */}
-                    <div>
+                    {/* Campo: Descripción */}
+                    <div className="space-y-1.5">
                         <label 
                             htmlFor="category-descripcion"
-                            className="block text-sm font-semibold text-slate-700 mb-2"
+                            className="block text-xs font-bold text-zinc-800 uppercase tracking-wider"
                         >
                             Descripción (Opcional)
                         </label>
-                        <div className="relative flex items-center">
-                            {/* Ícono de documento */}
-                            <span 
-                                className="absolute left-3.5 text-slate-400 select-none pointer-events-none flex items-center"
-                                aria-hidden="true"
-                            >
-                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
-                                </svg>
-                            </span>
-                            <input
-                                id="category-descripcion"
-                                type="text"
-                                name="descripcion"
-                                value={descripcion}
-                                onChange={onInputChange}
-                                placeholder="Breve descripción del grupo..."
-                                disabled={isSubmitting}
-                                className="w-full h-11 pl-10 pr-4 bg-white border border-slate-200 rounded-lg text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-600/15 transition-all disabled:opacity-60"
-                            />
-                        </div>
+                        <input
+                            id="category-descripcion"
+                            type="text"
+                            name="descripcion"
+                            value={descripcion}
+                            onChange={onInputChange}
+                            placeholder="Breve descripción del grupo terapéutico..."
+                            disabled={isSubmitting}
+                            className="w-full h-11 px-3.5 text-xs font-medium text-zinc-900 placeholder:text-zinc-400 bg-zinc-50/50 border border-zinc-300 rounded-lg hover:bg-white focus:bg-white focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 focus:outline-none transition-all shadow-2xs disabled:opacity-60"
+                        />
                     </div>
                 </div>
 
-                {/* Botones de acción inferiores */}
-                <div className="flex items-center justify-end gap-3 mt-8 pt-6 border-t border-slate-100">
+                {/* Acciones */}
+                <div className="flex items-center justify-end gap-3 pt-5 border-t border-zinc-100">
                     <button
                         type="button"
-                        onClick={() => navigate(-1)}
+                        onClick={() => navigate("/categories")}
                         disabled={isSubmitting}
-                        className="px-5 py-2.5 rounded-lg border border-slate-200 text-slate-600 font-medium text-sm hover:bg-slate-50 transition-colors disabled:opacity-60"
+                        className="px-5 py-2.5 text-xs font-semibold text-zinc-700 bg-white border border-zinc-300 hover:bg-zinc-100 rounded-lg transition-colors"
                     >
                         Cancelar
                     </button>
                     <button
                         type="submit"
                         disabled={isSubmitting}
-                        className="px-5 py-2.5 rounded-lg bg-teal-800 hover:bg-teal-900 active:bg-teal-950 text-white font-semibold text-sm shadow-sm transition-all flex items-center gap-2 disabled:opacity-75 disabled:cursor-not-allowed"
+                        className="px-6 py-2.5 text-xs font-bold text-white bg-zinc-900 hover:bg-black rounded-lg shadow-sm transition-all flex items-center gap-2"
                     >
                         {isSubmitting ? (
-                            <>
-                                <svg className="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                                </svg>
-                                <span>Guardando...</span>
-                            </>
+                            <span>GUARDANDO...</span>
                         ) : (
-                            <>
-                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M8 7H5a2 2 0 00-2 2v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
-                                </svg>
-                                <span>{id ? "Actualizar Categoría" : "Guardar Categoría"}</span>
-                            </>
+                            <span>{id ? "Actualizar Categoría" : "Guardar Categoría"}</span>
                         )}
                     </button>
                 </div>
@@ -247,3 +217,5 @@ export const CategoriesRegisterPage = () => {
         </div>
     );
 };
+
+export default CategoriesRegisterPage;

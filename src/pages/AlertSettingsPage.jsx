@@ -1,339 +1,342 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { getSettings, saveSettings, getAllLots } from "../services/SettingsService.js";
 
 export const AlertSettingsPage = () => {
-    const [loading, setLoading] = useState(true);
-    const [saving, setSaving] = useState(false);
-    const [lots, setLots] = useState([]);
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [lots, setLots] = useState([]);
 
-    const [form, setForm] = useState({
-        alertExpirationDays: 30,
-        alertMinStockPercent: 20,
-        alertEnableExpiration: true,
-        alertEnableMinStock: true,
-    });
+  const [form, setForm] = useState({
+    alertExpirationDays: 30,
+    alertMinStockPercent: 20,
+    alertEnableExpiration: true,
+    alertEnableMinStock: true,
+  });
 
-    useEffect(() => {
-        const loadInitialData = async () => {
-            setLoading(true);
-            try {
-                const [settingsData, lotsData] = await Promise.all([
-                    getSettings(),
-                    getAllLots()
-                ]);
+  useEffect(() => {
+    const loadInitialData = async () => {
+      setLoading(true);
+      try {
+        const [settingsData, lotsData] = await Promise.all([
+          getSettings(),
+          getAllLots(),
+        ]);
 
-                if (settingsData) {
-                    setForm({
-                        alertExpirationDays: settingsData.alertExpirationDays ?? 30,
-                        alertMinStockPercent: settingsData.alertMinStockPercent ?? 20,
-                        alertEnableExpiration: settingsData.alertEnableExpiration ?? true,
-                        alertEnableMinStock: settingsData.alertEnableMinStock ?? true,
-                    });
-                }
-                setLots(Array.isArray(lotsData) ? lotsData : []);
-            } catch (error) {
-                console.error("Error al cargar configuración de alertas:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        loadInitialData();
-    }, []);
-
-    const handleChange = (e) => {
-        const { name, value, type, checked } = e.target;
-        setForm((prev) => ({
-            ...prev,
-            [name]: type === "checkbox" ? checked : value,
-        }));
-    };
-
-    // Cálculos en vivo según los valores en pantalla
-    const now = new Date();
-    now.setHours(0, 0, 0, 0);
-
-    const expiringCount = lots.filter((lot) => {
-        if (!form.alertEnableExpiration || !lot.fechaVencimiento) return false;
-        const cleanDateStr = lot.fechaVencimiento.replace(" ", "T");
-        const expDate = new Date(cleanDateStr);
-        if (isNaN(expDate.getTime())) return false;
-        const diffDays = Math.ceil((expDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-        return diffDays <= Number(form.alertExpirationDays);
-    }).length;
-
-    const lowStockCount = lots.filter((lot) => {
-        if (!form.alertEnableMinStock) return false;
-        const inicial = Number(lot.cantidadInicial) || 1;
-        const actual = Number(lot.cantidadActual) || 0;
-        const pct = (actual / inicial) * 100;
-        return pct <= Number(form.alertMinStockPercent);
-    }).length;
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setSaving(true);
-        try {
-            await saveSettings({
-                alertExpirationDays: Number(form.alertExpirationDays),
-                alertMinStockPercent: Number(form.alertMinStockPercent),
-                alertEnableExpiration: Boolean(form.alertEnableExpiration),
-                alertEnableMinStock: Boolean(form.alertEnableMinStock),
-            });
-
-            await Swal.fire({
-                icon: "success",
-                title: "Configuración Guardada",
-                text: "Los parámetros de alertas de vencimiento y stock mínimo se han guardado exitosamente.",
-                confirmButtonColor: "#005f60",
-                timer: 2000,
-            });
-        } catch (error) {
-            console.error("Error al guardar configuración de alertas:", error);
-            await Swal.fire({
-                icon: "error",
-                title: "Error",
-                text: "No se pudieron guardar las opciones de alertas.",
-                confirmButtonColor: "#005f60",
-            });
-        } finally {
-            setSaving(false);
+        if (settingsData) {
+          setForm({
+            alertExpirationDays: settingsData.alertExpirationDays ?? 30,
+            alertMinStockPercent: settingsData.alertMinStockPercent ?? 20,
+            alertEnableExpiration: settingsData.alertEnableExpiration ?? true,
+            alertEnableMinStock: settingsData.alertEnableMinStock ?? true,
+          });
         }
+        setLots(Array.isArray(lotsData) ? lotsData : []);
+      } catch (error) {
+        console.error("Error al cargar configuración de alertas:", error);
+      } finally {
+        setLoading(false);
+      }
     };
 
-    if (loading) {
-        return (
-            <div className="w-100 min-vh-100 d-flex flex-column align-items-center justify-content-center p-4">
-                <div className="spinner-border text-teal" role="status">
-                    <span className="visually-hidden">Cargando alertas...</span>
-                </div>
-                <p className="text-secondary small mt-3">Cargando opciones de alertas...</p>
-                <style>{`.text-teal { color: #005f60; }`}</style>
-            </div>
-        );
+    loadInitialData();
+  }, []);
+
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setForm((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
+  };
+
+  // Cálculos en vivo según los valores configurados
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+
+  const expiringCount = lots.filter((lot) => {
+    if (!form.alertEnableExpiration || !lot.fechaVencimiento) return false;
+    const cleanDateStr = String(lot.fechaVencimiento).replace(" ", "T");
+    const expDate = new Date(cleanDateStr);
+    if (isNaN(expDate.getTime())) return false;
+    const diffDays = Math.ceil((expDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+    return diffDays <= Number(form.alertExpirationDays);
+  }).length;
+
+  const lowStockCount = lots.filter((lot) => {
+    if (!form.alertEnableMinStock) return false;
+    const inicial = Number(lot.cantidadInicial) || 1;
+    const actual = Number(lot.cantidadActual) || 0;
+    const pct = (actual / inicial) * 100;
+    return pct <= Number(form.alertMinStockPercent);
+  }).length;
+
+  const handleSubmit = async (e) => {
+    if (e) e.preventDefault();
+    setSaving(true);
+    try {
+      await saveSettings({
+        alertExpirationDays: Number(form.alertExpirationDays),
+        alertMinStockPercent: Number(form.alertMinStockPercent),
+        alertEnableExpiration: Boolean(form.alertEnableExpiration),
+        alertEnableMinStock: Boolean(form.alertEnableMinStock),
+      });
+
+      await Swal.fire({
+        icon: "success",
+        title: "Configuración Guardada",
+        text: "Los parámetros de alertas de vencimiento y stock crítico se han guardado exitosamente.",
+        confirmButtonColor: "#09090b",
+        timer: 2000,
+      });
+    } catch (error) {
+      console.error("Error al guardar configuración de alertas:", error);
+      await Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "No se pudieron guardar las opciones de alertas.",
+        confirmButtonColor: "#09090b",
+      });
+    } finally {
+      setSaving(false);
     }
+  };
 
+  if (loading) {
     return (
-        <div className="alert-settings-page w-100 min-vh-100 py-4 px-3 px-md-4">
-            {/* 1. Header de la Página */}
-            <div className="bg-white rounded-3 border p-4 shadow-sm mb-4">
-                <div className="d-flex flex-wrap align-items-center justify-content-between gap-3">
-                    <div className="d-flex align-items-center gap-3">
-                        <div className="alert-icon-box rounded-3 p-2.5 d-flex align-items-center justify-content-center">
-                            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#005f60" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
-                                <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
-                            </svg>
-                        </div>
-                        <div>
-                            <div className="d-flex align-items-center gap-2">
-                                <h4 className="m-0 fw-bold text-dark">Configuración de Alertas</h4>
-                                <span className="badge bg-teal-subtle text-teal rounded-pill px-2.5 py-1 small fw-bold">
-                                    Módulo Preventivo
-                                </span>
-                            </div>
-                            <p className="text-secondary small m-0 mt-1">
-                                Administra las alertas preventivas de productos por vencer en el mes siguiente y reposición de stock mínimo en lotes.
-                            </p>
-                        </div>
-                    </div>
-
-                    <button
-                        type="button"
-                        onClick={handleSubmit}
-                        disabled={saving}
-                        className="btn btn-save-teal px-4 py-2 fw-bold text-white d-flex align-items-center gap-2 shadow-sm rounded-3"
-                    >
-                        {saving ? (
-                            <>
-                                <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                                <span>Guardando...</span>
-                            </>
-                        ) : (
-                            <>
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-                                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
-                                    <polyline points="17 21 17 13 7 13 7 21" />
-                                    <polyline points="7 3 7 8 15 8" />
-                                </svg>
-                                <span>Guardar Alertas</span>
-                            </>
-                        )}
-                    </button>
-                </div>
-            </div>
-
-            {/* 2. Tarjetas de Configuración de Alertas */}
-            <div className="row g-4 mb-4">
-                {/* Alerta de Vencimiento */}
-                <div className="col-12 col-lg-6">
-                    <div className="bg-white rounded-3 border p-4 shadow-sm h-100 d-flex flex-column justify-content-between">
-                        <div>
-                            <div className="d-flex align-items-center justify-content-between mb-3">
-                                <div className="d-flex align-items-center gap-2.5">
-                                    <div className="p-2 rounded-3 bg-danger-subtle text-danger">
-                                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-                                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                                            <line x1="16" y1="2" x2="16" y2="6" />
-                                            <line x1="8" y1="2" x2="8" y2="6" />
-                                            <line x1="3" y1="10" x2="21" y2="10" />
-                                        </svg>
-                                    </div>
-                                    <div>
-                                        <h6 className="m-0 fw-bold text-dark">Alerta de Vencimiento</h6>
-                                        <small className="text-secondary">Productos que vencerán en el siguiente mes</small>
-                                    </div>
-                                </div>
-
-                                <div className="form-check form-switch m-0">
-                                    <input
-                                        className="form-check-input switch-custom cursor-pointer"
-                                        type="checkbox"
-                                        name="alertEnableExpiration"
-                                        checked={form.alertEnableExpiration}
-                                        onChange={handleChange}
-                                        id="switchExpiration"
-                                    />
-                                </div>
-                            </div>
-
-                            <p className="text-secondary small leading-relaxed mb-4">
-                                Esta alerta avisa sobre lotes de medicamentos que caducarán en el transcurso del <strong>siguiente mes</strong> (próximos <strong>{form.alertExpirationDays} días</strong>), mostrándolos en el componente de avisos del Dashboard para coordinar su venta preferente o devolución.
-                            </p>
-
-                            <div className="mb-4">
-                                <label className="form-label small fw-bold text-dark mb-1">
-                                    Días de anticipación para el aviso:
-                                </label>
-                                <div className="input-group">
-                                    <input
-                                        type="number"
-                                        min="1"
-                                        max="180"
-                                        name="alertExpirationDays"
-                                        value={form.alertExpirationDays}
-                                        onChange={handleChange}
-                                        disabled={!form.alertEnableExpiration}
-                                        className="form-control form-control-sm font-weight-bold"
-                                        style={{ maxWidth: "140px" }}
-                                    />
-                                    <span className="input-group-text small bg-light text-muted">días (1 mes = 30 días)</span>
-                                </div>
-                                <small className="text-muted d-block mt-1">
-                                    Valor recomendado: 30 días para cubrir completamente el mes siguiente.
-                                </small>
-                            </div>
-                        </div>
-
-                        <div className="p-3 rounded-3 bg-light border d-flex align-items-center justify-content-between">
-                            <span className="small text-secondary fw-semibold">Lotes por vencer detectados:</span>
-                            <span className={`badge ${expiringCount > 0 ? "bg-danger" : "bg-success"} rounded-pill px-3 py-1.5 fw-bold`}>
-                                {expiringCount} {expiringCount === 1 ? "lote próximo a vencer" : "lotes próximos a vencer"}
-                            </span>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Alerta de Stock Mínimo (20% inicial) */}
-                <div className="col-12 col-lg-6">
-                    <div className="bg-white rounded-3 border p-4 shadow-sm h-100 d-flex flex-column justify-content-between">
-                        <div>
-                            <div className="d-flex align-items-center justify-content-between mb-3">
-                                <div className="d-flex align-items-center gap-2.5">
-                                    <div className="p-2 rounded-3 bg-warning-subtle text-warning-emphasis">
-                                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-                                            <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
-                                            <line x1="12" y1="9" x2="12" y2="13" />
-                                            <line x1="12" y1="17" x2="12.01" y2="17" />
-                                        </svg>
-                                    </div>
-                                    <div>
-                                        <h6 className="m-0 fw-bold text-dark">Alerta de Stock Mínimo</h6>
-                                        <small className="text-secondary">Lotes con stock al 20% o menos respecto al inicial</small>
-                                    </div>
-                                </div>
-
-                                <div className="form-check form-switch m-0">
-                                    <input
-                                        className="form-check-input switch-custom cursor-pointer"
-                                        type="checkbox"
-                                        name="alertEnableMinStock"
-                                        checked={form.alertEnableMinStock}
-                                        onChange={handleChange}
-                                        id="switchMinStock"
-                                    />
-                                </div>
-                            </div>
-
-                            <p className="text-secondary small leading-relaxed mb-4">
-                                Avisa oportunamente cuando un lote empieza a quedar desabastecido. Se activa automáticamente cuando la <strong>cantidad actual del lote es del {form.alertMinStockPercent}% o menos</strong> con respecto a su cantidad inicial ingresada al almacén.
-                            </p>
-
-                            <div className="mb-4">
-                                <label className="form-label small fw-bold text-dark mb-1">
-                                    Porcentaje de stock crítico:
-                                </label>
-                                <div className="input-group">
-                                    <input
-                                        type="number"
-                                        min="1"
-                                        max="50"
-                                        name="alertMinStockPercent"
-                                        value={form.alertMinStockPercent}
-                                        onChange={handleChange}
-                                        disabled={!form.alertEnableMinStock}
-                                        className="form-control form-control-sm font-weight-bold"
-                                        style={{ maxWidth: "140px" }}
-                                    />
-                                    <span className="input-group-text small bg-light text-muted">% de la cantidad inicial</span>
-                                </div>
-                                <small className="text-muted d-block mt-1">
-                                    Fórmula: [ Cantidad Actual ≤ Cantidad Inicial × 20% ]
-                                </small>
-                            </div>
-                        </div>
-
-                        <div className="p-3 rounded-3 bg-light border d-flex align-items-center justify-content-between">
-                            <span className="small text-secondary fw-semibold">Lotes en stock mínimo detectados:</span>
-                            <span className={`badge ${lowStockCount > 0 ? "bg-warning text-dark" : "bg-success"} rounded-pill px-3 py-1.5 fw-bold`}>
-                                {lowStockCount} {lowStockCount === 1 ? "lote en aviso" : "lotes en aviso"}
-                            </span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {/* Estilos */}
-            <style>{`
-                .alert-icon-box {
-                    background-color: #e6f4f1;
-                    width: 48px;
-                    height: 48px;
-                }
-                .btn-save-teal {
-                    background-color: #005f60;
-                    border: none;
-                    transition: all 0.2s ease;
-                }
-                .btn-save-teal:hover {
-                    background-color: #004d4e;
-                    transform: translateY(-1px);
-                }
-                .bg-teal-subtle {
-                    background-color: #ccfbf1;
-                }
-                .text-teal {
-                    color: #0f766e;
-                }
-                .switch-custom:checked {
-                    background-color: #005f60;
-                    border-color: #005f60;
-                }
-                .cursor-pointer {
-                    cursor: pointer;
-                }
-            `}</style>
-        </div>
+      <div className="w-full min-h-[400px] flex flex-col items-center justify-center gap-3">
+        <svg className="animate-spin h-7 w-7 text-zinc-900" fill="none" viewBox="0 0 24 24">
+          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+        </svg>
+        <span className="text-xs font-mono uppercase tracking-wider text-zinc-500">
+          Cargando configuración de alertas preventivas...
+        </span>
+      </div>
     );
+  }
+
+  return (
+    <div className="max-w-6xl mx-auto space-y-6 pb-12">
+      {/* 1. Breadcrumbs */}
+      <div className="flex items-center gap-2 text-xs font-semibold text-zinc-500">
+        <span
+          className="hover:text-zinc-900 cursor-pointer transition-colors"
+          onClick={() => navigate("/dashboard")}
+        >
+          Dashboard
+        </span>
+        <span>/</span>
+        <span className="hover:text-zinc-900 cursor-pointer transition-colors">
+          Configuración
+        </span>
+        <span>/</span>
+        <span className="text-zinc-950 font-bold">Alertas Preventivas</span>
+      </div>
+
+      {/* 2. Header de la Página */}
+      <div className="bg-white border border-zinc-200 rounded-2xl p-5 sm:p-6 shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-zinc-900 text-white flex items-center justify-center shadow-sm flex-shrink-0">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
+              <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
+            </svg>
+          </div>
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <span className="bg-zinc-900 text-white font-mono font-bold text-[10px] px-2.5 py-0.5 rounded uppercase tracking-wider">
+                GESTIÓN PREVENTIVA
+              </span>
+              <span className="bg-zinc-100 text-zinc-800 border border-zinc-300 font-mono text-[10px] font-bold px-2 py-0.5 rounded uppercase">
+                ALERTAS AUTOMÁTICAS
+              </span>
+            </div>
+            <h1 className="text-2xl font-bold text-zinc-900 tracking-tight">
+              Configuración de Alertas del Sistema
+            </h1>
+            <p className="text-xs text-zinc-500 font-mono mt-0.5">
+              Defina las ventanas temporales para medicamentos por vencer y los umbrales de stock mínimo de lotes.
+            </p>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={handleSubmit}
+          disabled={saving}
+          className="inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-[#09090b] hover:bg-zinc-800 text-white font-mono font-bold text-xs shadow transition-all cursor-pointer tracking-wider uppercase disabled:opacity-50 self-start sm:self-auto"
+        >
+          {saving ? (
+            <>
+              <svg className="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+              </svg>
+              <span>Guardando...</span>
+            </>
+          ) : (
+            <>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+                <polyline points="17 21 17 13 7 13 7 21" />
+                <polyline points="7 3 7 8 15 8" />
+              </svg>
+              <span>Guardar Configuración</span>
+            </>
+          )}
+        </button>
+      </div>
+
+      {/* 3. Tarjetas de Configuración */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Tarjeta 1: Alerta de Vencimiento */}
+        <div className="bg-white border border-zinc-200 rounded-2xl p-6 sm:p-7 shadow-sm flex flex-col justify-between space-y-6">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-zinc-100">
+              <div className="flex items-center gap-2.5">
+                <div className="w-2.5 h-2.5 bg-zinc-900 rounded-full"></div>
+                <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-900">
+                  Alerta de Caducidad de Medicamentos
+                </h2>
+              </div>
+
+              {/* Switch */}
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  name="alertEnableExpiration"
+                  checked={form.alertEnableExpiration}
+                  onChange={handleChange}
+                  className="sr-only peer"
+                />
+                <div className="w-10 h-5 bg-zinc-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-zinc-900"></div>
+              </label>
+            </div>
+
+            <p className="text-xs text-zinc-500 font-mono leading-relaxed">
+              Monitorea los lotes que caducarán en los próximos días seleccionados. Permite coordinar venta preferente (primeras entradas, primeras salidas) o coordinar la devolución al laboratorio.
+            </p>
+
+            <div className="space-y-1.5 pt-2">
+              <label className="block text-xs font-bold text-zinc-800 uppercase tracking-wider">
+                Días de Anticipación para el Aviso
+              </label>
+              <div className="flex items-center gap-3">
+                <input
+                  type="number"
+                  min="1"
+                  max="180"
+                  name="alertExpirationDays"
+                  value={form.alertExpirationDays}
+                  onChange={handleChange}
+                  disabled={!form.alertEnableExpiration}
+                  className="w-32 h-10 px-3.5 bg-zinc-50/60 border border-zinc-300 rounded-xl text-xs font-mono font-bold text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:bg-white focus:border-zinc-950 focus:ring-1 focus:ring-zinc-950 transition-all disabled:opacity-50"
+                />
+                <span className="text-xs font-mono text-zinc-500">
+                  días (1 mes = 30 días)
+                </span>
+              </div>
+              <p className="text-[10px] font-mono text-zinc-400">
+                Valor sugerido: 30 a 60 días de ventana preventiva.
+              </p>
+            </div>
+          </div>
+
+          <div className="p-4 rounded-xl bg-zinc-50 border border-zinc-200 flex items-center justify-between">
+            <span className="text-xs font-mono font-bold text-zinc-700 uppercase">
+              Lotes por vencer detectados:
+            </span>
+            <span
+              className={`font-mono text-xs font-bold px-3 py-1 rounded-lg ${
+                expiringCount > 0
+                  ? "bg-zinc-900 text-white"
+                  : "bg-zinc-200 text-zinc-700"
+              }`}
+            >
+              {expiringCount} {expiringCount === 1 ? "LOTE EN RIESGO" : "LOTES EN RIESGO"}
+            </span>
+          </div>
+        </div>
+
+        {/* Tarjeta 2: Alerta de Stock Mínimo Crítico */}
+        <div className="bg-white border border-zinc-200 rounded-2xl p-6 sm:p-7 shadow-sm flex flex-col justify-between space-y-6">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-zinc-100">
+              <div className="flex items-center gap-2.5">
+                <div className="w-2.5 h-2.5 bg-zinc-900 rounded-full"></div>
+                <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-900">
+                  Alerta de Stock Crítico de Lote
+                </h2>
+              </div>
+
+              {/* Switch */}
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  name="alertEnableMinStock"
+                  checked={form.alertEnableMinStock}
+                  onChange={handleChange}
+                  className="sr-only peer"
+                />
+                <div className="w-10 h-5 bg-zinc-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-zinc-900"></div>
+              </label>
+            </div>
+
+            <p className="text-xs text-zinc-500 font-mono leading-relaxed">
+              Advierte cuando la cantidad actual en almacén de un lote específico cae por debajo del porcentaje configurado con respecto a su ingreso original.
+            </p>
+
+            <div className="space-y-1.5 pt-2">
+              <label className="block text-xs font-bold text-zinc-800 uppercase tracking-wider">
+                Porcentaje de Stock Mínimo
+              </label>
+              <div className="flex items-center gap-3">
+                <div className="relative">
+                  <input
+                    type="number"
+                    min="1"
+                    max="50"
+                    name="alertMinStockPercent"
+                    value={form.alertMinStockPercent}
+                    onChange={handleChange}
+                    disabled={!form.alertEnableMinStock}
+                    className="w-32 h-10 pl-3.5 pr-8 bg-zinc-50/60 border border-zinc-300 rounded-xl text-xs font-mono font-bold text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:bg-white focus:border-zinc-950 focus:ring-1 focus:ring-zinc-950 transition-all disabled:opacity-50"
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-mono font-bold text-zinc-400">
+                    %
+                  </span>
+                </div>
+                <span className="text-xs font-mono text-zinc-500">
+                  de la cantidad inicial del lote
+                </span>
+              </div>
+              <p className="text-[10px] font-mono text-zinc-400">
+                Fórmula de disparo: [ Stock Actual ≤ Stock Inicial × {form.alertMinStockPercent}% ]
+              </p>
+            </div>
+          </div>
+
+          <div className="p-4 rounded-xl bg-zinc-50 border border-zinc-200 flex items-center justify-between">
+            <span className="text-xs font-mono font-bold text-zinc-700 uppercase">
+              Lotes con stock bajo detectados:
+            </span>
+            <span
+              className={`font-mono text-xs font-bold px-3 py-1 rounded-lg ${
+                lowStockCount > 0
+                  ? "bg-zinc-900 text-white"
+                  : "bg-zinc-200 text-zinc-700"
+              }`}
+            >
+              {lowStockCount} {lowStockCount === 1 ? "LOTE CRÍTICO" : "LOTES CRÍTICOS"}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 };
+
+export default AlertSettingsPage;

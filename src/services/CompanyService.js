@@ -1,10 +1,8 @@
 import productsApi from "../apis/productsApi.js";
 
-const BASE_URL = `${import.meta.env.VITE_API_BASE_URL || "http://localhost:8080"}/company`;
-
 export const getCompanyInfo = async () => {
     try {
-        const response = await productsApi.get(BASE_URL);
+        const response = await productsApi.get("/company");
         return response;
     } catch (error) {
         console.error("Error al obtener datos de la empresa:", error);
@@ -24,12 +22,17 @@ export const saveOrUpdateCompany = async (companyData) => {
             email: (companyData.email || "").trim(),
             ticketFooterText1: (companyData.ticketFooterText1 || "").trim(),
             ticketFooterText2: (companyData.ticketFooterText2 || "").trim(),
+            ticketPaperSize: companyData.ticketPaperSize || "80mm",
+            alertExpirationDays: companyData.alertExpirationDays ?? 30,
+            alertMinStockPercent: companyData.alertMinStockPercent ?? 20,
+            alertEnableExpiration: companyData.alertEnableExpiration ?? true,
+            alertEnableMinStock: companyData.alertEnableMinStock ?? true,
             logoUrl: companyData.logoUrl || null,
             isActive: true,
         };
 
         // El endpoint del backend soporta PUT /company
-        return await productsApi.put(BASE_URL, payload);
+        return await productsApi.put("/company", payload);
     } catch (error) {
         console.error("Error al guardar datos de la empresa:", error);
         throw error;

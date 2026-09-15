@@ -148,6 +148,7 @@ export const UserRoutes = () => {
             path="/purchases/register"
             element={<PurchaseRegisterPage />}
           />
+          <Route path="/purchases" element={<Navigate to="/purchases/register" replace />} />
           <Route path="company" element={<CompanyPage />} />
           
           {/* Rutas separadas para Alertas y Tickets */}

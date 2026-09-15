@@ -18,7 +18,8 @@ export const SupportHelp = () => {
       otro: "Consulta General",
     };
 
-    const text = `*SOLICITUD DE SOPORTE*\n` +
+    const text =
+      `*SOLICITUD DE SOPORTE CORPORATIVO*\n` +
       `*Tipo:* ${typeLabels[reportType]}\n` +
       `*Detalle:* ${description.trim() || "Requiero asistencia técnica en el sistema."}`;
 
@@ -26,331 +27,201 @@ export const SupportHelp = () => {
   };
 
   return (
-    <div className="support-wrapper min-vh-100 py-5 px-3 d-flex flex-column align-items-center">
-      {/* 1. Header principal con icono farmacéutico estilizado */}
-      <div className="card-top-header bg-white rounded-4 p-4 shadow-sm mb-4 border d-flex align-items-center gap-3">
-        
+    <div className="w-full pb-10 space-y-6">
+      {/* 1. Header Banner */}
+      <div className="bg-white border border-zinc-200 rounded-lg p-6 shadow-sm">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <span className="font-mono text-[10px] uppercase tracking-wider bg-zinc-100 text-zinc-600 px-2 py-0.5 rounded border border-zinc-200 font-medium">
+                [SISTEMA & CONFIGURACIÓN]
+              </span>
+              <span className="font-mono text-[10px] uppercase tracking-wider bg-[#09090b] text-white px-2 py-0.5 rounded font-medium">
+                Mesa de Ayuda
+              </span>
+            </div>
+            <h1 className="text-xl font-bold tracking-tight text-zinc-950 uppercase font-mono">
+              Centro de Ayuda & Soporte Técnico
+            </h1>
+            <p className="text-xs text-zinc-500 mt-1">
+              Asistencia técnica especializada directa, gestión de incidencias operativas y soporte de desarrollo de software.
+            </p>
+          </div>
 
-        <div className="text-center w-100">
-  <div className="d-flex justify-content-center align-items-baseline gap-2">
-    <h3 className="m-0 fw-bolder text-dark">Centro de Ayuda & Soporte</h3>
-  </div>
-  <p className="text-muted m-0 small mt-1 mx-auto" style={{ maxWidth: "580px", lineHeight: "1.4" }}>
-    ¿Tienes alguna duda, problema con una venta o requieres asistencia técnica?
-    <br />
-    Comunícate directamente con el desarrollador del sistema.
-  </p>
-</div>
+          <div className="flex items-center">
+            <span className="border border-zinc-200 bg-zinc-50 text-zinc-700 font-mono text-xs px-3.5 py-1.5 rounded flex items-center gap-2 font-medium">
+              <span className="w-2 h-2 rounded-full bg-zinc-900 animate-pulse"></span>
+              Soporte Disponible
+            </span>
+          </div>
+        </div>
       </div>
 
-      {/* 2. Grid de dos columnas */}
-      <div className="row g-4 w-100 justify-content-center" style={{ maxWidth: "900px" }}>
-        
+      {/* 2. Grid Principal */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Columna Izquierda: Contacto Directo & Disponibilidad */}
-        <div className="col-md-6">
-          <div className="card border-0 rounded-4 shadow-sm p-4 h-100 bg-white d-flex flex-column justify-content-between">
-            <div>
-              {/* Encabezado */}
-              <div className="d-flex align-items-center gap-2 mb-4">
-                <div className="badge-tag-icon bg-cyan-soft text-cyan">
-                  {/* Ícono Auricular / Soporte Helpdesk */}
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="18"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="#0284c7"
-                    strokeWidth="2.2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M3 18v-6a9 9 0 0 1 18 0v6" />
-                    <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z" />
-                  </svg>
+        <div className="lg:col-span-6">
+          <div className="bg-white border border-zinc-200 rounded-lg p-6 h-full shadow-sm flex flex-col justify-between">
+            <div className="space-y-5">
+              {/* Header Sección */}
+              <div className="flex items-center justify-between pb-3 border-b border-zinc-100">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-4 bg-[#09090b] rounded-xs"></div>
+                  <h3 className="font-bold text-zinc-900 text-sm tracking-tight m-0 uppercase font-mono">
+                    Canal Directo de Desarrollo
+                  </h3>
                 </div>
-                <h6 className="m-0 fw-bolder text-dark">Datos del Desarrollador del Sistema</h6>
+                <span className="font-mono text-[10px] uppercase tracking-wider bg-zinc-100 text-zinc-600 border border-zinc-200 px-2 py-0.5 rounded font-medium">
+                  Nivel 3 / Core Dev
+                </span>
               </div>
 
-              {/* Encargado */}
-              <div className="d-flex align-items-center gap-3 mb-3 p-3 bg-light rounded-3 border-subtle">
-                <div className="avatar-soft-icon">
-                  {/* Ícono Developer / Especialista con Badge */}
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="19"
-                    height="19"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="#006d77"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M20 21v-2a4 4 0 0 0-3-3.87" />
-                    <path d="M4 21v-2a4 4 0 0 1 3-3.87" />
-                    <circle cx="12" cy="7" r="4" />
-                  </svg>
+              {/* Responsable Técnico */}
+              <div className="p-4 bg-zinc-50 border border-zinc-200 rounded flex items-center gap-3.5">
+                <div className="w-11 h-11 rounded-full bg-[#09090b] text-white flex items-center justify-center font-mono font-bold text-sm tracking-wider flex-shrink-0 border border-zinc-800">
+                  JP
                 </div>
                 <div>
-                  <small className="text-muted fw-bold text-uppercase d-block" style={{ fontSize: "0.68rem" }}>
-                    Software Engineer / Soporte
-                  </small>
-                  <span className="fw-bold text-dark" style={{ fontSize: "0.95rem" }}>
+                  <span className="text-zinc-400 font-mono font-semibold uppercase block text-[10px] tracking-wider">
+                    Software Engineer / Especialista
+                  </span>
+                  <span className="font-bold text-zinc-900 text-sm block">
                     {developerName}
                   </span>
                 </div>
               </div>
 
-              {/* WhatsApp Directo (Canal Principal) */}
-              <div className="d-flex align-items-center gap-3 mb-2 p-3 bg-light rounded-3 border-subtle">
-                <div className="avatar-soft-icon text-success bg-white shadow-xs">
-                  {/* Logo Oficial de WhatsApp */}
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="#10b981"
-                  >
-                    <path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2zm.01 16.48c-1.48 0-2.93-.4-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.19 8.19 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.24-8.24 2.2 0 4.27.86 5.82 2.42a8.18 8.18 0 0 1 2.41 5.83c0 4.54-3.7 8.23-8.23 8.23zm4.52-6.17c-.25-.12-1.47-.72-1.7-.81-.23-.08-.39-.12-.56.12-.17.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.12-1.05-.39-2-1.23-.74-.66-1.24-1.47-1.39-1.72-.14-.25-.02-.38.11-.5.11-.11.25-.29.37-.43.12-.15.17-.25.25-.42.08-.17.04-.31-.02-.44s-.56-1.35-.77-1.85c-.2-.49-.41-.42-.56-.43h-.48c-.17 0-.44.06-.67.31-.23.25-.88.86-.88 2.1 0 1.24.9 2.44 1.03 2.61.12.17 1.78 2.71 4.3 3.8 2.53 1.09 2.53.73 2.99.69.45-.05 1.47-.6 1.68-1.18.21-.58.21-1.07.15-1.18-.07-.1-.23-.17-.48-.29z"/>
-                  </svg>
-                </div>
-                <div>
-                  <div className="d-flex align-items-center gap-2">
-                    <small className="text-muted fw-bold text-uppercase" style={{ fontSize: "0.68rem" }}>
-                      WhatsApp (Contacto Principal)
-                    </small>
-                    
+              {/* Canal WhatsApp */}
+              <div className="p-4 bg-zinc-50 border border-zinc-200 rounded flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded bg-white border border-zinc-200 flex items-center justify-center text-zinc-900 flex-shrink-0">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+                    </svg>
                   </div>
-                  <span className="fw-bold text-dark font-monospace" style={{ fontSize: "0.95rem" }}>
-                    {phoneFormatted}
-                  </span>
+                  <div>
+                    <span className="text-zinc-400 font-mono font-semibold uppercase block text-[10px] tracking-wider">
+                      Línea Directa WhatsApp
+                    </span>
+                    <span className="font-mono font-bold text-zinc-900 text-sm">
+                      {phoneFormatted}
+                    </span>
+                  </div>
                 </div>
+                <a
+                  href={`https://wa.me/${rawPhone}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="bg-[#09090b] hover:bg-zinc-800 text-white font-mono text-xs px-3 py-1.5 rounded transition-colors"
+                >
+                  Abrir Chat
+                </a>
               </div>
 
-              {/* Horario y SLA con aviso de llamadas */}
-              <div className="p-3 border rounded-3 bg-light-subtle mb-3">
-                <div className="d-flex justify-content-between align-items-center mb-1">
-                  <small className="text-secondary fw-bold" style={{ fontSize: "0.72rem" }}>
-                    HORARIO DE ATENCIÓN
-                  </small>
-                  <span className="badge bg-white text-secondary border fw-semibold" style={{ fontSize: "0.68rem" }}>
+              {/* Horario y Políticas de Soporte */}
+              <div className="p-4 bg-zinc-50 border border-zinc-200 rounded space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-zinc-500 font-mono font-semibold uppercase text-[10px] tracking-wider">
+                    Horario de Atención
+                  </span>
+                  <span className="font-mono text-[10px] uppercase bg-white border border-zinc-200 text-zinc-700 px-2 py-0.5 rounded font-medium">
                     Lunes a Viernes
                   </span>
                 </div>
-                <div className="fw-bold text-dark small">08:00 AM – 01:00 PM</div>
-                
-                <div className="mt-2 pt-2 border-top">
-                  <div className="d-flex align-items-start gap-2 text-muted" style={{ fontSize: "0.72rem" }}>
-                    {/* Checkmark circular */}
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="16"
-                      height="16"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="#059669"
-                      strokeWidth="2.2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="flex-shrink-0 mt-1"
-                    >
-                      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-                      <polyline points="22 4 12 14.01 9 11.01" />
-                    </svg>
+                <div className="font-mono font-bold text-zinc-900 text-sm">
+                  08:00 AM – 01:00 PM
+                </div>
+
+                <div className="pt-3 border-t border-zinc-200 space-y-2 text-xs text-zinc-600">
+                  <div className="flex items-start gap-2">
+                    <span className="font-mono font-bold text-zinc-900 text-xs mt-0.5">[1]</span>
                     <span>
-                      Las consultas por <strong>WhatsApp</strong> son respondidas a la brevedad.
+                      Las consultas por <strong>WhatsApp</strong> son atendidas en orden de recepción y clasificadas según criticidad.
                     </span>
                   </div>
-
-                  <div className="d-flex align-items-start gap-2 text-danger mt-1 fw-medium" style={{ fontSize: "0.72rem" }}>
-                    {/* Campana de Alerta / Emergencia */}
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="16"
-                      height="16"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="#dc2626"
-                      strokeWidth="2.2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="flex-shrink-0 mt-1"
-                    >
-                      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-                      <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-                    </svg>
+                  <div className="flex items-start gap-2">
+                    <span className="font-mono font-bold text-zinc-900 text-xs mt-0.5">[2]</span>
                     <span>
-                      <strong>Llamadas telefónicas:</strong> reservadas exclusivamente para emergencias críticas (ej. caja o venta detenida).
+                      <strong>Llamadas telefónicas de emergencia:</strong> reservadas exclusivamente para incidentes de bloqueo total (POS, caja o base de datos detenida).
                     </span>
                   </div>
                 </div>
               </div>
             </div>
-
           </div>
         </div>
 
         {/* Columna Derecha: Reporte Rápido por WhatsApp */}
-        <div className="col-md-6">
-          <div className="card border-0 rounded-4 shadow-sm p-4 h-100 bg-white d-flex flex-column justify-content-between">
-            <form onSubmit={handleQuickReport} className="d-flex flex-column h-100 justify-content-between">
-              <div>
-                {/* Encabezado */}
-                <div className="d-flex align-items-center gap-2 mb-4">
-                  <div className="badge-tag-icon bg-orange-soft text-orange">
-                    {/* Ícono de Redacción / Ticket Rápido */}
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="18"
-                      height="18"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="#ea580c"
-                      strokeWidth="2.2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M12 20h9" />
-                      <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
-                    </svg>
+        <div className="lg:col-span-6">
+          <div className="bg-white border border-zinc-200 rounded-lg p-6 h-full shadow-sm flex flex-col justify-between">
+            <form onSubmit={handleQuickReport} className="flex flex-col h-full justify-between space-y-5">
+              <div className="space-y-4">
+                {/* Header Sección */}
+                <div className="flex items-center justify-between pb-3 border-b border-zinc-100">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-4 bg-[#09090b] rounded-xs"></div>
+                    <h3 className="font-bold text-zinc-900 text-sm tracking-tight m-0 uppercase font-mono">
+                      Generar Incidencia Rápida
+                    </h3>
                   </div>
-                  <h6 className="m-0 fw-bolder text-dark">Generar Mensaje Rápido por WhatsApp</h6>
+                  <span className="font-mono text-[10px] uppercase tracking-wider bg-zinc-100 text-zinc-600 border border-zinc-200 px-2 py-0.5 rounded font-medium">
+                    WhatsApp Bot Format
+                  </span>
                 </div>
 
-                <p className="text-muted small mb-3">
-                  Selecciona el motivo y describe brevemente lo sucedido. Se abrirá WhatsApp con el mensaje estructurado para atenderte de inmediato:
+                <p className="text-xs text-zinc-500 leading-relaxed">
+                  Seleccione el tipo de solicitud y describa brevemente la situación. Se abrirá una sesión de WhatsApp estructurada con los datos listos para enviar.
                 </p>
 
                 {/* Selector de Motivo */}
-                <div className="mb-3">
-                  <label className="form-label text-secondary fw-bold" style={{ fontSize: "0.75rem" }}>
-                    ¿QUÉ OCURRE? *
+                <div>
+                  <label className="block text-zinc-700 font-mono font-bold uppercase text-[11px] tracking-wider mb-1.5">
+                    Clasificación de la Incidencia *
                   </label>
                   <select
-                    className="form-select form-select-sm select-custom"
+                    className="w-full px-3 py-2 text-xs border border-zinc-300 rounded bg-white text-zinc-900 font-mono focus:outline-none focus:ring-1 focus:ring-zinc-900"
                     value={reportType}
                     onChange={(e) => setReportType(e.target.value)}
                   >
-                    <option value="urgente_pos">Problema en Caja / Ticketera / Venta / Otros</option>
-                    <option value="stock_error">Inconsistencia en Stock o Lote</option>
-                    <option value="nuevo_requerimiento">Nueva Función o Configuración</option>
-                    <option value="otro">Otra Consulta Operativa</option>
+                    <option value="urgente_pos">Urgencia POS (Caja / Facturación / Impresión / Otros)</option>
+                    <option value="stock_error">Consulta sobre Inventario / Lotes / Stock</option>
+                    <option value="nuevo_requerimiento">Solicitud de Función / Parámetro / Capacitación</option>
+                    <option value="otro">Consulta General u Operativa</option>
                   </select>
                 </div>
 
                 {/* Detalle */}
-                <div className="mb-3">
-                  <label className="form-label text-secondary fw-bold" style={{ fontSize: "0.75rem" }}>
-                    DETALLE ADICIONAL (OPCIONAL)
+                <div>
+                  <label className="block text-zinc-700 font-mono font-bold uppercase text-[11px] tracking-wider mb-1.5">
+                    Detalle Adicional (Opcional)
                   </label>
                   <textarea
-                    className="form-control text-area-custom"
-                    rows="4"
-                    placeholder="Ej: No imprime el ticket de la boleta B001-45 o el lector no lee el código..."
+                    className="w-full px-3 py-2.5 text-xs border border-zinc-300 rounded bg-white text-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 font-mono"
+                    rows="5"
+                    placeholder="Ejemplo: No imprime el ticket de la boleta B001-0042 o el lector no reconoce el código de barras del lote LOT-441..."
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                   />
                 </div>
               </div>
 
-              {/* Botón Acción Principal con ícono estilizado de WhatsApp */}
-              <button
-                type="submit"
-                className="btn btn-teal-contact w-100 py-2 fw-semibold d-flex align-items-center justify-content-center gap-2 shadow-sm mt-3"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
+              {/* Botón Acción Principal */}
+              <div className="pt-4 border-t border-zinc-100">
+                <button
+                  type="submit"
+                  className="w-full bg-[#09090b] hover:bg-zinc-800 text-white font-mono text-xs font-bold uppercase tracking-wider py-3 px-4 rounded transition-colors flex items-center justify-center gap-2 shadow-sm"
                 >
-                  <path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2zm.01 16.48c-1.48 0-2.93-.4-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.19 8.19 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.24-8.24 2.2 0 4.27.86 5.82 2.42a8.18 8.18 0 0 1 2.41 5.83c0 4.54-3.7 8.23-8.23 8.23zm4.52-6.17c-.25-.12-1.47-.72-1.7-.81-.23-.08-.39-.12-.56.12-.17.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.12-1.05-.39-2-1.23-.74-.66-1.24-1.47-1.39-1.72-.14-.25-.02-.38.11-.5.11-.11.25-.29.37-.43.12-.15.17-.25.25-.42.08-.17.04-.31-.02-.44s-.56-1.35-.77-1.85c-.2-.49-.41-.42-.56-.43h-.48c-.17 0-.44.06-.67.31-.23.25-.88.86-.88 2.1 0 1.24.9 2.44 1.03 2.61.12.17 1.78 2.71 4.3 3.8 2.53 1.09 2.53.73 2.99.69.45-.05 1.47-.6 1.68-1.18.21-.58.21-1.07.15-1.18-.07-.1-.23-.17-.48-.29z"/>
-                </svg>
-                Enviar Consulta por WhatsApp
-              </button>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="22" y1="2" x2="11" y2="13" />
+                    <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                  </svg>
+                  <span>Enviar Consulta por WhatsApp</span>
+                </button>
+              </div>
             </form>
           </div>
         </div>
-
       </div>
-
-      {/* Estilos */}
-      <style>{`
-        .support-wrapper {
-          background-color: #f8fafc;
-        }
-        .card-top-header {
-          width: 100%;
-          max-width: 900px;
-        }
-        .pill-badge-box {
-          width: 52px;
-          height: 52px;
-          border-radius: 12px;
-          background-color: #e6f4f1;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          flex-shrink: 0;
-        }
-        .badge-soporte-online {
-          background-color: #d1fae5;
-          color: #047857;
-          font-size: 0.7rem;
-          font-weight: 700;
-          padding: 2px 8px;
-          border-radius: 6px;
-        }
-        .badge-tag-icon {
-          width: 32px;
-          height: 32px;
-          border-radius: 8px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-        .bg-cyan-soft { background-color: #e0f2fe; }
-        .text-cyan { color: #0284c7; }
-        .bg-orange-soft { background-color: #ffedd5; }
-        .text-orange { color: #ea580c; }
-        .border-subtle {
-          border: 1px solid #edf2f7;
-        }
-        .avatar-soft-icon {
-          width: 36px;
-          height: 36px;
-          border-radius: 50%;
-          background-color: #fff;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          border: 1px solid #e2e8f0;
-          flex-shrink: 0;
-        }
-        .select-custom, .text-area-custom {
-          border-color: #e2e8f0;
-          font-size: 0.85rem;
-          color: #334155;
-        }
-        .select-custom:focus, .text-area-custom:focus {
-          border-color: #006d77;
-          box-shadow: 0 0 0 0.2rem rgba(0, 109, 119, 0.15);
-        }
-        .btn-teal-contact {
-          background-color: #006d77;
-          color: #fff;
-          border: none;
-          border-radius: 8px;
-          transition: 0.2s;
-        }
-        .btn-teal-contact:hover {
-          background-color: #084c53;
-          color: #fff;
-        }
-      `}</style>
     </div>
   );
 };

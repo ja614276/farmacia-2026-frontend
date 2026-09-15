@@ -150,6 +150,7 @@ export const PaymentConditionsPage = () => {
                     title: "¡Eliminado!",
                     text: "Condición de pago eliminada.",
                     icon: "success",
+                    confirmButtonColor: "#09090b",
                     timer: 1500,
                     showConfirmButton: false,
                 });
@@ -161,52 +162,87 @@ export const PaymentConditionsPage = () => {
     };
 
     return (
-        <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6">
-            {/* Cabecera Superior estilo Calco Imagen */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+        <div className="max-w-7xl mx-auto space-y-6">
+            {/* Cabecera Superior Corporativa */}
+            <div className="bg-white border border-zinc-200 rounded-2xl p-5 sm:p-6 shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-black tracking-tight flex items-center gap-1.5">
-                        <span className="text-[#005f60]">Condiciones</span>
-                        <span className="text-[#e27d60]">de Pago</span>
+                    <div className="flex items-center gap-2 mb-1.5">
+                        <span className="bg-zinc-900 text-white font-mono font-bold text-[10px] px-2.5 py-0.5 rounded uppercase tracking-wider">
+                          VENTAS & CRÉDITO
+                        </span>
+                    </div>
+                    <h1 className="text-2xl font-bold text-zinc-900 tracking-tight">
+                        Condiciones de Pago
                     </h1>
+                    <p className="text-xs text-zinc-500 font-mono mt-1">
+                        Configuración de plazos de pago y vencimientos comerciales en ventas.
+                    </p>
                 </div>
 
                 <button
                     type="button"
                     onClick={() => handleOpenModal()}
-                    className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-[#005f60] hover:bg-[#004e4f] text-white font-bold text-xs shadow-sm transition-all self-start sm:self-auto uppercase tracking-wider"
+                    className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#09090b] hover:bg-zinc-800 text-white font-bold text-xs shadow transition-all cursor-pointer tracking-wider uppercase font-mono self-start sm:self-auto"
                 >
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                     </svg>
-                    <span>Nueva Condicion de Pago</span>
+                    <span>Nueva Condición</span>
                 </button>
             </div>
 
             {/* Barra de Filtro / Búsqueda */}
-            <div className="bg-white rounded-xl p-3 shadow-sm border border-slate-100 mb-4 flex items-center gap-3">
-                <span className="text-slate-400 pl-2">
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-                    </svg>
-                </span>
-                <input
-                    type="text"
-                    placeholder="Buscar por nombre o días de crédito..."
-                    value={searchTerm}
-                    onChange={(e) => {
-                        setSearchTerm(e.target.value);
-                        setCurrentPage(1);
-                    }}
-                    className="w-full text-xs text-slate-800 placeholder:text-slate-400 bg-transparent focus:outline-none"
-                />
+            <div className="bg-white rounded-2xl p-3.5 shadow-sm border border-zinc-200 flex flex-col sm:flex-row items-center justify-between gap-3">
+                <div className="relative w-full sm:w-96 flex items-center">
+                    <span className="absolute left-3 text-zinc-400">
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                        </svg>
+                    </span>
+                    <input
+                        type="text"
+                        placeholder="Buscar por nombre o días de crédito..."
+                        value={searchTerm}
+                        onChange={(e) => {
+                            setSearchTerm(e.target.value);
+                            setCurrentPage(1);
+                        }}
+                        className="w-full pl-9 pr-8 py-2 text-xs bg-zinc-50 border border-zinc-200 rounded-xl font-medium text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:bg-white focus:border-zinc-900 transition-all font-sans"
+                    />
+                    {searchTerm && (
+                        <button
+                            type="button"
+                            onClick={() => setSearchTerm("")}
+                            className="absolute right-2.5 text-zinc-400 hover:text-zinc-700 text-xs font-bold"
+                        >
+                            ✕
+                        </button>
+                    )}
+                </div>
+
+                <div className="flex items-center gap-2 text-xs text-zinc-500 font-mono self-end sm:self-auto">
+                    <span>Mostrar:</span>
+                    <select
+                        value={itemsPerPage}
+                        onChange={(e) => {
+                            setItemsPerPage(Number(e.target.value));
+                            setCurrentPage(1);
+                        }}
+                        className="px-2.5 py-1 bg-white border border-zinc-200 rounded-lg font-bold text-zinc-800 focus:outline-none text-xs"
+                    >
+                        <option value={5}>5</option>
+                        <option value={10}>10</option>
+                        <option value={20}>20</option>
+                        <option value={50}>50</option>
+                    </select>
+                </div>
             </div>
 
-            {/* Tabla de Condiciones de Pago (Calco exacto de la Imagen del usuario) */}
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+            {/* Tabla de Condiciones de Pago */}
+            <div className="bg-white rounded-2xl shadow-sm border border-zinc-200 overflow-hidden">
                 {isLoading ? (
-                    <div className="flex items-center justify-center py-16 text-teal-700 text-xs font-bold gap-3">
-                        <svg className="animate-spin h-5 w-5 text-[#005f60]" fill="none" viewBox="0 0 24 24">
+                    <div className="flex items-center justify-center py-20 text-zinc-400 text-xs font-mono gap-3">
+                        <svg className="animate-spin h-6 w-6 text-zinc-900" fill="none" viewBox="0 0 24 24">
                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                         </svg>
@@ -214,41 +250,52 @@ export const PaymentConditionsPage = () => {
                     </div>
                 ) : currentRecords.length === 0 ? (
                     <div className="text-center py-16 px-4">
-                        <p className="text-slate-400 text-xs font-semibold">No se encontraron condiciones de pago registradas.</p>
+                        <p className="text-zinc-400 text-xs font-mono">No se encontraron condiciones de pago registradas.</p>
                     </div>
                 ) : (
                     <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse text-xs">
                             <thead>
-                                <tr className="border-b border-slate-100 bg-white text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                                    <th className="py-3.5 px-6">NOMBRE</th>
-                                    <th className="py-3.5 px-6 text-center">DIAS</th>
-                                    <th className="py-3.5 px-6 text-right">ACCIONES</th>
+                                <tr className="border-b border-zinc-200 bg-zinc-100/70 text-[11px] font-mono font-bold text-zinc-600 uppercase tracking-wider">
+                                    <th className="py-3 px-6">NOMBRE DE LA CONDICIÓN</th>
+                                    <th className="py-3 px-6 text-center">DÍAS DE CRÉDITO</th>
+                                    <th className="py-3 px-6 text-center">ESTADO</th>
+                                    <th className="py-3 px-6 text-right">ACCIONES</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-100">
+                            <tbody className="divide-y divide-zinc-100">
                                 {currentRecords.map((cond) => {
                                     const itemId = cond.idCondicion || cond.id;
+                                    const isActive = cond.isActive ?? true;
                                     return (
-                                        <tr key={itemId || cond.nombre} className="hover:bg-slate-50/70 transition-colors">
+                                        <tr key={itemId || cond.nombre} className="hover:bg-zinc-50/80 transition-colors">
                                             {/* NOMBRE */}
-                                            <td className="py-3.5 px-6 text-slate-700 text-xs font-medium">
+                                            <td className="py-3 px-6 text-zinc-900 text-xs font-bold">
                                                 {cond.nombre}
                                             </td>
 
                                             {/* DIAS */}
-                                            <td className="py-3.5 px-6 text-center text-slate-700 text-xs font-medium">
-                                                {cond.dias}
+                                            <td className="py-3 px-6 text-center text-zinc-900 font-mono text-xs font-bold">
+                                                {cond.dias} {cond.dias === 1 ? "día" : "días"}
                                             </td>
 
-                                            {/* ACCIONES (Íconos en cajas de borde celeste y rojo) */}
-                                            <td className="py-3.5 px-6 text-right">
-                                                <div className="inline-flex items-center justify-end gap-2">
+                                            {/* ESTADO */}
+                                            <td className="py-3 px-6 text-center">
+                                                <span className={`inline-block px-2.5 py-0.5 rounded text-[10px] font-mono font-bold uppercase ${
+                                                    isActive ? "bg-zinc-900 text-white" : "bg-zinc-100 text-zinc-600 border border-zinc-300"
+                                                }`}>
+                                                    {isActive ? "[ACTIVO]" : "[INACTIVO]"}
+                                                </span>
+                                            </td>
+
+                                            {/* ACCIONES */}
+                                            <td className="py-3 px-6 text-right">
+                                                <div className="inline-flex items-center justify-end gap-1.5">
                                                     {/* Editar */}
                                                     <button
                                                         type="button"
                                                         onClick={() => handleOpenModal(cond)}
-                                                        className="w-7 h-7 flex items-center justify-center rounded border border-sky-400 text-sky-500 hover:bg-sky-50 transition-colors"
+                                                        className="w-7 h-7 flex items-center justify-center rounded-lg bg-zinc-100 text-zinc-700 hover:bg-zinc-200 border border-zinc-200 transition-colors"
                                                         title="Editar condición"
                                                     >
                                                         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -260,7 +307,7 @@ export const PaymentConditionsPage = () => {
                                                     <button
                                                         type="button"
                                                         onClick={() => handleDelete(cond)}
-                                                        className="w-7 h-7 flex items-center justify-center rounded border border-rose-300 text-rose-500 hover:bg-rose-50 transition-colors"
+                                                        className="w-7 h-7 flex items-center justify-center rounded-lg bg-zinc-100 text-zinc-700 hover:bg-zinc-200 border border-zinc-200 transition-colors"
                                                         title="Eliminar condición"
                                                     >
                                                         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -277,43 +324,31 @@ export const PaymentConditionsPage = () => {
                     </div>
                 )}
 
-                {/* Footer y Paginación idéntica a la Imagen */}
-                <div className="px-6 py-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
-                    <div className="flex items-center gap-2">
-                        <span>Mostrar:</span>
-                        <select
-                            value={itemsPerPage}
-                            onChange={(e) => {
-                                setItemsPerPage(Number(e.target.value));
-                                setCurrentPage(1);
-                            }}
-                            className="px-2 py-1 bg-slate-50 border border-slate-200 rounded-md font-bold text-slate-700 focus:outline-none text-xs"
-                        >
-                            <option value={5}>5</option>
-                            <option value={10}>10</option>
-                            <option value={20}>20</option>
-                            <option value={50}>50</option>
-                        </select>
-                        <span>por página</span>
-                    </div>
+                {/* Footer y Paginación */}
+                <div className="px-6 py-3 border-t border-zinc-200 bg-zinc-50/50 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-zinc-500 font-mono">
+                    <span>
+                        Mostrando {filteredConditions.length === 0 ? 0 : startIndex + 1} a{" "}
+                        {Math.min(startIndex + itemsPerPage, filteredConditions.length)} de{" "}
+                        {filteredConditions.length} registros
+                    </span>
 
                     <div className="flex items-center gap-1.5">
                         <button
                             type="button"
                             onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                             disabled={currentPage === 1}
-                            className="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-xs"
+                            className="w-8 h-8 flex items-center justify-center rounded-xl bg-white border border-zinc-200 text-zinc-700 hover:bg-zinc-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-xs font-bold"
                         >
                             &lt;
                         </button>
-                        <span className="w-8 h-8 flex items-center justify-center rounded-full bg-[#005f60] text-white font-bold text-xs">
-                            {currentPage}
+                        <span className="px-3 py-1 rounded-xl bg-[#09090b] text-white font-bold text-xs">
+                            Pág. {currentPage} de {totalPages}
                         </span>
                         <button
                             type="button"
                             onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                             disabled={currentPage === totalPages}
-                            className="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-xs"
+                            className="w-8 h-8 flex items-center justify-center rounded-xl bg-white border border-zinc-200 text-zinc-700 hover:bg-zinc-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-xs font-bold"
                         >
                             &gt;
                         </button>
@@ -323,25 +358,25 @@ export const PaymentConditionsPage = () => {
 
             {/* Modal Crear / Editar Condición de Pago */}
             {isModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
-                    <div className="bg-white rounded-2xl shadow-xl border border-slate-100 w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-                        <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-                            <h3 className="font-extrabold text-sm text-slate-800 uppercase tracking-wider">
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/60 backdrop-blur-xs p-4 animate-in fade-in duration-150">
+                    <div className="bg-white rounded-2xl shadow-2xl border border-zinc-200 w-full max-w-md overflow-hidden">
+                        <div className="px-5 py-4 border-b border-zinc-100 flex items-center justify-between bg-white">
+                            <h3 className="font-bold text-sm text-zinc-900 uppercase font-mono tracking-wider">
                                 {editingCondition ? "Editar Condición de Pago" : "Nueva Condición de Pago"}
                             </h3>
                             <button
                                 type="button"
                                 onClick={handleCloseModal}
-                                className="text-slate-400 hover:text-slate-600 text-lg font-bold"
+                                className="w-8 h-8 rounded-full bg-zinc-100 hover:bg-zinc-200 text-zinc-600 hover:text-zinc-900 flex items-center justify-center text-sm font-bold transition-colors cursor-pointer"
                             >
-                                ×
+                                ✕
                             </button>
                         </div>
 
-                        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+                        <form onSubmit={handleSubmit} className="p-5 space-y-4">
                             <div>
-                                <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">
-                                    Nombre de la Condición *
+                                <label className="block text-xs font-mono font-bold text-zinc-600 mb-1.5 uppercase">
+                                    Nombre de la Condición <span className="text-zinc-400">*</span>
                                 </label>
                                 <input
                                     type="text"
@@ -349,13 +384,13 @@ export const PaymentConditionsPage = () => {
                                     placeholder="Ej: Crédito 30 dias, Contado..."
                                     value={formData.nombre}
                                     onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
-                                    className="w-full px-3.5 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500/20"
+                                    className="w-full px-3.5 py-2 text-xs bg-zinc-50 border border-zinc-300 rounded-xl font-medium text-zinc-900 focus:bg-white focus:outline-none focus:border-zinc-900 transition-all font-sans"
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">
-                                    Días de Plazo *
+                                <label className="block text-xs font-mono font-bold text-zinc-600 mb-1.5 uppercase">
+                                    Días de Plazo <span className="text-zinc-400">*</span>
                                 </label>
                                 <input
                                     type="number"
@@ -364,38 +399,40 @@ export const PaymentConditionsPage = () => {
                                     placeholder="0 para contado, 30, 60..."
                                     value={formData.dias}
                                     onChange={(e) => setFormData({ ...formData, dias: Number(e.target.value) || 0 })}
-                                    className="w-full px-3.5 py-2.5 text-xs bg-slate-50 border border-slate-200 rounded-xl font-black text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500/20"
+                                    className="w-full px-3.5 py-2 text-xs bg-zinc-50 border border-zinc-300 rounded-xl font-bold font-mono text-zinc-900 focus:bg-white focus:outline-none focus:border-zinc-900 transition-all"
                                 />
-                                <p className="text-[10px] text-slate-400 mt-1">
-                                    Coloca 0 para ventas al contado. Los días se usarán para calcular la fecha de vencimiento de la venta.
+                                <p className="text-[10px] font-mono text-zinc-400 mt-1">
+                                    0 = venta al contado. Valores mayores calculan automáticamente la fecha de vencimiento.
                                 </p>
                             </div>
 
-                            <div className="flex items-center gap-2 pt-2">
-                                <input
-                                    type="checkbox"
-                                    id="condIsActive"
-                                    checked={formData.isActive}
-                                    onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-                                    className="rounded border-slate-300 text-[#005f60] focus:ring-[#005f60]"
-                                />
-                                <label htmlFor="condIsActive" className="text-xs font-semibold text-slate-700 cursor-pointer">
-                                    Habilitado para punto de venta (Activo)
+                            <div className="pt-1">
+                                <label className="flex items-center gap-2 cursor-pointer select-none">
+                                    <input
+                                        type="checkbox"
+                                        id="condIsActive"
+                                        checked={formData.isActive}
+                                        onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
+                                        className="w-4 h-4 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900"
+                                    />
+                                    <span className="text-xs font-mono font-bold text-zinc-800 uppercase">
+                                        {formData.isActive ? "[ACTIVO EN PUNTO DE VENTA]" : "[INACTIVO]"}
+                                    </span>
                                 </label>
                             </div>
 
-                            <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+                            <div className="flex items-center justify-end gap-2 pt-4 border-t border-zinc-100">
                                 <button
                                     type="button"
                                     onClick={handleCloseModal}
-                                    className="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 font-bold text-xs transition-colors"
+                                    className="px-4 py-2 rounded-xl border border-zinc-200 text-zinc-600 hover:bg-zinc-100 font-medium text-xs transition-colors cursor-pointer"
                                 >
                                     Cancelar
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={isSubmitting}
-                                    className="px-5 py-2 rounded-xl bg-[#005f60] hover:bg-[#004e4f] text-white font-bold text-xs shadow-sm transition-all disabled:opacity-50"
+                                    className="px-5 py-2 rounded-xl bg-[#09090b] hover:bg-zinc-800 text-white font-semibold text-xs shadow transition-all disabled:opacity-50 cursor-pointer font-mono"
                                 >
                                     {isSubmitting ? "Guardando..." : (editingCondition ? "Actualizar" : "Guardar")}
                                 </button>

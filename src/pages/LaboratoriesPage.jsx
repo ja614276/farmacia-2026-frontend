@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { findAllLaboratories, removeLaboratory } from "../services/LaboratoryService";
@@ -34,8 +34,8 @@ export const LaboratoriesPage = () => {
             text: `¿Seguro que deseas eliminar el laboratorio "${lab.nombre}"?`,
             icon: "warning",
             showCancelButton: true,
-            confirmButtonColor: "#dc2626",
-            cancelButtonColor: "#64748b",
+            confirmButtonColor: "#09090b",
+            cancelButtonColor: "#71717a",
             confirmButtonText: "Sí, eliminar",
             cancelButtonText: "Cancelar",
         });
@@ -58,61 +58,73 @@ export const LaboratoriesPage = () => {
         }
     };
 
-    const filteredLaboratories = laboratories.filter((lab) => {
+    const filteredLaboratories = useMemo(() => {
         const query = searchTerm.toLowerCase();
-        const name = (lab.nombre || "").toLowerCase();
-        const email = (lab.email || "").toLowerCase();
-        const phone = (lab.telefono || "").toLowerCase();
-        const address = (lab.direccion || "").toLowerCase();
-        return name.includes(query) || email.includes(query) || phone.includes(query) || address.includes(query);
-    });
+        return laboratories.filter((lab) => {
+            const name = (lab.nombre || "").toLowerCase();
+            const email = (lab.email || "").toLowerCase();
+            const phone = (lab.telefono || "").toLowerCase();
+            const address = (lab.direccion || "").toLowerCase();
+            return name.includes(query) || email.includes(query) || phone.includes(query) || address.includes(query);
+        });
+    }, [laboratories, searchTerm]);
 
-    // Paginación en cliente
     const totalPages = Math.ceil(filteredLaboratories.length / pageSize) || 1;
-    const paginatedLaboratories = filteredLaboratories.slice(
-        (currentPage - 1) * pageSize,
-        currentPage * pageSize
-    );
+    const startIndex = (currentPage - 1) * pageSize;
+    const paginatedLaboratories = filteredLaboratories.slice(startIndex, startIndex + pageSize);
+
+    const startRecord = filteredLaboratories.length === 0 ? 0 : startIndex + 1;
+    const endRecord = Math.min(startIndex + pageSize, filteredLaboratories.length);
 
     return (
-        <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6">
-            {/* Cabecera Superior */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-                <div className="flex items-center gap-3.5">
-                    {/* Badge con ícono de matraz / laboratorio */}
-                    <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center border border-amber-100 shadow-sm flex-shrink-0">
-                        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M10 2v6.292a1 1 0 01-.293.708l-5.414 5.414A4 4 0 007.121 21h9.758a4 4 0 002.828-6.586l-5.414-5.414A1 1 0 0114 8.292V2M8 2h8M6.5 15h11" />
-                        </svg>
+        <div className="w-full max-w-[1600px] mx-auto space-y-5 pb-10">
+            {/* Header Corporativo Monocromático */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-zinc-200">
+                <div>
+                    <div className="flex items-center gap-2 text-xs font-semibold text-zinc-500 mb-1">
+                        <span className="hover:text-zinc-900 cursor-pointer" onClick={() => navigate("/dashboard")}>Dashboard</span>
+                        <span>/</span>
+                        <span className="hover:text-zinc-900 cursor-pointer" onClick={() => navigate("/products")}>Inventario</span>
+                        <span>/</span>
+                        <span className="text-zinc-950 font-bold">Laboratorios</span>
                     </div>
-                    <div>
-                        <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
-                            Laboratorios
-                        </h1>
-                        <p className="text-sm text-slate-500 mt-0.5">
-                            Gestión de proveedores y fabricantes farmacológicos
-                        </p>
+                    <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-lg bg-zinc-900 text-white flex items-center justify-center font-bold shadow-xs">
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h1 className="text-xl sm:text-2xl font-black text-zinc-950 tracking-tight">
+                                Laboratorios y Fabricantes
+                            </h1>
+                            <p className="text-xs text-zinc-500 mt-0.5">
+                                Catálogo de fabricantes farmacéuticos, laboratorios acreditados y droguerías.
+                            </p>
+                        </div>
                     </div>
                 </div>
 
-                {/* Botón Registrar Laboratorio */}
-                <Link
-                    to="/laboratories/register"
-                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-teal-800 hover:bg-teal-900 active:bg-teal-950 text-white font-semibold text-sm shadow-sm transition-all self-start sm:self-auto hover:-translate-y-0.5"
-                >
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                    </svg>
-                    <span>Registrar Laboratorio</span>
-                </Link>
+                <div className="flex items-center gap-2.5 self-start sm:self-auto">
+                    <Link
+                        to="/laboratories/register"
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-zinc-900 hover:bg-black text-white text-xs font-bold rounded-lg shadow-sm transition-all"
+                    >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" />
+                        </svg>
+                        <span>Registrar Laboratorio</span>
+                    </Link>
+                </div>
             </div>
 
             {/* Barra de Búsqueda y Contador */}
-            <div className="bg-white rounded-2xl p-4 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-slate-100 mb-6 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
-                <div className="relative flex-1 max-w-md">
-                    <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+            <div className="bg-white rounded-xl p-4 border border-zinc-200 shadow-xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
+                <div className="relative flex-1 max-w-lg">
+                    <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-400">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <circle cx="11" cy="11" r="8" strokeWidth="2" />
+                            <path strokeLinecap="round" strokeWidth="2" d="M21 21l-4.35-4.35" />
                         </svg>
                     </span>
                     <input
@@ -122,138 +134,125 @@ export const LaboratoriesPage = () => {
                             setSearchTerm(e.target.value);
                             setCurrentPage(1);
                         }}
-                        placeholder="Buscar laboratorio..."
-                        className="w-full h-11 pl-10 pr-4 bg-slate-50/80 border border-slate-200 rounded-xl text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-teal-600 focus:ring-2 focus:ring-teal-600/15 transition-all"
+                        placeholder="Buscar por nombre, correo, teléfono o dirección..."
+                        className="w-full h-10 pl-10 pr-4 bg-zinc-50/60 border border-zinc-300 rounded-lg text-xs font-medium text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:bg-white focus:border-zinc-950 focus:ring-1 focus:ring-zinc-950 transition-all"
                     />
+                    {searchTerm && (
+                        <button
+                            type="button"
+                            onClick={() => setSearchTerm("")}
+                            className="absolute inset-y-0 right-0 pr-3 flex items-center text-xs text-zinc-400 hover:text-zinc-900 font-bold"
+                        >
+                            ✕
+                        </button>
+                    )}
                 </div>
 
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100/80 border border-slate-200/60 text-slate-600 text-xs font-bold uppercase tracking-wider self-start sm:self-auto">
-                    <svg className="w-4 h-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
-                    </svg>
-                    <span>{filteredLaboratories.length} ENTIDADES REGISTRADAS</span>
+                <div className="flex items-center gap-2 self-start sm:self-auto">
+                    <span className="font-mono text-xs font-bold text-zinc-900 bg-zinc-100 border border-zinc-200 px-3 py-1.5 rounded-lg">
+                        {filteredLaboratories.length} {filteredLaboratories.length === 1 ? "LABORATORIO" : "LABORATORIOS"}
+                    </span>
                 </div>
             </div>
 
-            {/* Contenedor de la Tabla */}
-            <div className="bg-white rounded-2xl shadow-[0_4px_25px_rgba(0,0,0,0.03)] border border-slate-100 overflow-hidden">
+            {/* Tabla de Laboratorios */}
+            <div className="bg-white rounded-xl border border-zinc-200 shadow-xs overflow-hidden">
                 {isLoading ? (
-                    <div className="flex items-center justify-center py-20 text-teal-700 text-sm font-medium gap-3">
-                        <svg className="animate-spin h-6 w-6 text-teal-600" fill="none" viewBox="0 0 24 24">
+                    <div className="flex items-center justify-center py-20 text-zinc-700 text-xs font-semibold gap-3">
+                        <svg className="animate-spin h-5 w-5 text-zinc-900" fill="none" viewBox="0 0 24 24">
                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                         </svg>
                         <span>Cargando laboratorios farmacológicos...</span>
                     </div>
                 ) : filteredLaboratories.length === 0 ? (
-                    /* Estado Vacío */
-                    <div className="flex flex-col items-center justify-center py-20 px-4 text-center">
-                        <div className="w-16 h-16 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mb-3.5 border border-amber-100 shadow-sm">
-                            <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.6">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M10 2v6.292a1 1 0 01-.293.708l-5.414 5.414A4 4 0 007.121 21h9.758a4 4 0 002.828-6.586l-5.414-5.414A1 1 0 0114 8.292V2M8 2h8M6.5 15h11" />
+                    <div className="text-center py-16 px-4">
+                        <div className="max-w-sm mx-auto flex flex-col items-center">
+                            <svg className="w-8 h-8 text-zinc-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <circle cx="11" cy="11" r="8" strokeWidth="2" />
+                                <path strokeLinecap="round" strokeWidth="2" d="M21 21l-4.35-4.35" />
                             </svg>
+                            <span className="font-bold text-zinc-900 text-sm">No se encontraron laboratorios</span>
+                            <p className="text-xs text-zinc-400 mt-0.5 mb-3">
+                                {searchTerm ? "No hay resultados para la búsqueda realizada." : "Aún no tienes laboratorios registrados en el sistema."}
+                            </p>
+                            {!searchTerm && (
+                                <Link
+                                    to="/laboratories/register"
+                                    className="px-3.5 py-1.5 bg-zinc-900 hover:bg-black text-white text-xs font-bold rounded-lg transition-colors"
+                                >
+                                    + Registrar primer laboratorio
+                                </Link>
+                            )}
                         </div>
-                        <p className="italic text-slate-700 text-base font-semibold">
-                            Sin laboratorios registrados
-                        </p>
-                        <p className="text-xs text-slate-500 mt-1 max-w-sm">
-                            {searchTerm 
-                                ? "No se encontraron laboratorios que coincidan con la búsqueda." 
-                                : "Aún no tienes laboratorios registrados en el sistema. Registra el primero para asociarlo a tus medicamentos."}
-                        </p>
-                        {!searchTerm && (
-                            <Link
-                                to="/laboratories/register"
-                                className="inline-flex items-center gap-1.5 mt-4 text-xs font-semibold text-teal-700 hover:text-teal-800"
-                            >
-                                + Registrar primer laboratorio
-                            </Link>
-                        )}
                     </div>
                 ) : (
-                    /* Tabla de Laboratorios */
                     <div className="overflow-x-auto">
-                        <table className="w-full text-left text-sm text-slate-600">
-                            <thead className="bg-slate-50/80 border-b border-slate-100 text-xs uppercase font-semibold text-slate-500 tracking-wider">
-                                <tr>
-                                    <th className="py-4 px-6">LABORATORIO</th>
-                                    <th className="py-4 px-6">CONTACTO DIRECTO</th>
-                                    <th className="py-4 px-6">DIRECCIÓN FISCAL</th>
-                                    <th className="py-4 px-6 text-right">ACCIONES</th>
+                        <table className="w-full text-left border-collapse text-xs">
+                            <thead>
+                                <tr className="bg-zinc-100/80 border-b border-zinc-200 text-[10px] font-bold text-zinc-600 uppercase tracking-wider">
+                                    <th className="py-3 px-4" style={{ width: "30%" }}>LABORATORIO</th>
+                                    <th className="py-3 px-4" style={{ width: "25%" }}>CONTACTO DIRECTO</th>
+                                    <th className="py-3 px-4" style={{ width: "35%" }}>DIRECCIÓN FISCAL</th>
+                                    <th className="py-3 px-4 text-right" style={{ width: "10%" }}>ACCIONES</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-100">
+                            <tbody className="divide-y divide-zinc-200/70 bg-white">
                                 {paginatedLaboratories.map((lab) => (
-                                    <tr key={lab.id} className="hover:bg-slate-50/60 transition-colors">
+                                    <tr key={lab.id} className="hover:bg-zinc-50/70 transition-colors">
                                         {/* Laboratorio */}
-                                        <td className="py-4 px-6">
+                                        <td className="py-3.5 px-4">
                                             <div>
-                                                <span className="font-bold text-slate-900 text-base block">
+                                                <span className="font-bold text-zinc-950 uppercase text-xs block">
                                                     {lab.nombre}
                                                 </span>
-                                                <span className="text-[11px] font-semibold text-[#e2725b] uppercase tracking-wider block mt-0.5">
-                                                    • FABRICANTE PRINCIPAL
+                                                <span className="font-mono text-[10px] text-zinc-500 uppercase tracking-wider block mt-0.5">
+                                                    FABRICANTE AUTORIZADO
                                                 </span>
                                             </div>
                                         </td>
 
                                         {/* Contacto Directo */}
-                                        <td className="py-4 px-6">
+                                        <td className="py-3.5 px-4">
                                             <div className="flex flex-col gap-1 text-xs">
-                                                <span className={`flex items-center gap-1.5 ${lab.telefono ? "text-slate-700 font-medium" : "text-slate-400 italic"}`}>
-                                                    <svg className="w-3.5 h-3.5 text-teal-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" />
-                                                    </svg>
+                                                <span className={lab.telefono ? "text-zinc-800 font-medium font-mono" : "text-zinc-400 italic"}>
                                                     {lab.telefono || "Sin teléfono"}
                                                 </span>
-                                                <span className={`flex items-center gap-1.5 ${lab.email ? "text-slate-600" : "text-slate-400 italic"}`}>
-                                                    <svg className="w-3.5 h-3.5 text-teal-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
-                                                    </svg>
-                                                    {lab.email || "Sin correo corporativo"}
+                                                <span className={lab.email ? "text-zinc-600 font-mono text-[11px]" : "text-zinc-400 italic"}>
+                                                    {lab.email || "Sin correo"}
                                                 </span>
                                             </div>
                                         </td>
 
                                         {/* Dirección Fiscal */}
-                                        <td className="py-4 px-6 text-slate-500 max-w-sm">
-                                            <div className="flex items-start gap-1.5 text-xs">
-                                                <svg className="w-3.5 h-3.5 text-slate-400 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
-                                                </svg>
-                                                {lab.direccion ? (
-                                                    <span>{lab.direccion}</span>
-                                                ) : (
-                                                    <span className="italic text-slate-400">
-                                                        Dirección no especificada en el registro actual.
-                                                    </span>
-                                                )}
-                                            </div>
+                                        <td className="py-3.5 px-4 text-zinc-600 max-w-sm truncate">
+                                            {lab.direccion || <span className="text-zinc-400 italic">Dirección no especificada</span>}
                                         </td>
 
                                         {/* Acciones */}
-                                        <td className="py-4 px-6 text-right whitespace-nowrap">
-                                            <button
-                                                type="button"
-                                                onClick={() => navigate(`/laboratories/edit/${lab.id}`)}
-                                                className="p-1.5 text-slate-400 hover:text-teal-700 hover:bg-teal-50 rounded-lg transition-colors mr-1.5"
-                                                title="Editar Laboratorio"
-                                            >
-                                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
-                                                </svg>
-                                            </button>
-                                            <button
-                                                type="button"
-                                                onClick={() => handleDelete(lab)}
-                                                className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
-                                                title="Eliminar Laboratorio"
-                                            >
-                                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-                                                </svg>
-                                            </button>
+                                        <td className="py-3.5 px-4 text-right whitespace-nowrap">
+                                            <div className="inline-flex items-center justify-end gap-1.5">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => navigate(`/laboratories/edit/${lab.id}`)}
+                                                    className="p-1.5 text-zinc-600 hover:text-zinc-950 hover:bg-zinc-200 border border-zinc-200 rounded transition-colors"
+                                                    title="Editar laboratorio"
+                                                >
+                                                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+                                                    </svg>
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleDelete(lab)}
+                                                    className="p-1.5 text-zinc-400 hover:text-red-700 hover:bg-zinc-100 rounded transition-colors"
+                                                    title="Eliminar laboratorio"
+                                                >
+                                                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                    </svg>
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}
@@ -264,46 +263,32 @@ export const LaboratoriesPage = () => {
 
                 {/* Footer de Paginación */}
                 {!isLoading && filteredLaboratories.length > 0 && (
-                    <div className="px-6 py-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
-                        <div className="flex items-center gap-2">
-                            <span>Mostrar:</span>
-                            <select
-                                value={pageSize}
-                                onChange={(e) => {
-                                    setPageSize(Number(e.target.value));
-                                    setCurrentPage(1);
-                                }}
-                                className="border border-slate-200 rounded-lg px-2 py-1 text-slate-700 focus:outline-none focus:border-teal-600"
-                            >
-                                <option value={5}>5</option>
-                                <option value={10}>10</option>
-                                <option value={20}>20</option>
-                                <option value={50}>50</option>
-                            </select>
-                            <span>por página</span>
+                    <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-5 py-3 border-t border-zinc-200 bg-zinc-50/50 text-xs text-zinc-600">
+                        <div>
+                            Mostrando <span className="font-bold text-zinc-900">{startRecord}</span> a{" "}
+                            <span className="font-bold text-zinc-900">{endRecord}</span> de{" "}
+                            <span className="font-bold text-zinc-900">{filteredLaboratories.length}</span> registros
                         </div>
 
                         {totalPages > 1 && (
                             <div className="flex items-center gap-1.5">
                                 <button
                                     type="button"
-                                    onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
                                     disabled={currentPage === 1}
-                                    className="p-1 rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                                    onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+                                    className="px-2.5 py-1 rounded-md border border-zinc-300 bg-white hover:bg-zinc-100 disabled:opacity-40 disabled:cursor-not-allowed text-xs font-semibold text-zinc-700 transition-colors"
                                 >
-                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-                                    </svg>
+                                    Anterior
                                 </button>
                                 {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
                                     <button
                                         key={page}
                                         type="button"
                                         onClick={() => setCurrentPage(page)}
-                                        className={`w-7 h-7 rounded-full text-xs font-semibold transition-all ${
+                                        className={`w-7 h-7 rounded-md text-xs font-bold transition-all ${
                                             currentPage === page
-                                                ? "bg-teal-800 text-white shadow-sm"
-                                                : "text-slate-600 hover:bg-slate-100"
+                                                ? "bg-zinc-900 text-white"
+                                                : "bg-white text-zinc-700 hover:bg-zinc-100 border border-zinc-300"
                                         }`}
                                     >
                                         {page}
@@ -311,13 +296,11 @@ export const LaboratoriesPage = () => {
                                 ))}
                                 <button
                                     type="button"
-                                    onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
                                     disabled={currentPage === totalPages}
-                                    className="p-1 rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                                    onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+                                    className="px-2.5 py-1 rounded-md border border-zinc-300 bg-white hover:bg-zinc-100 disabled:opacity-40 disabled:cursor-not-allowed text-xs font-semibold text-zinc-700 transition-colors"
                                 >
-                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-                                    </svg>
+                                    Siguiente
                                 </button>
                             </div>
                         )}
@@ -327,3 +310,5 @@ export const LaboratoriesPage = () => {
         </div>
     );
 };
+
+export default LaboratoriesPage;

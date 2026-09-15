@@ -131,15 +131,15 @@ export const ReportsPage = () => {
     }, []);
 
     return (
-        <div className="reports-page-container w-100 min-vh-100 py-3 px-3 px-md-4" style={{ backgroundColor: "#f8fafc" }}>
-            {/* 1. Header Gerencial Unificado */}
-            <div className="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
+        <div className="reports-page-container w-100 min-vh-100 py-3 px-3 px-md-4" style={{ backgroundColor: "#ffffff" }}>
+            {/* 1. Header Gerencial Monocromático */}
+            <div className="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4 pb-3 border-bottom">
                 <div className="d-flex align-items-center gap-3">
                     <div
-                        className="report-header-icon rounded-3 p-2.5 d-flex align-items-center justify-content-center shadow-sm"
-                        style={{ background: "linear-gradient(135deg, #f97316 0%, #ea580c 100%)", width: "46px", height: "46px" }}
+                        className="rounded-2 d-flex align-items-center justify-content-center shadow-sm"
+                        style={{ backgroundColor: "#09090b", width: "46px", height: "46px" }}
                     >
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                             <line x1="18" y1="20" x2="18" y2="10" />
                             <line x1="12" y1="20" x2="12" y2="4" />
                             <line x1="6" y1="20" x2="6" y2="14" />
@@ -147,11 +147,11 @@ export const ReportsPage = () => {
                     </div>
                     <div>
                         <div className="text-uppercase fw-bold text-secondary" style={{ fontSize: "0.68rem", letterSpacing: "1px" }}>
-                            BUSINESS INTELLIGENCE • MÓDULO GERENCIAL UNIFICADO
+                            DASHBOARD / REPORTES GERENCIALES / ANÁLISIS ESTRATÉGICO
                         </div>
-                        <h4 className="m-0 fw-black text-dark" style={{ letterSpacing: "-0.5px", fontWeight: 900 }}>
-                            Análisis Estratégico
-                        </h4>
+                        <h3 className="m-0 fw-bold text-dark" style={{ letterSpacing: "-0.5px" }}>
+                            Reportes & Análisis Gerencial
+                        </h3>
                     </div>
                 </div>
 
@@ -159,21 +159,31 @@ export const ReportsPage = () => {
                     <button
                         type="button"
                         onClick={loadReportData}
-                        className="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1.5 px-3 py-1.5 fw-semibold shadow-sm rounded-2 bg-white"
+                        disabled={loading}
+                        className="btn btn-sm d-flex align-items-center gap-2 px-3 py-2 fw-bold shadow-sm rounded-2 text-dark"
+                        style={{ backgroundColor: "#ffffff", border: "1px solid #e4e4e7" }}
                         title="Actualizar datos de todos los módulos"
                     >
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <svg
+                            className={loading ? "spinner-border spinner-border-sm" : ""}
+                            width="14"
+                            height="14"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                        >
                             <path d="M23 4v6h-6" />
                             <path d="M1 20v-6h6" />
                             <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
                         </svg>
-                        <span>Actualizar Datos</span>
+                        <span>{loading ? "Sincronizando..." : "Actualizar Datos"}</span>
                     </button>
                 </div>
             </div>
 
             {/* 2. Pestañas Principales Superiores (VENTAS, PROVEEDORES, INVENTARIO, FINANZAS, KARDEX) */}
-            <div className="main-tabs-wrapper d-flex gap-2 mb-3 overflow-x-auto pb-1">
+            <div className="main-tabs-wrapper d-flex gap-2 mb-4 overflow-x-auto pb-1">
                 {mainModules.map((mod) => (
                     <button
                         key={mod}
@@ -244,15 +254,17 @@ export const ReportsPage = () => {
             </div>
 
             {/* 4. Pie de página de estado del sistema */}
-            <div className="d-flex flex-wrap align-items-center justify-content-between p-3 bg-white rounded-3 border mt-3 gap-3">
+            <div className="d-flex flex-wrap align-items-center justify-content-between p-3 bg-white rounded-2 border mt-4 gap-3">
                 <div className="d-flex align-items-center gap-2">
-                    <span className="online-dot"></span>
+                    <span className="badge rounded-1 fw-bold" style={{ backgroundColor: "#09090b", color: "#ffffff", fontSize: "0.68rem", padding: "4px 8px" }}>
+                        EN LÍNEA
+                    </span>
                     <span className="fw-bold text-dark text-uppercase" style={{ fontSize: "0.72rem", letterSpacing: "0.05em" }}>
                         BASE DE DATOS CONECTADA • MÓDULOS ACTIVOS: {mainModules.join(" | ")}
                     </span>
                 </div>
-                <div className="text-muted text-uppercase small" style={{ fontSize: "0.68rem", letterSpacing: "0.05em" }}>
-                    SISFARMACIA V8.3.4 INTELLIGENCE ENGINE • ARQUITECTURA LIMPIA Y MODULAR
+                <div className="text-muted text-uppercase" style={{ fontSize: "0.68rem", letterSpacing: "0.05em", fontFamily: "monospace" }}>
+                    SISFARMACIA ENTERPRISE V8.3.4 • MOTOR ANALÍTICO INTEGRADO
                 </div>
             </div>
         </div>

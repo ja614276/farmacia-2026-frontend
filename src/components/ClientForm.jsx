@@ -214,40 +214,42 @@ export const ClientForm = ({
     }
 
     return (
-        <div className="max-w-6xl mx-auto px-4 py-6 sm:px-6">
+        <div className="client-form-monochrome max-w-5xl mx-auto px-4 py-5 sm:px-6">
             {/* Header superior */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-5">
                 <div className="flex items-center gap-3">
                     <button
                         type="button"
                         onClick={handleCancel}
-                        className="w-9 h-9 rounded-full bg-white border border-slate-200 text-slate-500 hover:text-slate-800 hover:bg-slate-50 flex items-center justify-center transition-colors shadow-sm"
-                        title="Volver"
+                        className="w-8 h-8 rounded-md bg-white border border-zinc-300 text-zinc-700 hover:text-black hover:bg-zinc-100 flex items-center justify-center transition-colors shadow-xs"
+                        title="Volver al directorio"
                     >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
                         </svg>
                     </button>
                     <div>
-                        <div className="flex items-center gap-2">
-                            <span className="text-teal-600">
-                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth="2"
-                                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-                                    />
-                                </svg>
-                            </span>
-                            <h2 className="text-xl font-bold text-slate-800 tracking-tight">
-                                {isEditMode ? "Editar Cliente" : "Nuevo Cliente"}
-                            </h2>
-                        </div>
-                        <p className="text-xs text-slate-500 mt-0.5">
+                        <nav aria-label="breadcrumb" className="mb-0.5">
+                            <ol className="flex items-center gap-1.5 text-xs text-zinc-500">
+                                <li>
+                                    <span
+                                        className="cursor-pointer text-zinc-800 hover:text-black underline"
+                                        onClick={() => navigate("/clients")}
+                                    >
+                                        Clientes
+                                    </span>
+                                </li>
+                                <li className="text-zinc-400">/</li>
+                                <li className="text-zinc-900 font-semibold">{isEditMode ? "Editar" : "Nuevo"}</li>
+                            </ol>
+                        </nav>
+                        <h2 className="text-lg font-bold text-zinc-900 tracking-tight m-0">
+                            {isEditMode ? "Editar Registro de Cliente" : "Registrar Nuevo Cliente"}
+                        </h2>
+                        <p className="text-xs text-zinc-500 mt-0.5 m-0">
                             {isEditMode
-                                ? "Modifica los datos personales, contacto y condiciones crediticias del cliente."
-                                : "Registra un nuevo cliente para gestionar sus compras, recetas y cuenta corriente."}
+                                ? "Actualiza los datos personales, contacto y condiciones crediticias del titular."
+                                : "Ingresa los datos personales, fiscales y líneas de crédito asignadas."}
                         </p>
                     </div>
                 </div>
@@ -258,7 +260,7 @@ export const ClientForm = ({
                         type="button"
                         onClick={handleCancel}
                         disabled={isSubmitting}
-                        className="px-4 py-2 text-xs font-semibold text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 shadow-sm transition-colors"
+                        className="px-3.5 py-1.5 text-xs font-semibold text-zinc-700 bg-white border border-zinc-300 rounded-md hover:bg-zinc-100 shadow-xs transition-colors"
                     >
                         Cancelar
                     </button>
@@ -266,7 +268,7 @@ export const ClientForm = ({
                         type="button"
                         onClick={onSubmit}
                         disabled={isSubmitting}
-                        className="inline-flex items-center gap-2 px-5 py-2 text-xs font-semibold text-white bg-teal-600 rounded-lg hover:bg-teal-700 shadow-sm hover:shadow transition-all disabled:opacity-50"
+                        className="inline-flex items-center gap-2 px-4 py-1.5 text-xs font-semibold text-white bg-zinc-900 hover:bg-black rounded-md shadow-xs transition-colors disabled:opacity-40"
                     >
                         {isSubmitting ? (
                             <>
@@ -281,12 +283,7 @@ export const ClientForm = ({
                                 <span>Guardando...</span>
                             </>
                         ) : (
-                            <>
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                                </svg>
-                                <span>{isEditMode ? "Actualizar Cliente" : "Guardar Cliente"}</span>
-                            </>
+                            <span>{isEditMode ? "Actualizar Cliente" : "Guardar Cliente"}</span>
                         )}
                     </button>
                 </div>
@@ -294,22 +291,22 @@ export const ClientForm = ({
 
             {/* Formulario Principal */}
             <form onSubmit={onSubmit}>
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
                     {/* COLUMNA IZQUIERDA: Datos Personales, Contacto y Seguro (7 cols) */}
-                    <div className="lg:col-span-7 flex flex-col gap-6">
-                        {/* Tarjeta 1: Datos Personales */}
-                        <div className="bg-white rounded-2xl p-6 shadow-[0_4px_25px_rgba(0,0,0,0.03)] border border-slate-100 border-t-4 border-t-indigo-500">
-                            <div className="flex items-center gap-2 text-indigo-600 font-bold text-xs uppercase tracking-wider mb-4">
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="lg:col-span-7 flex flex-col gap-4">
+                        {/* Bloque 1: Datos Personales */}
+                        <div className="bg-white rounded-md p-4.5 border border-zinc-200 shadow-xs">
+                            <div className="flex items-center gap-2 text-zinc-900 font-bold text-xs uppercase tracking-wider mb-3.5">
+                                <svg className="w-4 h-4 text-zinc-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                                 </svg>
                                 <span>Datos Personales</span>
                             </div>
 
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                                 <div>
-                                    <label className="block text-xs font-semibold text-slate-700 mb-1">
-                                        Nombre(s) <span className="text-red-500">*</span>
+                                    <label className="block text-[11px] font-bold text-zinc-700 uppercase mb-1">
+                                        Nombre(s) <span className="text-zinc-900">*</span>
                                     </label>
                                     <input
                                         type="text"
@@ -318,13 +315,13 @@ export const ClientForm = ({
                                         onChange={onInputChange}
                                         placeholder="Ej: Carlos Alberto"
                                         required
-                                        className="w-full px-3 py-2 text-xs text-slate-800 bg-slate-50/50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-600 transition-all placeholder:text-slate-400"
+                                        className="w-full px-2.5 py-1.5 text-xs text-zinc-900 bg-white border border-zinc-300 rounded-md focus:outline-none focus:border-zinc-900 transition-colors placeholder:text-zinc-400"
                                     />
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs font-semibold text-slate-700 mb-1">
-                                        Apellidos <span className="text-red-500">*</span>
+                                    <label className="block text-[11px] font-bold text-zinc-700 uppercase mb-1">
+                                        Apellidos <span className="text-zinc-900">*</span>
                                     </label>
                                     <input
                                         type="text"
@@ -333,17 +330,17 @@ export const ClientForm = ({
                                         onChange={onInputChange}
                                         placeholder="Ej: Rodríguez Gómez"
                                         required
-                                        className="w-full px-3 py-2 text-xs text-slate-800 bg-slate-50/50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-600 transition-all placeholder:text-slate-400"
+                                        className="w-full px-2.5 py-1.5 text-xs text-zinc-900 bg-white border border-zinc-300 rounded-md focus:outline-none focus:border-zinc-900 transition-colors placeholder:text-zinc-400"
                                     />
                                 </div>
 
                                 <div className="sm:col-span-2">
-                                    <label className="block text-xs font-semibold text-slate-700 mb-1">
-                                        Documento / DNI / RUC / Carnet
+                                    <label className="block text-[11px] font-bold text-zinc-700 uppercase mb-1">
+                                        Documento / DNI / RUC
                                     </label>
                                     <div className="relative">
-                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <div className="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-zinc-400">
+                                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <rect width="20" height="14" x="2" y="5" rx="2" strokeWidth="2" />
                                                 <line x1="2" x2="22" y1="10" y2="10" strokeWidth="2" />
                                             </svg>
@@ -354,17 +351,17 @@ export const ClientForm = ({
                                             value={identification}
                                             onChange={onInputChange}
                                             placeholder="Ej: 74892314"
-                                            className="w-full pl-9 pr-3 py-2 text-xs font-mono text-slate-800 bg-slate-50/50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-600 transition-all placeholder:text-slate-400"
+                                            className="w-full pl-8 pr-2.5 py-1.5 text-xs font-mono text-zinc-900 bg-white border border-zinc-300 rounded-md focus:outline-none focus:border-zinc-900 transition-colors placeholder:text-zinc-400"
                                         />
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Tarjeta 2: Información de Contacto */}
-                        <div className="bg-white rounded-2xl p-6 shadow-[0_4px_25px_rgba(0,0,0,0.03)] border border-slate-100 border-t-4 border-t-emerald-500">
-                            <div className="flex items-center gap-2 text-emerald-600 font-bold text-xs uppercase tracking-wider mb-4">
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        {/* Bloque 2: Información de Contacto */}
+                        <div className="bg-white rounded-md p-4.5 border border-zinc-200 shadow-xs">
+                            <div className="flex items-center gap-2 text-zinc-900 font-bold text-xs uppercase tracking-wider mb-3.5">
+                                <svg className="w-4 h-4 text-zinc-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path
                                         strokeLinecap="round"
                                         strokeLinejoin="round"
@@ -375,9 +372,9 @@ export const ClientForm = ({
                                 <span>Información de Contacto</span>
                             </div>
 
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                                 <div>
-                                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                                    <label className="block text-[11px] font-bold text-zinc-700 uppercase mb-1">
                                         Teléfono / Celular
                                     </label>
                                     <input
@@ -386,12 +383,12 @@ export const ClientForm = ({
                                         value={phone}
                                         onChange={onInputChange}
                                         placeholder="Ej: +51 987 654 321"
-                                        className="w-full px-3 py-2 text-xs text-slate-800 bg-slate-50/50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-600 transition-all placeholder:text-slate-400"
+                                        className="w-full px-2.5 py-1.5 text-xs text-zinc-900 bg-white border border-zinc-300 rounded-md focus:outline-none focus:border-zinc-900 transition-colors placeholder:text-zinc-400"
                                     />
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                                    <label className="block text-[11px] font-bold text-zinc-700 uppercase mb-1">
                                         Correo Electrónico
                                     </label>
                                     <input
@@ -400,13 +397,13 @@ export const ClientForm = ({
                                         value={email}
                                         onChange={onInputChange}
                                         placeholder="cliente@correo.com"
-                                        className="w-full px-3 py-2 text-xs text-slate-800 bg-slate-50/50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-600 transition-all placeholder:text-slate-400"
+                                        className="w-full px-2.5 py-1.5 text-xs text-zinc-900 bg-white border border-zinc-300 rounded-md focus:outline-none focus:border-zinc-900 transition-colors placeholder:text-zinc-400"
                                     />
                                 </div>
 
                                 <div className="sm:col-span-2">
-                                    <label className="block text-xs font-semibold text-slate-700 mb-1">
-                                        Dirección Completa
+                                    <label className="block text-[11px] font-bold text-zinc-700 uppercase mb-1">
+                                        Dirección
                                     </label>
                                     <input
                                         type="text"
@@ -414,16 +411,16 @@ export const ClientForm = ({
                                         value={address}
                                         onChange={onInputChange}
                                         placeholder="Ej: Av. Principal 123, Dpto 4B"
-                                        className="w-full px-3 py-2 text-xs text-slate-800 bg-slate-50/50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-600 transition-all placeholder:text-slate-400"
+                                        className="w-full px-2.5 py-1.5 text-xs text-zinc-900 bg-white border border-zinc-300 rounded-md focus:outline-none focus:border-zinc-900 transition-colors placeholder:text-zinc-400"
                                     />
                                 </div>
                             </div>
                         </div>
 
-                        {/* Tarjeta 3: Seguro u Obra Social (Opcional) */}
-                        <div className="bg-white rounded-2xl p-6 shadow-[0_4px_25px_rgba(0,0,0,0.03)] border border-slate-100 border-t-4 border-t-sky-500">
-                            <div className="flex items-center gap-2 text-sky-600 font-bold text-xs uppercase tracking-wider mb-4">
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        {/* Bloque 3: Seguro u Obra Social (Opcional) */}
+                        <div className="bg-white rounded-md p-4.5 border border-zinc-200 shadow-xs">
+                            <div className="flex items-center gap-2 text-zinc-900 font-bold text-xs uppercase tracking-wider mb-3.5">
+                                <svg className="w-4 h-4 text-zinc-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path
                                         strokeLinecap="round"
                                         strokeLinejoin="round"
@@ -434,10 +431,10 @@ export const ClientForm = ({
                                 <span>Seguro Médico / Obra Social (Opcional)</span>
                             </div>
 
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                                 <div>
-                                    <label className="block text-xs font-semibold text-slate-700 mb-1">
-                                        Entidad / Seguro
+                                    <label className="block text-[11px] font-bold text-zinc-700 uppercase mb-1">
+                                        Entidad / Aseguradora
                                     </label>
                                     <input
                                         type="text"
@@ -445,12 +442,12 @@ export const ClientForm = ({
                                         value={healthInsurance}
                                         onChange={onInputChange}
                                         placeholder="Ej: EsSalud, Rimac, Pacífico"
-                                        className="w-full px-3 py-2 text-xs text-slate-800 bg-slate-50/50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-600 transition-all placeholder:text-slate-400"
+                                        className="w-full px-2.5 py-1.5 text-xs text-zinc-900 bg-white border border-zinc-300 rounded-md focus:outline-none focus:border-zinc-900 transition-colors placeholder:text-zinc-400"
                                     />
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                                    <label className="block text-[11px] font-bold text-zinc-700 uppercase mb-1">
                                         N° Afiliado / Carnet
                                     </label>
                                     <input
@@ -459,7 +456,7 @@ export const ClientForm = ({
                                         value={affiliateNumber}
                                         onChange={onInputChange}
                                         placeholder="Ej: POL-882310"
-                                        className="w-full px-3 py-2 text-xs text-slate-800 bg-slate-50/50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-600 transition-all placeholder:text-slate-400"
+                                        className="w-full px-2.5 py-1.5 text-xs text-zinc-900 bg-white border border-zinc-300 rounded-md focus:outline-none focus:border-zinc-900 transition-colors placeholder:text-zinc-400"
                                     />
                                 </div>
                             </div>
@@ -467,25 +464,25 @@ export const ClientForm = ({
                     </div>
 
                     {/* COLUMNA DERECHA: Finanzas, Límites y Estado (5 cols) */}
-                    <div className="lg:col-span-5 flex flex-col gap-6">
-                        {/* Tarjeta: Crédito y Condiciones de Pago */}
-                        <div className="bg-white rounded-2xl p-6 shadow-[0_4px_25px_rgba(0,0,0,0.03)] border border-slate-100 border-t-4 border-t-rose-500">
-                            <div className="flex items-center gap-2 text-rose-600 font-bold text-xs uppercase tracking-wider mb-4">
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="lg:col-span-5 flex flex-col gap-4">
+                        {/* Bloque: Crédito y Condiciones de Pago */}
+                        <div className="bg-white rounded-md p-4.5 border border-zinc-200 shadow-xs">
+                            <div className="flex items-center gap-2 text-zinc-900 font-bold text-xs uppercase tracking-wider mb-3.5">
+                                <svg className="w-4 h-4 text-zinc-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <rect width="20" height="14" x="2" y="5" rx="2" strokeWidth="2" />
                                     <line x1="2" x2="22" y1="10" y2="10" strokeWidth="2" />
                                 </svg>
                                 <span>Finanzas y Crédito</span>
                             </div>
 
-                            <div className="flex flex-col gap-4">
-                                <div className="grid grid-cols-2 gap-4">
+                            <div className="flex flex-col gap-3.5">
+                                <div className="grid grid-cols-2 gap-3.5">
                                     <div>
-                                        <label className="block text-xs font-semibold text-slate-700 mb-1">
+                                        <label className="block text-[11px] font-bold text-zinc-700 uppercase mb-1">
                                             Límite Crédito (S/)
                                         </label>
                                         <div className="relative">
-                                            <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-xs font-semibold text-slate-400">
+                                            <span className="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-xs font-semibold text-zinc-500">
                                                 S/
                                             </span>
                                             <input
@@ -495,17 +492,17 @@ export const ClientForm = ({
                                                 name="creditLimit"
                                                 value={creditLimit}
                                                 onChange={onInputChange}
-                                                className="w-full pl-8 pr-3 py-2 text-xs font-bold text-slate-800 bg-slate-50/50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-600 transition-all"
+                                                className="w-full pl-7 pr-2.5 py-1.5 text-xs font-bold text-zinc-900 bg-white border border-zinc-300 rounded-md focus:outline-none focus:border-zinc-900 transition-colors"
                                             />
                                         </div>
                                     </div>
 
                                     <div>
-                                        <label className="block text-xs font-semibold text-slate-700 mb-1">
+                                        <label className="block text-[11px] font-bold text-zinc-700 uppercase mb-1">
                                             Saldo Actual (S/)
                                         </label>
                                         <div className="relative">
-                                            <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-xs font-semibold text-slate-400">
+                                            <span className="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-xs font-semibold text-zinc-500">
                                                 S/
                                             </span>
                                             <input
@@ -515,61 +512,53 @@ export const ClientForm = ({
                                                 name="currentBalance"
                                                 value={currentBalance}
                                                 onChange={onInputChange}
-                                                className="w-full pl-8 pr-3 py-2 text-xs font-bold text-teal-700 bg-slate-50/50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-600 transition-all"
+                                                className="w-full pl-7 pr-2.5 py-1.5 text-xs font-bold text-zinc-900 bg-white border border-zinc-300 rounded-md focus:outline-none focus:border-zinc-900 transition-colors"
                                             />
                                         </div>
                                     </div>
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs font-semibold text-slate-700 mb-1">
-                                        Días de Crédito permitidos
+                                    <label className="block text-[11px] font-bold text-zinc-700 uppercase mb-1">
+                                        Plazo de Crédito (Días)
                                     </label>
-                                    <div className="relative">
-                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <circle cx="12" cy="12" r="10" strokeWidth="2" />
-                                                <polyline points="12 6 12 12 16 14" strokeWidth="2" />
-                                            </svg>
-                                        </div>
-                                        <input
-                                            type="number"
-                                            min="0"
-                                            name="creditDays"
-                                            value={creditDays}
-                                            onChange={onInputChange}
-                                            placeholder="0"
-                                            className="w-full pl-9 pr-3 py-2 text-xs text-slate-800 bg-slate-50/50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-600 transition-all"
-                                        />
-                                    </div>
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        name="creditDays"
+                                        value={creditDays}
+                                        onChange={onInputChange}
+                                        placeholder="0"
+                                        className="w-full px-2.5 py-1.5 text-xs text-zinc-900 bg-white border border-zinc-300 rounded-md focus:outline-none focus:border-zinc-900 transition-colors"
+                                    />
                                 </div>
 
-                                <div className="p-3.5 bg-rose-50/70 border border-rose-100 rounded-xl text-rose-800 text-[11px] leading-relaxed mt-2">
-                                    <span className="font-bold">Política crediticia: </span>
-                                    Configura los topes y días según el convenio o historial de pago del cliente. Para compras al contado, mantén el límite en 0.
+                                <div className="p-3 bg-zinc-50 border border-zinc-200 rounded-md text-zinc-600 text-[11px] leading-relaxed">
+                                    <span className="font-bold text-zinc-800">Política de Crédito: </span>
+                                    Configura los topes y días según el convenio o historial de pago del cliente. Para operaciones estrictamente al contado, mantén el límite en 0.
                                 </div>
                             </div>
                         </div>
 
-                        {/* Tarjeta: Estado de la Cuenta */}
-                        <div className="bg-white rounded-2xl p-6 shadow-[0_4px_25px_rgba(0,0,0,0.03)] border border-slate-100">
-                            <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-3">
-                                Estado del Cliente
+                        {/* Bloque: Estado de la Cuenta */}
+                        <div className="bg-white rounded-md p-4.5 border border-zinc-200 shadow-xs">
+                            <h3 className="text-xs font-bold text-zinc-900 uppercase tracking-wider mb-3 m-0">
+                                Estado del Registro
                             </h3>
-                            <label className="flex items-center gap-3 p-3 bg-slate-50 hover:bg-slate-100/80 border border-slate-200 rounded-xl cursor-pointer transition-colors">
+                            <label className="flex items-center gap-3 p-2.5 bg-zinc-50 hover:bg-zinc-100 border border-zinc-200 rounded-md cursor-pointer transition-colors">
                                 <input
                                     type="checkbox"
                                     name="isActive"
                                     checked={isActive}
                                     onChange={onInputChange}
-                                    className="w-4 h-4 text-teal-600 rounded border-slate-300 focus:ring-teal-500 transition-colors"
+                                    className="w-4 h-4 text-zinc-900 rounded border-zinc-300 focus:ring-zinc-900"
                                 />
                                 <div>
-                                    <span className="text-xs font-semibold text-slate-800 block">
+                                    <span className="text-xs font-bold text-zinc-900 block">
                                         Cliente Activo
                                     </span>
-                                    <span className="text-[11px] text-slate-500 block">
-                                        Habilitado para compras, recetas y líneas de crédito en el punto de venta.
+                                    <span className="text-[11px] text-zinc-500 block">
+                                        Habilitado para emitir comprobantes y otorgar financiamiento en el punto de venta.
                                     </span>
                                 </div>
                             </label>

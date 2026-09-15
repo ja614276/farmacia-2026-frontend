@@ -1,10 +1,6 @@
-import { useState } from "react";
 import { useProducts } from "../hooks/useProducts.js";
 import { ProductList } from "../components/ProductList";
-import { useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/hooks/useAuth.js";
-import { ProductDetailModal } from "../components/ProductDetailModal";
-import { ProductLotsModal } from "../components/ProductLotsModal";
 
 export const ProductsPage = () => {
     const { 
@@ -13,20 +9,18 @@ export const ProductsPage = () => {
         error, 
         handlerRemoveProduct, 
         handlerProductSelectedForm,
-        getProducts 
     } = useProducts();
-    const navigate = useNavigate();
     const { login } = useAuth();
-
-    // Estados para los dos modales
-    const [detailProduct, setDetailProduct] = useState(null);
-    const [lotsProduct, setLotsProduct] = useState(null);
 
     if (isLoading) {
         return (
-            <div className="container my-4 text-center">
-                <div className="spinner-border text-teal" role="status">
-                    <span className="visually-hidden">Cargando...</span>
+            <div className="w-full min-h-[400px] flex items-center justify-center">
+                <div className="flex items-center gap-3 text-zinc-700 font-semibold text-xs">
+                    <svg className="animate-spin h-5 w-5 text-zinc-900" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    </svg>
+                    <span>Cargando catálogo de medicamentos...</span>
                 </div>
             </div>
         );
@@ -34,79 +28,20 @@ export const ProductsPage = () => {
 
     if (error) {
         return (
-            <div className="container my-4">
-                <div className="alert alert-danger">
-                    Hubo un error al cargar los productos: {error.message}
-                </div>
+            <div className="w-full p-4 bg-red-50 border border-red-200 text-red-700 rounded-xl text-xs font-semibold">
+                Hubo un error al cargar los productos: {error.message || "Error del servidor"}
             </div>
         );
     }
 
     return (
-        <div className="container my-4">
-            
-            {/*
-            
-            <div className="d-flex justify-content-between align-items-center mb-3">
-                <h3 className="m-0 fw-bold text-dark">Lista de Productos</h3>
-                {!login.isAdmin || (
-                    <button
-                        className="btn btn-teal-primary fw-semibold"
-                        onClick={() => navigate("/products/register")}
-                    >
-                        + Nuevo Producto
-                    </button>
-                )}
-            </div>
-            
-            */}
-
-            {products.length === 0 ? (
-                <div className="alert alert-warning">No hay productos registrados en el sistema.</div>
-            ) : (
-                <ProductList
-                    products={products}
-                    isAdmin={login.isAdmin}
-                    handlerProductSelectedForm={handlerProductSelectedForm}
-                    handlerRemoveProduct={handlerRemoveProduct}
-                    // 👈 Pasamos los manejadores para abrir los modales:
-                    onViewDetail={(prod) => setDetailProduct(prod)}
-                    onViewLots={(prod) => setLotsProduct(prod)}
-                />
-            )}
-
-            {/* Modal de Ficha Técnica */}
-            {detailProduct && (
-                <ProductDetailModal
-                    product={detailProduct}
-                    onClose={() => setDetailProduct(null)}
-                    onEdit={(prod) => {
-                        setDetailProduct(null);
-                        const id = prod.idProducto || prod.id;
-                        if (handlerProductSelectedForm) handlerProductSelectedForm(prod);
-                        navigate(`/products/edit/${id}`);
-                    }}
-                />
-            )}
-
-            {/* Modal de Lotes y Ajuste de Precios */}
-            {lotsProduct && (
-                <ProductLotsModal
-                    product={lotsProduct}
-                    onClose={() => setLotsProduct(null)}
-                    // 1. Redirigir a editar el producto completo
-                    onNavigateToEdit={(lot, prod) => {
-                        setLotsProduct(null);
-                        const id = prod.idProducto || prod.id;
-                        if (handlerProductSelectedForm) handlerProductSelectedForm(prod);
-                        navigate(`/products/edit/${id}`);
-                    }}
-                    // 2. Refrescar lista tras guardar precios
-                    onSavePrices={async () => {
-                        if (getProducts) await getProducts();
-                    }}
-                />
-            )}
-        </div>
+        <ProductList
+            products={products}
+            isAdmin={Boolean(login?.isAdmin)}
+            handlerProductSelectedForm={handlerProductSelectedForm}
+            handlerRemoveProduct={handlerRemoveProduct}
+        />
     );
 };
+
+export default ProductsPage;

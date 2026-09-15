@@ -52,12 +52,8 @@ export const EmployeesRegisterPage = () => {
     }
   }, [id, employees]);
 
- const handleSubmit = async (payload, formId) => {
-    // Si formId no viene, usamos obligatoriamente el id de la URL
+  const handleSubmit = async (payload, formId) => {
     const targetId = formId && Number(formId) > 0 ? formId : id;
-
-    console.log("📌 Submitting empleado con targetId:", targetId);
-
     await handlerAddEmployee(payload, targetId);
     navigate("/employees");
   };
@@ -68,15 +64,41 @@ export const EmployeesRegisterPage = () => {
 
   if (fetching) {
     return (
-      <div className="d-flex justify-content-center align-items-center py-5 bg-white border rounded-3">
-        <div className="spinner-border spinner-border-sm text-teal me-2" role="status"></div>
-        <span className="text-muted small">Cargando expediente para edición...</span>
+      <div className="w-full min-h-[350px] flex flex-col items-center justify-center gap-3 bg-white border border-zinc-200 rounded-2xl p-10">
+        <svg className="animate-spin h-6 w-6 text-zinc-900" fill="none" viewBox="0 0 24 24">
+          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+        </svg>
+        <span className="text-xs font-mono uppercase tracking-wider text-zinc-500">
+          Cargando expediente para edición...
+        </span>
       </div>
     );
   }
 
   return (
-    <div className="container-fluid px-0">
+    <div className="max-w-5xl mx-auto space-y-6 pb-12">
+      {/* Breadcrumbs */}
+      <div className="flex items-center gap-2 text-xs font-semibold text-zinc-500">
+        <span
+          className="hover:text-zinc-900 cursor-pointer transition-colors"
+          onClick={() => navigate("/dashboard")}
+        >
+          Dashboard
+        </span>
+        <span>/</span>
+        <span
+          className="hover:text-zinc-900 cursor-pointer transition-colors"
+          onClick={() => navigate("/employees")}
+        >
+          Colaboradores
+        </span>
+        <span>/</span>
+        <span className="text-zinc-950 font-bold">
+          {id ? `Editar #${id}` : "Nuevo Colaborador"}
+        </span>
+      </div>
+
       <EmployeeForm
         initialData={employeeSelected}
         onSubmit={handleSubmit}

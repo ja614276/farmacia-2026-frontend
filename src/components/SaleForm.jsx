@@ -11,6 +11,7 @@ import productsApi from "../apis/productsApi";
 import { PresentationLotModal } from "./PresentationLotModal";
 import { SaleSuccessModal } from "./SaleSuccessModal";
 import { ReceiptTicketModal } from "./ReceiptTicketModal";
+import { ProductDetailModal } from "./ProductDetailModal";
 
 const initialFormState = {
     id: null,
@@ -49,6 +50,9 @@ export const SaleForm = ({ saleSelected = null, initialData = null, onSuccess = 
     // Modales
     const [selectedProductForModal, setSelectedProductForModal] = useState(null);
     const [isPresModalOpen, setIsPresModalOpen] = useState(false);
+
+    const [selectedProductForDetail, setSelectedProductForDetail] = useState(null);
+    const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
     const [createdSaleData, setCreatedSaleData] = useState(null);
     const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
@@ -323,6 +327,17 @@ export const SaleForm = ({ saleSelected = null, initialData = null, onSuccess = 
     const handleOpenPresentationModal = (product) => {
         setSelectedProductForModal(product);
         setIsPresModalOpen(true);
+    };
+
+    // Apertura del modal de detalles técnicos del producto al hacer clic en "Ver"
+    const handleOpenDetailModal = (product) => {
+        setSelectedProductForDetail(product);
+        setIsDetailModalOpen(true);
+    };
+
+    const handleCloseDetailModal = () => {
+        setSelectedProductForDetail(null);
+        setIsDetailModalOpen(false);
     };
 
     // Selección de presentación y agregado al carrito
@@ -676,30 +691,30 @@ export const SaleForm = ({ saleSelected = null, initialData = null, onSuccess = 
     }
 
     return (
-        <div className="max-w-[1600px] mx-auto px-3 py-4 space-y-4">
+        <div className="sale-form-monochrome max-w-[1600px] mx-auto px-3 py-4 space-y-4">
 
-            {/* BARRA SUPERIOR POS (Calco fiel de la Imagen 2) */}
-            <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 flex flex-col md:flex-row items-center justify-between gap-4">
+            {/* BARRA SUPERIOR POS CORPORATIVA (BLANCO Y NEGRO) */}
+            <div className="bg-white rounded-md p-3.5 border border-zinc-200 flex flex-col md:flex-row items-center justify-between gap-4 shadow-xs">
                 {/* Caja Central */}
                 <div className="flex items-center gap-3 self-start md:self-auto">
-                    <div className="w-11 h-11 rounded-2xl bg-[#005f60] flex items-center justify-center text-white shadow-sm flex-shrink-0">
-                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="w-10 h-10 rounded-md bg-zinc-900 flex items-center justify-center text-white shadow-xs flex-shrink-0">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                         </svg>
                     </div>
                     <div>
-                        <h1 className="font-black text-slate-800 text-lg tracking-tight">
-                            Caja Central
+                        <h1 className="font-bold text-zinc-900 text-base tracking-tight m-0">
+                            Punto de Venta · Emisión
                         </h1>
-                        <span className="text-[10px] font-bold text-teal-700 tracking-wider uppercase block">
-                            POS - VENTA DIRECTA
+                        <span className="text-[10px] font-bold text-zinc-500 tracking-wider uppercase block">
+                            Caja Central
                         </span>
                     </div>
                 </div>
 
                 {/* Buscador Central con atajo F1 */}
                 <div className="w-full md:max-w-2xl relative">
-                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-zinc-400">
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <circle cx="11" cy="11" r="8" strokeWidth="2" />
                             <path strokeLinecap="round" strokeWidth="2" d="M21 21l-4.35-4.35" />
@@ -713,47 +728,46 @@ export const SaleForm = ({ saleSelected = null, initialData = null, onSuccess = 
                             setProductCatalogSearch(e.target.value);
                             setCatalogPage(1);
                         }}
-                        placeholder="Buscar por código, nombre, p. activo, patología o lote..."
-                        className="w-full pl-10 pr-14 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-600 transition-all shadow-inner"
+                        placeholder="Buscar medicamento por nombre, código, principio activo o lote..."
+                        className="w-full pl-9 pr-12 py-2 bg-white border border-zinc-300 rounded-md text-xs font-medium text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:border-zinc-900 transition-colors"
                     />
-                    <span className="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-[10px] font-bold text-slate-400">
+                    <span className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-[10px] font-mono font-bold text-zinc-400">
                         F1
                     </span>
                 </div>
 
-                {/* Indicador de Caja */}
+                {/* Indicador de Sesión de Caja */}
                 <div className="flex items-center gap-2 self-end md:self-auto">
-                    <div className="inline-flex items-center gap-2 bg-emerald-50 border border-emerald-200 px-3.5 py-1.5 rounded-full text-xs font-bold text-emerald-800 shadow-sm">
-                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                    <div className="inline-flex items-center gap-2 bg-zinc-100 border border-zinc-300 px-3 py-1.5 rounded-md text-xs font-bold text-zinc-900">
+                        <span className="w-2 h-2 rounded-full bg-zinc-900" />
                         <span>CAJA #{activeSession ? activeSession.id : "1"}</span>
                     </div>
                 </div>
             </div>
 
-            {/* CUERPO PRINCIPAL DEL POS (Imagen 2: Grid 8 cols catálogo/carrito, 4 cols panel de pago) */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+            {/* CUERPO PRINCIPAL DEL POS */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
 
                 {/* COLUMNA IZQUIERDA (8 COLS): Catálogo superior y Carrito inferior */}
                 <div className="lg:col-span-8 space-y-4">
 
                     {/* SECCIÓN 1: CATÁLOGO DE PRODUCTOS DISPONIBLES */}
-                    <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                    <div className="bg-white rounded-md border border-zinc-200 overflow-hidden shadow-xs">
                         <div className="overflow-x-auto">
-                            <table className="w-full text-left border-collapse">
+                            <table className="w-full text-left border-collapse enterprise-table">
                                 <thead>
-                                    <tr className="border-b border-slate-100 bg-slate-50/50 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                                        <th className="py-3 px-4">PRODUCTO</th>
-                                        <th className="py-3 px-4">LABORATORIO</th>
-                                        <th className="py-3 px-4 text-center">STOCK</th>
-                                        <th className="py-3 px-4 text-right">PRECIO</th>
-                                        <th className="py-3 px-4 text-center">RX</th>
-                                        <th className="py-3 px-4 text-right">ACCIÓN</th>
+                                    <tr className="border-b border-zinc-200 bg-zinc-100 text-[10px] font-bold text-zinc-600 uppercase tracking-wider">
+                                        <th className="py-2.5 px-4">PRODUCTO</th>
+                                        <th className="py-2.5 px-4">LABORATORIO</th>
+                                        <th className="py-2.5 px-4 text-center">STOCK</th>
+                                        <th className="py-2.5 px-4 text-right">PRECIO</th>
+                                        <th className="py-2.5 px-4 text-right">ACCIÓN</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-slate-100 text-xs">
+                                <tbody className="divide-y divide-zinc-100 text-xs">
                                     {paginatedCatalog.length === 0 ? (
                                         <tr>
-                                            <td colSpan="6" className="py-8 text-center text-slate-400 text-xs">
+                                            <td colSpan="5" className="py-8 text-center text-zinc-400 text-xs">
                                                 No se encontraron productos en el catálogo
                                             </td>
                                         </tr>
@@ -769,83 +783,78 @@ export const SaleForm = ({ saleSelected = null, initialData = null, onSuccess = 
                                                 : `S/ ${priceVal.toFixed(2)}`;
 
                                             return (
-                                                <tr key={prod.idProducto || prod.id} className="hover:bg-slate-50/60 transition-colors">
+                                                <tr key={prod.idProducto || prod.id} className="hover:bg-zinc-50 transition-colors">
                                                     {/* PRODUCTO */}
-                                                    <td className="py-3 px-4">
-                                                        <div className="flex items-center gap-3">
-
-                                                            <div>
-                                                                <span className="font-extrabold text-slate-800 text-xs block uppercase">
-                                                                    {prod.nombre}
+                                                    <td className="py-2.5 px-4">
+                                                        <div 
+                                                            className="cursor-pointer group"
+                                                            onClick={() => handleOpenDetailModal(prod)}
+                                                            title="Clic para ver detalles del producto"
+                                                        >
+                                                            <span className="font-bold text-zinc-900 text-xs block uppercase group-hover:underline">
+                                                                {prod.nombre}
+                                                            </span>
+                                                            <div className="flex items-center gap-2 mt-0.5 text-[11px]">
+                                                                <span className="text-zinc-500">
+                                                                    {[prod.formaFarmaceutica, prod.concentracion].filter(Boolean).join(" ")}
                                                                 </span>
-                                                                <div className="flex items-center gap-2 mt-0.5 text-[11px]">
-                                                                    <span className="text-slate-400">
-                                                                        {[prod.formaFarmaceutica, prod.concentracion].filter(Boolean).join(" ")}
+                                                                {prod.principioActivo && (
+                                                                    <span className="text-zinc-600 font-medium">
+                                                                        · {prod.principioActivo}
                                                                     </span>
-                                                                </div>
-                                                                <div>{prod.principioActivo && (
-                                                                    <span className="text-teal-700 font-medium">
-                                                                        {prod.principioActivo}
-                                                                    </span>
-                                                                )}</div>
+                                                                )}
                                                             </div>
                                                         </div>
                                                     </td>
 
                                                     {/* LABORATORIO */}
-                                                    <td className="py-3 px-4">
-                                                        <span className="font-semibold text-slate-600 uppercase text-[11px]">
-                                                            {prod.laboratorioNombre || prod.laboratorio?.nombre || "TERBOL"}
+                                                    <td className="py-2.5 px-4">
+                                                        <span className="font-medium text-zinc-700 uppercase text-[11px]">
+                                                            {prod.laboratorioNombre || prod.laboratorio?.nombre || "GENFAR"}
                                                         </span>
                                                     </td>
 
-                                                    {/* STOCK DISPONIBLE (DESCONTANDO LO QUE ESTÁ EN EL CARRITO) */}
-                                                    <td className="py-3 px-4 text-center">
-                                                        <span className={`font-black text-xs ${
-                                                            stockVal <= 0
-                                                                ? "text-slate-400"
-                                                                : stockVal <= 5
-                                                                    ? "text-rose-600"
-                                                                    : stockVal <= 15
-                                                                        ? "text-amber-600"
-                                                                        : "text-emerald-700"
-                                                        }`}>
+                                                    {/* STOCK DISPONIBLE */}
+                                                    <td className="py-2.5 px-4 text-center">
+                                                        <span className={`font-mono font-bold text-xs ${stockVal <= 0
+                                                            ? "text-zinc-400"
+                                                            : "text-zinc-900"
+                                                            }`}>
                                                             {stockVal}
                                                         </span>
                                                     </td>
 
                                                     {/* PRECIO */}
-                                                    <td className="py-3 px-4 text-right">
-                                                        <span className="font-extrabold text-slate-800 text-xs">
+                                                    <td className="py-2.5 px-4 text-right">
+                                                        <span className="font-bold text-zinc-900 text-xs font-mono">
                                                             {priceDisplay}
                                                         </span>
                                                     </td>
 
-                                                    {/* RX */}
-                                                    <td className="py-3 px-4 text-center">
-                                                        {prod.requiereReceta ? (
-                                                            <span className="bg-rose-50 text-rose-700 font-black text-[9px] px-1.5 py-0.5 rounded border border-rose-200 uppercase">
-                                                                Rx
-                                                            </span>
-                                                        ) : (
-                                                            <span className="text-slate-300 text-xs font-bold">-</span>
-                                                        )}
-                                                    </td>
-
-                                                    {/* ACCIÓN AGREGAR */}
-                                                    <td className="py-3 px-4 text-right">
-                                                        <button
-                                                            type="button"
-                                                            disabled={stockVal <= 0}
-                                                            onClick={() => handleOpenPresentationModal(prod)}
-                                                            className={`px-4 py-1.5 text-xs font-bold rounded-xl shadow-sm transition-all ${
-                                                                stockVal <= 0
-                                                                    ? "bg-slate-200 text-slate-400 cursor-not-allowed"
-                                                                    : "bg-[#005f60] hover:bg-[#004e4f] text-white hover:shadow"
-                                                            }`}
-                                                        >
-                                                            {stockVal <= 0 ? "Agotado" : "Agregar"}
-                                                        </button>
+                                                    {/* ACCIÓN (VER / AGREGAR) */}
+                                                    <td className="py-2.5 px-4 text-right">
+                                                        <div className="flex items-center justify-end gap-1.5">
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => handleOpenDetailModal(prod)}
+                                                                className="px-2.5 py-1 text-xs font-semibold rounded border border-zinc-300 hover:bg-zinc-100 text-zinc-700 transition-colors shadow-2xs"
+                                                                title="Ver ficha técnica y detalles completos del producto"
+                                                            >
+                                                                Ver
+                                                            </button>
+                                                            <button
+                                                                type="button"
+                                                                disabled={stockVal <= 0}
+                                                                onClick={() => handleOpenPresentationModal(prod)}
+                                                                className={`px-3 py-1 text-xs font-semibold rounded shadow-xs transition-colors ${stockVal <= 0
+                                                                    ? "bg-zinc-200 text-zinc-400 cursor-not-allowed"
+                                                                    : "bg-zinc-900 hover:bg-zinc-800 text-white"
+                                                                    }`}
+                                                                title="Agregar a la venta"
+                                                            >
+                                                                {stockVal <= 0 ? "Agotado" : "Agregar"}
+                                                            </button>
+                                                        </div>
                                                     </td>
                                                 </tr>
                                             );
@@ -856,9 +865,9 @@ export const SaleForm = ({ saleSelected = null, initialData = null, onSuccess = 
                         </div>
 
                         {/* Paginación Catálogo */}
-                        <div className="p-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-                            <span className="text-[11px] text-slate-400 font-medium">
-                                MOSTRANDO {paginatedCatalog.length} DE {filteredCatalog.length}
+                        <div className="p-2.5 border-t border-zinc-200 flex items-center justify-between text-xs text-zinc-500 bg-white">
+                            <span className="text-[11px] text-zinc-500 font-medium">
+                                Mostrando {paginatedCatalog.length} de {filteredCatalog.length}
                             </span>
                             {totalCatalogPages > 1 && (
                                 <div className="flex items-center gap-1">
@@ -866,18 +875,18 @@ export const SaleForm = ({ saleSelected = null, initialData = null, onSuccess = 
                                         type="button"
                                         disabled={catalogPage === 1}
                                         onClick={() => setCatalogPage((p) => Math.max(p - 1, 1))}
-                                        className="w-7 h-7 rounded-lg border border-slate-200 flex items-center justify-center text-xs text-slate-600 hover:bg-slate-50 disabled:opacity-40"
+                                        className="w-7 h-7 rounded border border-zinc-300 flex items-center justify-center text-xs text-zinc-700 hover:bg-zinc-100 disabled:opacity-30"
                                     >
                                         &lt;
                                     </button>
-                                    <span className="text-xs font-bold px-2 text-teal-800">
+                                    <span className="text-xs font-semibold px-2 text-zinc-900">
                                         {catalogPage} / {totalCatalogPages}
                                     </span>
                                     <button
                                         type="button"
                                         disabled={catalogPage === totalCatalogPages}
                                         onClick={() => setCatalogPage((p) => Math.min(p + 1, totalCatalogPages))}
-                                        className="w-7 h-7 rounded-lg border border-slate-200 flex items-center justify-center text-xs text-slate-600 hover:bg-slate-50 disabled:opacity-40"
+                                        className="w-7 h-7 rounded border border-zinc-300 flex items-center justify-center text-xs text-zinc-700 hover:bg-zinc-100 disabled:opacity-30"
                                     >
                                         &gt;
                                     </button>
@@ -886,36 +895,36 @@ export const SaleForm = ({ saleSelected = null, initialData = null, onSuccess = 
                         </div>
                     </div>
 
-                    {/* SECCIÓN 2: CARRITO DE VENTA (Calco fiel de la Imagen 2) */}
-                    <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-                        <div className="p-4 border-b border-slate-100 flex items-center justify-between">
+                    {/* SECCIÓN 2: CARRITO DE VENTA */}
+                    <div className="bg-white rounded-md border border-zinc-200 overflow-hidden shadow-xs">
+                        <div className="p-3 border-b border-zinc-200 flex items-center justify-between bg-zinc-50">
                             <div className="flex items-center gap-2">
-                                <svg className="w-5 h-5 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="w-4 h-4 text-zinc-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                                 </svg>
-                                <h3 className="font-extrabold text-slate-800 text-xs tracking-wider uppercase">
+                                <h3 className="font-bold text-zinc-900 text-xs tracking-wider uppercase m-0">
                                     CARRITO DE VENTA
                                 </h3>
                             </div>
-                            <span className="text-xs font-bold text-slate-400">
-                                {formState.details.length} ÍTEM(S)
+                            <span className="text-xs font-semibold text-zinc-500">
+                                {formState.details.length} ÍTEMS
                             </span>
                         </div>
 
                         {formState.details.length === 0 ? (
-                            <div className="py-14 text-center text-slate-400 flex flex-col items-center justify-center">
-                                <svg className="w-10 h-10 text-slate-200 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div className="py-12 text-center text-zinc-400 flex flex-col items-center justify-center">
+                                <svg className="w-8 h-8 text-zinc-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                                 </svg>
-                                <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-                                    CARRITO VACÍO
+                                <span className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
+                                    Carrito sin productos
                                 </span>
                             </div>
                         ) : (
                             <div className="overflow-x-auto">
-                                <table className="w-full text-left border-collapse text-xs">
+                                <table className="w-full text-left border-collapse text-xs enterprise-table">
                                     <thead>
-                                        <tr className="border-b border-slate-100 bg-slate-50/50 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                                        <tr className="border-b border-zinc-200 bg-zinc-100 text-[10px] font-bold text-zinc-600 uppercase tracking-wider">
                                             <th className="py-2.5 px-4">PRODUCTO</th>
                                             <th className="py-2.5 px-4 text-center">CANTIDAD</th>
                                             <th className="py-2.5 px-4 text-right">P. UNIT.</th>
@@ -923,21 +932,21 @@ export const SaleForm = ({ saleSelected = null, initialData = null, onSuccess = 
                                             <th className="py-2.5 px-4 text-center"></th>
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-slate-100">
+                                    <tbody className="divide-y divide-zinc-100">
                                         {formState.details.map((item, idx) => (
-                                            <tr key={idx} className="hover:bg-slate-50/60">
+                                            <tr key={idx} className="hover:bg-zinc-50">
                                                 {/* PRODUCTO + PRESENTACIÓN */}
-                                                <td className="py-3 px-4">
+                                                <td className="py-2.5 px-4">
                                                     <div>
-                                                        <span className="font-extrabold text-slate-800 text-xs block uppercase">
+                                                        <span className="font-bold text-zinc-900 text-xs block uppercase">
                                                             {item.productName}
                                                         </span>
                                                         <div className="flex items-center gap-2 mt-0.5 text-[11px]">
-                                                            <span className="bg-teal-50 text-teal-800 font-bold px-1.5 py-0.2 rounded border border-teal-200 uppercase">
+                                                            <span className="bg-zinc-100 text-zinc-900 font-semibold px-1.5 py-0.5 rounded border border-zinc-300 uppercase text-[10px]">
                                                                 {item.presentationName}
                                                             </span>
                                                             {item.lotNumber && (
-                                                                <span className="text-slate-500 font-medium">
+                                                                <span className="text-zinc-500 font-mono text-[11px]">
                                                                     Lote: {item.lotNumber}
                                                                 </span>
                                                             )}
@@ -945,8 +954,8 @@ export const SaleForm = ({ saleSelected = null, initialData = null, onSuccess = 
                                                     </div>
                                                 </td>
 
-                                                {/* CANTIDAD CON BOTONES +/- Y LÍMITE DE STOCK */}
-                                                <td className="py-3 px-4 text-center">
+                                                {/* CANTIDAD CON BOTONES +/- */}
+                                                <td className="py-2.5 px-4 text-center">
                                                     {(() => {
                                                         const prod = availableProducts.find((p) => (p.idProducto || p.id) === item.productId);
                                                         const origStock = prod ? Number(prod.stockReal !== undefined ? prod.stockReal : (prod.stock || 0)) : 999999;
@@ -960,12 +969,12 @@ export const SaleForm = ({ saleSelected = null, initialData = null, onSuccess = 
                                                         const isAtMaxStock = item.presentationQuantity >= maxPresQty;
 
                                                         return (
-                                                            <div className="inline-flex items-center border border-slate-200 rounded-xl overflow-hidden bg-slate-50 shadow-inner">
+                                                            <div className="inline-flex items-center border border-zinc-300 rounded overflow-hidden bg-white shadow-xs">
                                                                 <button
                                                                     type="button"
                                                                     disabled={item.presentationQuantity <= 1}
                                                                     onClick={() => handleUpdateQuantity(idx, -1)}
-                                                                    className="w-7 h-7 flex items-center justify-center font-bold text-slate-600 hover:bg-slate-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                                                                    className="w-6 h-6 flex items-center justify-center font-bold text-zinc-700 hover:bg-zinc-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                                                                 >
                                                                     -
                                                                 </button>
@@ -975,17 +984,16 @@ export const SaleForm = ({ saleSelected = null, initialData = null, onSuccess = 
                                                                     max={maxPresQty}
                                                                     value={item.presentationQuantity}
                                                                     onChange={(e) => handleSetQuantityDirect(idx, e.target.value)}
-                                                                    className="w-10 text-center bg-transparent font-black text-xs text-slate-800 focus:outline-none"
+                                                                    className="w-9 text-center bg-transparent font-bold text-xs text-zinc-900 focus:outline-none"
                                                                 />
                                                                 <button
                                                                     type="button"
                                                                     disabled={isAtMaxStock}
                                                                     onClick={() => handleUpdateQuantity(idx, 1)}
-                                                                    className={`w-7 h-7 flex items-center justify-center font-bold transition-colors ${
-                                                                        isAtMaxStock
-                                                                            ? "text-slate-300 bg-slate-100 cursor-not-allowed"
-                                                                            : "text-slate-600 hover:bg-slate-200"
-                                                                    }`}
+                                                                    className={`w-6 h-6 flex items-center justify-center font-bold transition-colors ${isAtMaxStock
+                                                                        ? "text-zinc-300 bg-zinc-100 cursor-not-allowed"
+                                                                        : "text-zinc-700 hover:bg-zinc-100"
+                                                                        }`}
                                                                     title={isAtMaxStock ? "Stock máximo alcanzado" : "Aumentar cantidad"}
                                                                 >
                                                                     +
@@ -996,21 +1004,21 @@ export const SaleForm = ({ saleSelected = null, initialData = null, onSuccess = 
                                                 </td>
 
                                                 {/* PRECIO UNITARIO */}
-                                                <td className="py-3 px-4 text-right font-medium text-slate-600">
+                                                <td className="py-2.5 px-4 text-right font-medium text-zinc-700">
                                                     S/ {Number(item.presentationUnitPrice).toFixed(2)}
                                                 </td>
 
                                                 {/* SUBTOTAL */}
-                                                <td className="py-3 px-4 text-right font-black text-slate-800 text-xs">
+                                                <td className="py-2.5 px-4 text-right font-bold text-zinc-900 text-xs">
                                                     S/ {Number(item.subtotal).toFixed(2)}
                                                 </td>
 
                                                 {/* REMOVER */}
-                                                <td className="py-3 px-4 text-center">
+                                                <td className="py-2.5 px-4 text-center">
                                                     <button
                                                         type="button"
                                                         onClick={() => handleRemoveProduct(idx)}
-                                                        className="text-slate-400 hover:text-rose-600 p-1.5 rounded-lg hover:bg-rose-50 transition-colors"
+                                                        className="text-zinc-400 hover:text-black p-1 rounded hover:bg-zinc-100 transition-colors"
                                                         title="Eliminar producto"
                                                     >
                                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1021,21 +1029,20 @@ export const SaleForm = ({ saleSelected = null, initialData = null, onSuccess = 
                                             </tr>
                                         ))}
                                     </tbody>
-
                                 </table>
                             </div>
                         )}
 
-                        {/* RESUMEN Y TOTAL AL PIE DEL CARRITO DE VENTA */}
+                        {/* RESUMEN Y TOTAL AL PIE DEL CARRITO */}
                         {formState.details.length > 0 && (
-                            <div className="p-4 bg-slate-50/90 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3">
-                                <div className="flex items-center gap-3 text-xs text-slate-500 font-medium">
+                            <div className="p-3 bg-zinc-50 border-t border-zinc-200 flex flex-col sm:flex-row items-center justify-between gap-3">
+                                <div className="flex items-center gap-3 text-xs text-zinc-500 font-medium">
                                     <span>
-                                        Ítems: <strong className="text-slate-800 font-bold">{formState.details.length}</strong>
+                                        Ítems: <strong className="text-zinc-900 font-bold">{formState.details.length}</strong>
                                     </span>
                                     <span>•</span>
                                     <span>
-                                        Unidades: <strong className="text-slate-800 font-bold">
+                                        Unidades: <strong className="text-zinc-900 font-bold">
                                             {formState.details.reduce((acc, curr) => acc + Number(curr.presentationQuantity || 0), 0)}
                                         </strong>
                                     </span>
@@ -1043,26 +1050,26 @@ export const SaleForm = ({ saleSelected = null, initialData = null, onSuccess = 
 
                                 <div className="flex items-center gap-4">
                                     <div className="text-right hidden sm:block">
-                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                                        <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">
                                             SUBTOTAL
                                         </span>
-                                        <span className="text-xs font-bold text-slate-700">
+                                        <span className="text-xs font-bold text-zinc-800">
                                             S/ {subtotalCalculado.toFixed(2)}
                                         </span>
                                     </div>
                                     <div className="text-right hidden sm:block">
-                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                                        <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block">
                                             IGV (18%)
                                         </span>
-                                        <span className="text-xs font-bold text-slate-700">
+                                        <span className="text-xs font-bold text-zinc-800">
                                             S/ {igvCalculado.toFixed(2)}
                                         </span>
                                     </div>
-                                    <div className="bg-[#005f60] text-white px-4 py-2 rounded-xl flex items-center gap-3 shadow-sm">
-                                        <span className="text-[11px] font-bold uppercase tracking-wider text-teal-200">
+                                    <div className="bg-zinc-900 text-white px-3.5 py-1.5 rounded-md flex items-center gap-3 shadow-xs">
+                                        <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-400">
                                             TOTAL:
                                         </span>
-                                        <span className="text-lg font-black tracking-tight">
+                                        <span className="text-base font-bold tracking-tight">
                                             S/ {totalVenta.toFixed(2)}
                                         </span>
                                     </div>
@@ -1075,53 +1082,27 @@ export const SaleForm = ({ saleSelected = null, initialData = null, onSuccess = 
                 {/* COLUMNA DERECHA (4 COLS): Panel de Totales y Datos de Transacción */}
                 <div className="lg:col-span-4 space-y-4">
 
-                    {/* TARJETA TOTALES (BANNER OSCURO VERDE AZULADO CALCO IMAGEN 2) */}
-                    <div className="bg-[#005f60] text-white rounded-2xl p-5 shadow-md flex flex-col justify-between">
-                        <div className="space-y-1.5 text-xs text-teal-100 border-b border-teal-500/40 pb-3 mb-3">
-                            <div className="flex justify-between">
-                                <span>SUBTOTAL</span>
-                                <span className="font-bold">S/ {subtotalCalculado.toFixed(2)}</span>
-                            </div>
-                            <div className="flex justify-between">
-                                <span>Base Imponible</span>
-                                <span>S/ {subtotalCalculado.toFixed(2)}</span>
-                            </div>
-                            <div className="flex justify-between">
-                                <span>IGV (18%)</span>
-                                <span>S/ {igvCalculado.toFixed(2)}</span>
-                            </div>
-                        </div>
 
-                        <div>
-                            <span className="text-[11px] font-bold tracking-wider uppercase text-teal-200 block">
-                                TOTAL A PAGAR
-                            </span>
-                            <div className="text-3xl font-black text-white tracking-tight mt-0.5">
-                                S/ {totalVenta.toFixed(2)}
-                            </div>
-                        </div>
-                    </div>
 
-                    {/* DETALLES DE TRANSACCIÓN (Calco Imagen 2) */}
-                    <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 space-y-4">
-                        <div className="flex items-center gap-2 text-slate-700 font-bold text-xs uppercase tracking-wider border-b border-slate-100 pb-2">
-                            <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    {/* DETALLES DE TRANSACCIÓN */}
+                    <div className="bg-white rounded-md p-4 border border-zinc-200 shadow-xs space-y-3.5">
+                        <div className="flex items-center gap-2 text-zinc-900 font-bold text-xs uppercase tracking-wider border-b border-zinc-200 pb-2">
+                            <svg className="w-4 h-4 text-zinc-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                             </svg>
                             <span>DETALLES DE TRANSACCIÓN</span>
                         </div>
-
                         {/* Comprobante y Serie */}
                         <div className="grid grid-cols-2 gap-3">
                             <div>
-                                <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">
+                                <label className="block text-[10px] font-bold text-zinc-600 uppercase mb-1">
                                     COMPROBANTE
                                 </label>
                                 <select
                                     name="receiptType"
                                     value={formState.receiptType}
                                     onChange={onInputChange}
-                                    className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
+                                    className="w-full px-2.5 py-1.5 text-xs bg-white border border-zinc-300 rounded-md font-semibold text-zinc-900 focus:outline-none focus:border-zinc-900"
                                 >
                                     <option value="TICKET">TICKET</option>
                                     <option value="BOLETA">BOLETA DE VENTA</option>
@@ -1130,10 +1111,10 @@ export const SaleForm = ({ saleSelected = null, initialData = null, onSuccess = 
                             </div>
 
                             <div>
-                                <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">
-                                    SERIE - Nº <span className="font-normal text-[10px] text-slate-400">(Vista previa)</span>
+                                <label className="block text-[10px] font-bold text-zinc-600 uppercase mb-1">
+                                    SERIE - Nº <span className="font-normal text-[10px] text-zinc-400">(Vista previa)</span>
                                 </label>
-                                <div className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-mono text-xs font-bold text-slate-700 truncate">
+                                <div className="px-2.5 py-1.5 bg-zinc-100 border border-zinc-300 rounded-md font-mono text-xs font-bold text-zinc-800 truncate">
                                     {formState.series} - {formState.receiptNumber}
                                 </div>
                             </div>
@@ -1142,14 +1123,14 @@ export const SaleForm = ({ saleSelected = null, initialData = null, onSuccess = 
                         {/* Tipo Venta y Medio Pago */}
                         <div className="grid grid-cols-2 gap-3">
                             <div>
-                                <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">
+                                <label className="block text-[10px] font-bold text-zinc-600 uppercase mb-1">
                                     TIPO VENTA
                                 </label>
                                 <select
                                     name="saleType"
                                     value={formState.saleType}
                                     onChange={handleSaleTypeChange}
-                                    className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500/20 uppercase"
+                                    className="w-full px-2.5 py-1.5 text-xs bg-white border border-zinc-300 rounded-md font-semibold text-zinc-900 focus:outline-none focus:border-zinc-900 uppercase"
                                 >
                                     {paymentConditions.length > 0 ? (
                                         paymentConditions.map((cond) => (
@@ -1167,14 +1148,14 @@ export const SaleForm = ({ saleSelected = null, initialData = null, onSuccess = 
                             </div>
 
                             <div>
-                                <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">
+                                <label className="block text-[10px] font-bold text-zinc-600 uppercase mb-1">
                                     MEDIO PAGO
                                 </label>
                                 <select
                                     name="paymentMethodName"
                                     value={formState.paymentMethodName}
                                     onChange={handlePaymentMethodChange}
-                                    className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500/20 uppercase"
+                                    className="w-full px-2.5 py-1.5 text-xs bg-white border border-zinc-300 rounded-md font-semibold text-zinc-900 focus:outline-none focus:border-zinc-900 uppercase"
                                 >
                                     {paymentMethods.length > 0 ? (
                                         paymentMethods.map((pm) => (
@@ -1198,13 +1179,13 @@ export const SaleForm = ({ saleSelected = null, initialData = null, onSuccess = 
                         {/* Cliente Asignado */}
                         <div>
                             <div className="flex items-center justify-between mb-1">
-                                <label className="text-[11px] font-bold text-slate-500 uppercase">
+                                <label className="text-[10px] font-bold text-zinc-600 uppercase">
                                     CLIENTE ASIGNADO
                                 </label>
                                 <button
                                     type="button"
                                     onClick={() => navigate("/clients/register")}
-                                    className="text-[11px] font-bold text-teal-700 hover:text-teal-900 border border-teal-200 hover:bg-teal-50 px-2 py-0.5 rounded-lg transition-colors"
+                                    className="text-[10px] font-semibold text-zinc-900 hover:text-black border border-zinc-300 hover:bg-zinc-100 px-2 py-0.5 rounded transition-colors"
                                 >
                                     + Nuevo Cliente
                                 </button>
@@ -1212,7 +1193,7 @@ export const SaleForm = ({ saleSelected = null, initialData = null, onSuccess = 
                             <select
                                 value={formState.clientId || ""}
                                 onChange={handleClientChange}
-                                className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
+                                className="w-full px-2.5 py-1.5 text-xs bg-white border border-zinc-300 rounded-md font-semibold text-zinc-900 focus:outline-none focus:border-zinc-900"
                             >
                                 <option value="">Público General</option>
                                 {clientsList.map((c) => (
@@ -1221,17 +1202,17 @@ export const SaleForm = ({ saleSelected = null, initialData = null, onSuccess = 
                                     </option>
                                 ))}
                             </select>
-                            <div className="flex justify-between text-[10px] text-slate-400 font-medium mt-1">
+                            <div className="flex justify-between text-[10px] text-zinc-400 font-medium mt-1">
                                 <span>Límite: S/ 0.00</span>
-                                <span>Saldo Actual: S/ 0.00 (+S/ 0.00)</span>
+                                <span>Saldo Actual: S/ 0.00</span>
                             </div>
                         </div>
 
                         {/* Efectivo Recibido y Vuelto */}
                         {(formState.paymentMethodName || "").toUpperCase().includes("EFECTIVO") && (
-                            <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-100">
+                            <div className="grid grid-cols-2 gap-3 pt-2 border-t border-zinc-200">
                                 <div>
-                                    <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">
+                                    <label className="block text-[10px] font-bold text-zinc-600 uppercase mb-1">
                                         PAGA CON (S/)
                                     </label>
                                     <input
@@ -1241,37 +1222,37 @@ export const SaleForm = ({ saleSelected = null, initialData = null, onSuccess = 
                                         value={formState.amountPaid}
                                         onChange={onInputChange}
                                         name="amountPaid"
-                                        className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl font-black text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500/20"
+                                        className="w-full px-2.5 py-1.5 text-xs bg-white border border-zinc-300 rounded-md font-bold text-zinc-900 focus:outline-none focus:border-zinc-900"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">
+                                    <label className="block text-[10px] font-bold text-zinc-600 uppercase mb-1">
                                         VUELTO / CAMBIO
                                     </label>
-                                    <div className="px-3 py-2 bg-slate-100 border border-slate-200 rounded-xl font-black text-xs text-emerald-700">
+                                    <div className="px-2.5 py-1.5 bg-zinc-100 border border-zinc-300 rounded-md font-mono font-bold text-xs text-zinc-900">
                                         S/ {vuelto.toFixed(2)}
                                     </div>
                                 </div>
                             </div>
                         )}
 
-                        {/* BOTÓN REALIZAR VENTA (Calco Imagen 2) */}
+                        {/* BOTÓN REALIZAR VENTA */}
                         <button
                             type="button"
                             onClick={onSubmit}
                             disabled={isSubmitting || formState.details.length === 0}
-                            className="w-full py-4 bg-[#005f60] hover:bg-[#004e4f] text-white rounded-2xl font-black text-sm tracking-wide shadow-sm hover:shadow transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 transform hover:-translate-y-0.5 active:translate-y-0 mt-4"
+                            className="w-full py-3 bg-zinc-900 hover:bg-black text-white rounded-md font-bold text-xs tracking-wide shadow-xs transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-3"
                         >
                             {isSubmitting ? (
                                 <>
-                                    <svg className="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                                    <svg className="animate-spin h-3.5 w-3.5 text-white" fill="none" viewBox="0 0 24 24">
                                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                                     </svg>
                                     <span>PROCESANDO...</span>
                                 </>
                             ) : (
-                                <span>{isEditMode ? "ACTUALIZAR VENTA" : "Realizar Venta"}</span>
+                                <span>{isEditMode ? "ACTUALIZAR COMPROBANTE" : "EMITIR Y COBRAR COMPROBANTE"}</span>
                             )}
                         </button>
                     </div>
@@ -1312,6 +1293,22 @@ export const SaleForm = ({ saleSelected = null, initialData = null, onSuccess = 
                 }}
                 saleData={createdSaleData}
             />
+
+            {/* MODAL DETALLES DEL PRODUCTO */}
+            {isDetailModalOpen && selectedProductForDetail && (
+                <ProductDetailModal
+                    product={selectedProductForDetail}
+                    onClose={handleCloseDetailModal}
+                    onAddToCart={(prod, pres) => {
+                        handleCloseDetailModal();
+                        if (pres) {
+                            handleAddPresentationToCart({ product: prod, presentation: pres, lot: null });
+                        } else {
+                            handleOpenPresentationModal(prod);
+                        }
+                    }}
+                />
+            )}
         </div>
     );
 };
